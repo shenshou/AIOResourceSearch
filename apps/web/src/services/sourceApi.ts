@@ -80,6 +80,15 @@ export const sourceApi = {
     });
   },
 
+  async importExternalSources(token: string, etag: string, sources: SourceDefinition[]) {
+    return request<SourcesConfig>("/api/admin/sources", {
+      token,
+      method: "POST",
+      etag,
+      body: { sources },
+    });
+  },
+
   async updateSource(token: string, etag: string, source: SourceDefinition) {
     return request<SourcesConfig>(`/api/admin/sources/${encodeURIComponent(source.id)}`, {
       token,
