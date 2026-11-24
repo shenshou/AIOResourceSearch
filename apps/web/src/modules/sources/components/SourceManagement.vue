@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import {
+  CONTENT_CATEGORIES,
+  CONTENT_CATEGORY_LABELS,
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
   SOURCE_TYPES,
   type AdapterDefinition,
+  type ContentCategory,
   type SearchMode,
   type SourceCapability,
   type SourceCategory,
@@ -23,6 +26,7 @@ const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 const showToken = ref(false);
 const catalogQuery = ref("");
+const contentCategoryLabels = CONTENT_CATEGORY_LABELS;
 const categoryLabels: Record<SourceCategory, string> = {
   jav: "JAV 资源站",
   torrent: "BT / Torrent 搜索引擎",
@@ -50,6 +54,7 @@ const emptyForm = (): SourceDefinition => ({
   id: "",
   name: "",
   category: "other-index",
+  contentCategory: "jav",
   type: "provider",
   adapterId: "",
   searchUrlTemplate: "",
@@ -93,6 +98,7 @@ async function importAllCatalogSources() {
     id: entry.id,
     name: entry.name,
     category: entry.category,
+    contentCategory: "jav",
     type: "external-search",
     enabled: false,
     ...(entry.baseUrl ? { baseUrl: entry.baseUrl } : {}),
@@ -113,6 +119,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     id: entry.id,
     name: entry.name,
     category: entry.category,
+    contentCategory: "jav",
     type: "external-search" as const,
     adapterId: "",
     searchUrlTemplate: entry.searchUrlTemplate ?? "",
@@ -137,6 +144,7 @@ function beginCreate() {
 function beginEdit(source: SourceDefinition) {
   Object.assign(form, {
     ...source,
+    contentCategory: source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"),
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
     searchUrlTemplate: source.searchUrlTemplate ?? "",
@@ -287,7 +295,7 @@ async function submitLogin() {
                 {{ source.enabled ? "已启用" : "已禁用" }}
               </span>
             </div>
-            <p class="source-meta">{{ categoryLabels[source.category] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · Adapter: {{ source.adapterId }}</template></p>
+            <p class="source-meta">{{ categoryLabels[source.category] }} / {{ contentCategoryLabels[source.contentCategory ?? (source.category === "other-index" ? "general" : "jav")] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · Adapter: {{ source.adapterId }}</template></p>
             <div class="source-tags">
               <span v-for="mode in source.searchModes" :key="mode">{{ modeLabels[mode] }}</span>
               <span v-for="capability in source.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
@@ -322,6 +330,11 @@ async function submitLogin() {
             <label>数据源分类
               <select v-model="form.category">
                 <option v-for="category in SOURCE_CATEGORIES" :key="category" :value="category">{{ categoryLabels[category] }}</option>
+              </select>
+            </label>
+            <label>内容分类
+              <select v-model="form.contentCategory">
+                <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ contentCategoryLabels[category] }}</option>
               </select>
             </label>
             <label>来源类型
