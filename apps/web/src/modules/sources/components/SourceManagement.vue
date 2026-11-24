@@ -392,7 +392,7 @@ async function submitLogin() {
                 <textarea v-model="htmlFieldsJson" rows="4" maxlength="5000" placeholder='{"releaseDate":".release-date","author":".author","isbn":".isbn"}'></textarea>
               </label>
             </template>
-            <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="form.type === 'external-search' && !form.searchUrlTemplate?.trim()" placeholder="https://example.com" /></label>
+            <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="(form.type === 'external-search' && !form.searchUrlTemplate?.trim()) || (form.type === 'provider' && form.adapterId === 'generic-html')" placeholder="https://example.com" /></label>
             <label v-if="form.type === 'provider'">请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" /> 保存后启用</label>
             <fieldset class="wide choice-field">
