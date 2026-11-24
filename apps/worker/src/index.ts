@@ -165,7 +165,7 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof type !== "string" || !sourceTypes.includes(type as (typeof sourceTypes)[number])) return null;
   if (type === "provider" &&
       (typeof value.adapterId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.adapterId))) return null;
-  if (type === "external-search") {
+  if (type === "external-search" && value.searchUrlTemplate !== undefined) {
     if (typeof value.searchUrlTemplate !== "string" ||
         value.searchUrlTemplate.length > 2048 ||
         (value.searchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1) return null;
@@ -183,7 +183,10 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (!Array.isArray(value.searchModes) || !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
   if (!Array.isArray(value.capabilities) || !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
   if (type === "external-search" &&
-      (value.capabilities.length > 0 || value.adapterId !== undefined || value.credentialBinding !== undefined)) return null;
+      (value.capabilities.length > 0 ||
+       value.adapterId !== undefined ||
+       value.credentialBinding !== undefined ||
+       (value.searchUrlTemplate === undefined && typeof value.baseUrl !== "string"))) return null;
   if (type === "provider" && value.searchUrlTemplate !== undefined) return null;
   if (typeof value.timeoutMs !== "number" || !Number.isInteger(value.timeoutMs) || value.timeoutMs < 1000 || value.timeoutMs > 30000) return null;
 
