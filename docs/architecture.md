@@ -114,3 +114,16 @@ Each source receives its own timeout signal. A provider failure or timeout is is
 Provider output is validated and normalized against the configured source identity. Result URLs and optional external links must be HTTPS. Magnet links are parsed as URIs and must contain a valid BitTorrent Info Hash (`xt=urn:btih`); the `xt` parameter may appear in any query-parameter position. ED2K values are checked against their expected URI format. Results are deduplicated by canonical result URL, capped at 50 per source and 100 total.
 
 The registry currently contains no concrete adapters, so the endpoint can return an empty result set with explicit unavailable source statuses until a reviewed provider implementation is added. No source is fetched merely because a URL was entered in its configuration.
+
+
+## Worker tests
+
+The Worker scheduler has a focused unit-test suite under `apps/worker/tests/providers`. Tests inject a provider resolver into `executeSearch`; production calls omit this optional dependency and continue to use the compile-time registry. This seam avoids mutating global registry state in tests.
+
+Run the suite from the repository root:
+
+```bash
+npm run test:worker
+```
+
+The test runner uses Node's test API through the lightweight `tsx` TypeScript runner. CI executes Worker tests before the frontend production build and Worker type-check. Tests use mocked provider functions and do not make network requests or contact real source websites.
