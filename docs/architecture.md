@@ -93,3 +93,12 @@ Search page
 ```
 
 Search orchestration is not enabled until the provider audit identifies sources and access methods that can be integrated appropriately.
+
+
+## Provider adapter runtime
+
+Executable adapters are registered in `apps/worker/src/providers/registry.ts`. The registry is a compile-time allowlist backed by imported TypeScript implementations; it is never populated from KV. `isProviderImplemented` is the single source of truth used by adapter administration to determine whether an adapter ID has executable code.
+
+The Provider contract lives in `apps/worker/src/providers/types.ts`. Each implementation declares its stable ID, code version, supported source categories, capabilities, and search modes, and exposes a `search` method that returns normalized resources. The context supplies the configured source, Worker Fetch API, and abort signal.
+
+The registry is intentionally empty until a concrete provider has passed source-access review and implementation tests. An adapter record in KV alone cannot make an adapter executable or searchable. Registering or changing executable code requires a Worker deployment; changing administrative metadata remains a KV-only operation.
