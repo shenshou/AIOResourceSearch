@@ -7,7 +7,7 @@
     "dev": "wrangler dev --config wrangler.jsonc",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/providers/search.test.ts"
   },
   "dependencies": {
     "@aio-resource-search/shared": "0.1.0"
