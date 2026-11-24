@@ -39,7 +39,7 @@ const MAX_PARSED_RESULTS = 50;
 export async function parseHtmlResults(
   response: Response,
   selectors: HtmlSelectorConfig,
-): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string }>> {
+): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; metadata?: Record<string, string> }>> {
   const stack: MutableItem[] = [];
   const results: MutableItem[] = [];
   const rewriter = new HTMLRewriter()
