@@ -1,0 +1,19 @@
+{
+  "name": "aio-resource-search",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "apps/worker",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @aio-resource-search/web",
+    "dev:worker": "npm run dev --workspace @aio-resource-search/worker",
+    "build": "npm run build --workspace @aio-resource-search/web",
+    "typecheck:worker": "npm run typecheck --workspace @aio-resource-search/worker"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
