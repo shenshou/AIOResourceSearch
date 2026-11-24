@@ -4,6 +4,15 @@ const FEED_ENDPOINT = "https://sukebei.nyaa.net/feed/magnet";
 const MAX_FEED_BYTES = 2 * 1024 * 1024;
 
 function decodeXml(value: string): string {
+  const decodeCodePoint = (raw: string, radix: number): string => {
+    const codePoint = Number.parseInt(raw, radix);
+    if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff ||
+        (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+      return "\uFFFD";
+    }
+    return String.fromCodePoint(codePoint);
+  };
+
   return value
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/&amp;/g, "&")
@@ -11,15 +20,44 @@ function decodeXml(value: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_match, code: string) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([\da-f]+);/gi, (_match, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&#(\d+);/g, (_match, code: string) => decodeCodePoint(code, 10))
+    .replace(/&#x([\da-f]+);/gi, (_match, code: string) => decodeCodePoint(code, 16))
     .trim();
 }
 
 function readTag(xml: string, tagName: string): string {
   const escaped = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = new RegExp(`<(?:[\\w.-]+:)?${escaped}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[\\w.-]+:)?${escaped}\\s*>`, "i").exec(xml);
+  const match = new RegExp(
+    `<(?:[\\w.-]+:)?${escaped}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[\\w.-]+:)?${escaped}\\s*>`,
+    "i",
+  ).exec(xml);
   return match ? decodeXml(match[1]) : "";
+}
+
+async function readTextLimited(response: Response, maxBytes: number): Promise<string> {
+  const reader = response.body?.getReader();
+  if (!reader) return "";
+
+  const decoder = new TextDecoder();
+  let totalBytes = 0;
+  let text = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel("RSS response exceeded size limit.");
+        throw new Error("Sukebei RSS response exceeded the size limit.");
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+    text += decoder.decode();
+    return text;
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 function detailUrl(guid: string, itemId: string): string | null {
@@ -45,6 +83,10 @@ function detailUrl(guid: string, itemId: string): string | null {
 }
 
 function parseItems(xml: string, query: string) {
+  if (!/<rss\b[^>]*>[\s\S]*<channel\b[^>]*>/i.test(xml) || !/<\/channel\s*>[\s\S]*<\/rss\s*>/i.test(xml)) {
+    throw new Error("Sukebei returned an invalid RSS document.");
+  }
+
   const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
   const searchUrl = new URL(FEED_ENDPOINT);
   searchUrl.searchParams.set("q", query);
@@ -56,14 +98,13 @@ function parseItems(xml: string, query: string) {
     const magnetUri = rawLink.startsWith("magnet:")
       ? rawLink
       : readTag(item, "magnet");
-    const hash = readTag(item, "infoHash") || readTag(item, "infohash");
     const stableId = guid.match(/\/(\d+)\/?$/)?.[1] ?? guid;
     const url = detailUrl(guid, stableId);
 
     if (!title || !magnetUri.startsWith("magnet:") || !url) return [];
 
     return [{
-      id: stableId || hash || magnetUri,
+      id: stableId || magnetUri,
       sourceId: "sukebei",
       sourceName: "Sukebei",
       category: "torrent" as const,
@@ -82,7 +123,7 @@ function parseItems(xml: string, query: string) {
  */
 export const sukebeiRssProvider: ProviderAdapter = {
   id: "sukebei-rss",
-  version: "1.0.0",
+  version: "1.0.1",
   categories: ["torrent"],
   capabilities: ["magnet"],
   searchModes: ["number", "keyword"],
@@ -94,22 +135,28 @@ export const sukebeiRssProvider: ProviderAdapter = {
     const response = await context.fetch(url.toString(), {
       method: "GET",
       headers: { Accept: "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8" },
+      redirect: "manual",
       signal: context.signal,
     });
     if (!response.ok) {
       throw new Error(`Sukebei RSS returned HTTP ${response.status}.`);
     }
 
+    const finalUrl = response.url;
+    if (finalUrl) {
+      const parsedFinalUrl = new URL(finalUrl);
+      if (parsedFinalUrl.protocol !== "https:" || parsedFinalUrl.hostname !== "sukebei.nyaa.net") {
+        throw new Error("Sukebei RSS redirected to an unexpected host.");
+      }
+    }
+
     const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
-    if (declaredLength > MAX_FEED_BYTES) {
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_FEED_BYTES) {
       throw new Error("Sukebei RSS response exceeded the size limit.");
     }
 
-    const xml = await response.text();
-    if (xml.length > MAX_FEED_BYTES) {
-      throw new Error("Sukebei RSS response exceeded the size limit.");
-    }
-    if (!/<rss\b|<feed\b/i.test(xml)) {
+    const xml = await readTextLimited(response, MAX_FEED_BYTES);
+    if (!/<rss\b/i.test(xml)) {
       throw new Error("Sukebei returned an unexpected feed format.");
     }
 
