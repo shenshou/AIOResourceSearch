@@ -200,3 +200,10 @@ h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 5vw, 42px); letter-spacin
 
 .catalog-search { width: 100%; min-height: 38px; margin: 0 0 12px; padding: 0 11px; border: 1px solid var(--border); border-radius: 8px; color: #e2e8f0; background: #101a2c; font-size: 12px; }
 .catalog-search:focus { outline: 2px solid #64748b; outline-offset: 1px; }
+
+.source-catalog-toolbar { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.source-catalog-toolbar .catalog-search { flex: 1; min-width: 0; margin: 0; }
+@media (max-width: 700px) {
+  .source-catalog-toolbar { align-items: stretch; flex-direction: column; }
+  .source-catalog-toolbar .primary-button { width: 100%; }
+}
