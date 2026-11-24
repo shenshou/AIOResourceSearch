@@ -2,6 +2,7 @@ import type { ProviderAdapter } from "./types";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 import { torlockProvider } from "./torlock-torznab";
+import { yourBittorrentProvider } from "./yourbittorrent-json";
 
 /**
  * Compile-time allowlist of executable provider adapters.
@@ -13,6 +14,7 @@ const providerAdapters: readonly ProviderAdapter[] = [
   sukebeiRssProvider,
   perverzijaDbProvider,
   torlockProvider,
+  yourBittorrentProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
