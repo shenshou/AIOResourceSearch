@@ -1,103 +1,160 @@
 # Source Catalog
 
-This catalog records adult-resource source candidates found in the reviewed public repositories. It is an inventory, not an assertion that every site permits automated access or that every source is currently operational.
+本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并在管理页面提供预置登记入口。
 
-## Source types
+<badge>共 88 个去重候选</badge>
 
-- **External search**: opens a source's own search page using a configured HTTPS URL template. A Worker does not fetch or parse that site.
-- **Provider**: a reviewed Worker adapter performs a permitted request and maps the response into the shared result contract.
-- **Pending review**: the source is listed for administration, but its canonical URL, search template, access policy, and Cloudflare compatibility have not all been verified. It must remain disabled until reviewed.
+**重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
-No entry in this document is automatically enabled. The repository does not copy third-party scraping code or anti-bot bypass logic.
+## 来源类型
 
-## Atlas
+- **外部搜索入口**：只生成用户主动打开的 HTTPS 链接。配置搜索模板时会把查询词 URL 编码后替换 `{query}`；没有搜索模板时仅打开站点首页。Worker 不会请求或解析目标网站。
+- **Worker 抓取源**：由经过审查并实现的 Provider 请求和解析。必须有编译进 Worker 的适配器代码。
+- **待审核**：预置目录中的所有条目初始状态。登记时默认禁用。
 
-| Candidate | Intended role | Evidence / notes |
+## 来源目录
+
+## JAV 资源站（28）
+
+| 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
-| JavBus | JAV metadata/detail candidate | Atlas's JAV provider directly requests JavBus detail pages and magnet data. Requires a separate access-policy and Cloudflare compatibility review before implementation. |
-| JavDB | JAV metadata / external-search candidate | Referenced by Atlas's JAV source/ranking features; do not assume an official public API. |
-| DMM / FANZA | JAV metadata / external-search candidate | Referenced as metadata sources in Atlas documentation. No paid API is to be added to this project. |
-| Atlas configurable JAV search sources | External-search candidates | Atlas supports administrator-configured URL templates. The current repository does not provide a portable, authoritative live source list to import wholesale; each URL template must be independently verified. |
+| AV01 | Atlas | 有上游搜索模板，需复核 |
+| BestJavPorn | Atlas | 有上游搜索模板，需复核 |
+| DMM / FANZA | Atlas | 仅首页入口或 URL 待补 |
+| Jable.org | FetchJAV | 仅首页入口或 URL 待补 |
+| JableTV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
+| JAV Ass Lover | Atlas | 有上游搜索模板，需复核 |
+| JAV Desu | Atlas | 有上游搜索模板，需复核 |
+| JAV Subtitle | Atlas | 有上游搜索模板，需复核 |
+| JAV Subtitled | Atlas | 有上游搜索模板，需复核 |
+| JAV.guru | Atlas / FetchJAV | 有上游搜索模板，需复核 |
+| JAV.sb | Atlas | 有上游搜索模板，需复核 |
+| JavBus | Atlas | 有上游搜索模板，需复核 |
+| JAVCL | Atlas | 有上游搜索模板，需复核 |
+| JAVDatabase | FetchJAV | 仅首页入口或 URL 待补 |
+| JavDB | Atlas / FetchJAV | 有上游搜索模板，需复核 |
+| JavDoe | Atlas | 有上游搜索模板，需复核 |
+| JavGG | Atlas | 有上游搜索模板，需复核 |
+| JAVHDPorn.net | Atlas | 有上游搜索模板，需复核 |
+| JAVLeak | Atlas | 有上游搜索模板，需复核 |
+| JavLibrary | Atlas | 有上游搜索模板，需复核 |
+| JavMost | Atlas | 有上游搜索模板，需复核 |
+| JAVOut | Atlas | 有上游搜索模板，需复核 |
+| JAVSeen | Atlas | 有上游搜索模板，需复核 |
+| JAVTsunami | Atlas | 有上游搜索模板，需复核 |
+| JavyNow | Atlas | 有上游搜索模板，需复核 |
+| MissAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
+| r/JAV | Atlas | 有上游搜索模板，需复核 |
+| SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-Unrelated Atlas categories (anime, manga, movies, novels), user accounts, community, history, ranking storage, and D1-backed features are outside this project's scope.
+## BT / Torrent（15）
 
-## Lustpress
+| 来源 | 上游项目 | 初始入口状态 |
+|---|---|---|
+| 141PPV | Atlas | 仅首页入口或 URL 待补 |
+| BTSOW | Atlas | 仅首页入口或 URL 待补 |
+| Empornium | Atlas | 仅首页入口或 URL 待补 |
+| iJavTorrent | Atlas | 仅首页入口或 URL 待补 |
+| JAVBEE | Atlas | 仅首页入口或 URL 待补 |
+| JavJunkies | Atlas | 仅首页入口或 URL 待补 |
+| LoveTorrent | Atlas | 仅首页入口或 URL 待补 |
+| MagnetDL | Atlas | 仅首页入口或 URL 待补 |
+| My JAV Bay | Atlas | 仅首页入口或 URL 待补 |
+| NextJAV | Atlas | 仅首页入口或 URL 待补 |
+| OneJAV | Atlas | 仅首页入口或 URL 待补 |
+| Project Jav | Atlas | 仅首页入口或 URL 待补 |
+| Sukebei | Atlas | 仅首页入口或 URL 待补 |
+| TorrentKitty | Atlas | 仅首页入口或 URL 待补 |
+| XXXClub | Atlas | 仅首页入口或 URL 待补 |
 
-Lustpress documents these eight site providers:
+## 论坛（16）
 
-| Candidate | Category |
-|---|---|
-| PornHub | other-index |
-| XNXX | other-index |
-| RedTube | other-index |
-| XVideos | other-index |
-| XHamster | other-index |
-| YouPorn | other-index |
-| Eporner | other-index |
-| TXXX | other-index |
+| 来源 | 上游项目 | 初始入口状态 |
+|---|---|---|
+| 141HongKong | Atlas | 仅首页入口或 URL 待补 |
+| 5278.cc | Atlas | 仅首页入口或 URL 待补 |
+| 52AV | Atlas | 仅首页入口或 URL 待补 |
+| 91论坛 | Atlas | 仅首页入口或 URL 待补 |
+| Cool18 | Atlas | 仅首页入口或 URL 待补 |
+| EYNY | Atlas | 仅首页入口或 URL 待补 |
+| HJD2048 | Atlas | 仅首页入口或 URL 待补 |
+| JKForum | Atlas | 仅首页入口或 URL 待补 |
+| OurSogo | Atlas | 仅首页入口或 URL 待补 |
+| Sex8.cc | Atlas | 仅首页入口或 URL 待补 |
+| SexInSex | Atlas | 仅首页入口或 URL 待补 |
+| SIS001 | Atlas | 仅首页入口或 URL 待补 |
+| South-Plus | Atlas | 仅首页入口或 URL 待补 |
+| T66Y草榴社区 | Atlas | 仅首页入口或 URL 待补 |
+| 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
+| 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-Lustpress primarily uses HTML scraping. Its README also warns that some sites block automated requests from CI/shared IP ranges. The PornHub challenge solver is intentionally excluded: do not port challenge solving, anti-bot bypass, or access-control circumvention.
+## 其他资源索引（29）
 
-## FetchJAV
+| 来源 | 上游项目 | 初始入口状态 |
+|---|---|---|
+| 85Tube | FetchJAV | 仅首页入口或 URL 待补 |
+| 91Porn | FetchJAV | 仅首页入口或 URL 待补 |
+| AApp11 | FetchJAV | 仅首页入口或 URL 待补 |
+| Eporner | Lustpress | 仅首页入口或 URL 待补 |
+| HAnime XYZ | FetchJAV | 仅首页入口或 URL 待补 |
+| Hanime1 | FetchJAV | 仅首页入口或 URL 待补 |
+| HanimeTV | FetchJAV | 仅首页入口或 URL 待补 |
+| MIEN321 | FetchJAV | 仅首页入口或 URL 待补 |
+| PigAV | FetchJAV | 仅首页入口或 URL 待补 |
+| Porn5F | FetchJAV | 仅首页入口或 URL 待补 |
+| PornBest | FetchJAV | 仅首页入口或 URL 待补 |
+| PornHK | FetchJAV | 仅首页入口或 URL 待补 |
+| PornHoHo | FetchJAV | 仅首页入口或 URL 待补 |
+| PornHub | Lustpress | 仅首页入口或 URL 待补 |
+| PornJP | FetchJAV | 仅首页入口或 URL 待补 |
+| PornLuLu | FetchJAV | 仅首页入口或 URL 待补 |
+| PornNVR | FetchJAV | 仅首页入口或 URL 待补 |
+| PornTW | FetchJAV | 仅首页入口或 URL 待补 |
+| RedTube | Lustpress | 仅首页入口或 URL 待补 |
+| Seselah | FetchJAV | 仅首页入口或 URL 待补 |
+| ThisAV | FetchJAV | 仅首页入口或 URL 待补 |
+| TnaFlix | FetchJAV | 仅首页入口或 URL 待补 |
+| TXXX | Lustpress | 仅首页入口或 URL 待补 |
+| Video01 | FetchJAV | 仅首页入口或 URL 待补 |
+| XHamster | Lustpress | 仅首页入口或 URL 待补 |
+| XJISHI | FetchJAV | 仅首页入口或 URL 待补 |
+| XNXX | Lustpress | 仅首页入口或 URL 待补 |
+| XVideos | Lustpress | 仅首页入口或 URL 待补 |
+| YouPorn | Lustpress | 仅首页入口或 URL 待补 |
 
-FetchJAV's README lists the following site adapters:
+## 来源项目范围说明
 
-| Candidate | Notes |
-|---|---|
-| JableTV | Primary site adapter |
-| MissAV | Primary site adapter; README mentions mirrors |
-| SupJav | Primary site adapter; README mentions mirrors |
-| Hanime1 | Listed site adapter |
-| HanimeTV | Listed site adapter |
-| TnaFlix | Listed site adapter |
-| 91Porn | Listed site adapter |
-| JavDB | Listed site adapter |
-| Jable.org | Listed as a JableTV mirror/inherited site |
-| ThisAV | Additional site |
-| PigAV | Additional site |
-| Porn5F | Additional site |
-| 85Tube | Additional site |
-| PornBest | Additional site |
-| HAnime XYZ | Additional site |
-| PornTW | Additional site |
-| PornJP | Additional site |
-| PornHK | Additional site |
-| PornHoHo | Additional site |
-| PornNVR | Additional site |
-| Video01 | Additional site |
-| PornLuLu | Additional site |
-| MIEN321 | Additional site |
-| AApp11 | Additional site |
-| Seselah | Additional site |
-| XJISHI | Additional site |
+### Atlas
+- 已纳入 Atlas `database/seeds/003_search_sources.sql` 中与 JAV、Torrent、Community 相关的 56 个默认源（动漫、影视、漫画、小说类不纳入本项目）。
+- 另纳入 README 提及的 DMM/FANZA 元数据候选。
+- Atlas 的源列表支持自定义 URL 模板；这里收录的是公开仓库中的默认 seed，不代表生产环境当前全部数据源。
 
-FetchJAV's metadata fetcher also references JAV.guru and JAVDatabase for discovery / metadata enrichment. These are metadata candidates, not proof of an authorized or stable API.
+### Lustpress
+- 已纳入其 README 和 Provider 目录列出的 8 个站点：PornHub、XNXX、RedTube、XVideos、XHamster、YouPorn、Eporner、TXXX。
+- Lustpress 主要使用 HTML scraping，README 提醒部分站点会阻断 CI/共享 IP 自动化请求。
+- 不移植 PornHub challenge solver、验证码求解、反机器人或访问控制绕过逻辑。
 
-The following FetchJAV features are excluded: streaming, video downloading, subtitle search providers, local download history, local media libraries, proxy/cookie import, and Cloudflare/TLS-fingerprint bypass mechanisms.
+### FetchJAV
+- 已纳入 README 的 26 个站点适配器，以及 metadata_fetcher.py 提及的 JAV.guru / JAVDatabase 元数据来源。
+- 不纳入字幕 Provider、下载、播放、媒体库、历史记录、代理/Cookie 导入或 TLS 指纹/Cloudflare 绕过机制。
 
-## Deduplicated candidate inventory
+### 论坛来源
+- Atlas 默认目录中包含 16 个社区/论坛入口，均只登记为外部入口；不会自动抓取论坛帖子或评论。
+- 其他两个项目未提供同类论坛适配器清单。
 
-The combined inventory currently contains the following distinct names (Jable.org is retained as a separately configurable mirror entry, but should be grouped under JableTV in the UI):
+## 登记和启用规则
 
-- JAV metadata/search: JavBus, JavDB, DMM/FANZA, JAV.guru, JAVDatabase, JableTV, Jable.org, MissAV, SupJav
-- Other resource indexes: Hanime1, HanimeTV, TnaFlix, 91Porn, HAnime XYZ, ThisAV, PigAV, Porn5F, 85Tube, PornBest, PornTW, PornJP, PornHK, PornHoHo, PornNVR, Video01, PornLuLu, MIEN321, AApp11, Seselah, XJISHI, PornHub, XNXX, RedTube, XVideos, XHamster, YouPorn, Eporner, TXXX
+1. 从数据源管理页打开“预置来源目录”，选择“配置并登记”。
+2. 对有上游搜索模板的条目，先核对当前站点的 URL 格式；对仅首页入口的条目，可保持模板为空并使用基础 URL。
+3. 没有可确认的 HTTPS 首页或搜索 URL 时，先补齐 URL 再保存。
+4. 所有目录条目默认禁用；启用前必须确认访问规则和目标站点仍可正常访问。
+5. 外部搜索入口不需要 Provider，也不会向 Worker 增加抓取请求。
+6. 只有公开访问且允许自动化、并且经过实际测试的来源，才考虑实现 Provider。
+7. 不使用付费元数据 API；不绕过验证码、反爬、登录、付费墙或其他访问控制。
 
-No forum-specific source was identified in the reviewed provider lists. Forum sources remain a supported category in the product model, but should be added only after a specific public forum source is identified and reviewed.
-
-## Admission checklist
-
-Before an inventory entry becomes an active source:
-
-1. Confirm the canonical HTTPS homepage and the site's current search URL format.
-2. Confirm that the search page is publicly accessible without login, paywall, CAPTCHA, or other access-control circumvention.
-3. Review the site's terms, robots policy, copyright/authorization constraints, and acceptable request rate.
-4. Verify whether Cloudflare Workers can reach the site; local desktop success does not prove data-center egress compatibility.
-5. Choose external-search unless a concrete, permitted, stable public interface or page parser has been reviewed.
-6. For a Provider, implement and test the adapter in Worker code. A KV record alone never makes executable code available.
-7. Keep new candidates disabled until the checks above are complete.
-
-## Upstream references
+## 上游参考
 
 - Atlas: https://github.com/Zoroaaa/Atlas
+- Atlas default source seed: https://github.com/Zoroaaa/Atlas/blob/main/database/seeds/003_search_sources.sql
 - Lustpress: https://github.com/sinkaroid/lustpress
 - FetchJAV: https://github.com/FetchJAV/FetchJAV_Public
