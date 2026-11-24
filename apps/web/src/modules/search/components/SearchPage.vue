@@ -148,7 +148,7 @@ async function submitSearch() {
             :href="source.url"
             target="_blank"
             rel="noopener noreferrer"
-          >{{ source.sourceName }} <span aria-hidden="true">↗</span></a>
+          >{{ source.sourceName }} <small>{{ source.kind === "search" ? "站内搜索" : "访问首页" }}</small> <span aria-hidden="true">↗</span></a>
         </div>
       </section>
 
