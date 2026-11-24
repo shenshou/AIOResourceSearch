@@ -1,6 +1,7 @@
 import type {
   ContentCategory,
   FetchMechanism,
+  HtmlSelectorConfig,
   SearchMode,
   SourceCapability,
   SourceCategory,
@@ -42,6 +43,8 @@ export interface ProviderContext {
   signal: AbortSignal;
   /** Optional Cloudflare edge cache for upstream APIs with explicit cache intervals. */
   cache?: Cache;
+  /** Cloudflare HTMLRewriter-backed parser, injected by the Worker runtime. */
+  parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string }>>;
 }
 
 export interface ProviderAdapter {
