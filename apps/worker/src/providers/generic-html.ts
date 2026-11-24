@@ -81,7 +81,7 @@ export const genericHtmlProvider: ProviderAdapter = {
     if (!source.baseUrl || !source.providerSearchUrlTemplate || !source.htmlSelectors || !parseHtml) {
       throw new Error("HTML source requires a base URL, search URL template, CSS selectors, and HTML parser.");
     }
-    if ((source.providerSearchUrlTemplate.match(/\\{query\\}/g) ?? []).length !== 1) {
+    if ((source.providerSearchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1) {
       throw new Error("HTML search URL template must contain exactly one {query} placeholder.");
     }
 
