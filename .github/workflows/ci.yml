@@ -21,5 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run Worker unit tests
+        run: npm run test:worker
+
       - name: Build frontend and type-check Worker
         run: npm run build
