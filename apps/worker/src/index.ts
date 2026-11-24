@@ -1,6 +1,8 @@
-import { isProviderImplemented } from "./providers/registry";
+import { getProviderAdapter, isProviderImplemented } from "./providers/registry";
 import { executeSearch } from "./providers/search";
 import type {
+  CONTENT_CATEGORIES,
+  FETCH_MECHANISMS,
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
@@ -37,6 +39,8 @@ const DEFAULT_ADAPTERS_CONFIG: AdaptersConfig = {
 };
 
 const categories = ["jav", "torrent", "forum", "other-index"] satisfies readonly (typeof SOURCE_CATEGORIES)[number][];
+const contentCategories = [...CONTENT_CATEGORIES];
+const fetchMechanisms = [...FETCH_MECHANISMS];
 const sourceTypes = ["provider", "external-search"] as const;
 const searchModes = ["number", "keyword"] satisfies readonly (typeof SEARCH_MODES)[number][];
 const capabilities = ["metadata", "image", "magnet", "ed2k", "torrent", "forum-post"] satisfies readonly (typeof SOURCE_CAPABILITIES)[number][];
@@ -90,9 +94,12 @@ async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
   return {
     ...config,
     adapters: config.adapters.map((adapter) => {
+      const implementation = getProviderAdapter(adapter.id);
       const implemented = isProviderImplemented(adapter.id);
       return {
         ...adapter,
+        mechanism: adapter.mechanism ?? implementation?.mechanism ?? "api",
+        contentCategories: adapter.contentCategories ?? implementation?.contentCategories ?? ["jav"],
         implemented,
         enabled: Boolean(adapter.enabled && implemented),
       };
@@ -161,6 +168,7 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof value.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.id)) return null;
   if (typeof value.name !== "string" || value.name.trim().length < 1 || value.name.length > 80) return null;
   if (typeof value.category !== "string" || !categories.includes(value.category as SourceDefinition["category"])) return null;
+  if (value.contentCategory !== undefined && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory))) return null;
   const type = value.type === undefined ? "provider" : value.type;
   if (typeof type !== "string" || !sourceTypes.includes(type as (typeof sourceTypes)[number])) return null;
   if (type === "provider" &&
@@ -210,6 +218,7 @@ function validateSource(input: unknown): SourceDefinition | null {
     id: value.id,
     name: value.name.trim(),
     category: value.category as SourceDefinition["category"],
+    ...(typeof value.contentCategory === "string" ? { contentCategory: value.contentCategory as SourceDefinition["contentCategory"] } : {}),
     type: type as SourceDefinition["type"],
     ...(typeof value.adapterId === "string" ? { adapterId: value.adapterId } : {}),
     ...(typeof value.searchUrlTemplate === "string" ? { searchUrlTemplate: value.searchUrlTemplate } : {}),
@@ -262,12 +271,15 @@ function validateAdapter(input: unknown): AdapterDefinition | null {
   if (typeof value.description !== "string" || value.description.length > 500) return null;
   if (typeof value.version !== "string" || value.version.trim().length < 1 || value.version.length > 40) return null;
   if (typeof value.enabled !== "boolean") return null;
+  if (value.mechanism !== undefined && (typeof value.mechanism !== "string" || !fetchMechanisms.includes(value.mechanism as (typeof fetchMechanisms)[number]))) return null;
+  if (value.contentCategories !== undefined && (!Array.isArray(value.contentCategories) || value.contentCategories.length < 1 || !value.contentCategories.every((item) => contentCategories.includes(item as (typeof contentCategories)[number])))) return null;
   if (!Array.isArray(value.categories) || value.categories.length < 1 ||
       !value.categories.every((item) => categories.includes(item as SourceDefinition["category"]))) return null;
   if (!Array.isArray(value.capabilities) ||
       !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
   if (value.notes !== undefined && (typeof value.notes !== "string" || value.notes.length > 500)) return null;
 
+  const implementation = getProviderAdapter(value.id);
   const implemented = isProviderImplemented(value.id);
   if (value.enabled && !implemented) return null;
 
@@ -275,6 +287,8 @@ function validateAdapter(input: unknown): AdapterDefinition | null {
     id: value.id,
     name: value.name.trim(),
     description: value.description.trim(),
+    mechanism: (value.mechanism ?? implementation?.mechanism ?? "api") as AdapterDefinition["mechanism"],
+    contentCategories: (value.contentCategories ?? implementation?.contentCategories ?? ["jav"]) as AdapterDefinition["contentCategories"],
     version: value.version.trim(),
     enabled: value.enabled,
     categories: [...new Set(value.categories as SourceDefinition["category"][])],
@@ -532,13 +546,16 @@ async function route(request: Request, env: Env): Promise<Response> {
     if (typeof value.query !== "string" || !value.query.trim() || value.query.trim().length > 120) {
       return json({ error: { code: "invalid_query", message: "Query must contain 1 to 120 characters." } }, 422);
     }
+    if (value.contentCategory !== undefined && value.contentCategory !== "all" && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory))) {
+      return json({ error: { code: "invalid_content_category", message: "Content category is not supported." } }, 422);
+    }
     if (value.mode !== "number" && value.mode !== "keyword") {
       return json({ error: { code: "invalid_search_mode", message: "Mode must be number or keyword." } }, 422);
     }
 
     const [sources, adapters] = await Promise.all([readConfig(env), readAdaptersConfig(env)]);
     const result = await executeSearch(
-      { query: value.query.trim(), mode: value.mode },
+      { query: value.query.trim(), mode: value.mode, ...(typeof value.contentCategory === "string" ? { contentCategory: value.contentCategory as "all" | (typeof CONTENT_CATEGORIES)[number] } : {}) },
       sources,
       adapters,
       undefined,
