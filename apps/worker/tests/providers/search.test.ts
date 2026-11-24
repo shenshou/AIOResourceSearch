@@ -115,6 +115,30 @@ test("builds external search destinations without invoking a provider", async ()
   }]);
 });
 
+test("returns a homepage link for a browse-only external source", async () => {
+  const external = source({
+    id: "browse-only",
+    name: "Browse-only source",
+    type: "external-search",
+    adapterId: undefined,
+    baseUrl: "https://example.com",
+    capabilities: [],
+  });
+  const result = await executeSearch(
+    { query: "some query", mode: "keyword" },
+    sourceConfig(external),
+    { version: 0, updatedAt: null, adapters: [] },
+  );
+
+  assert.deepEqual(result.externalSearches, [{
+    sourceId: "browse-only",
+    sourceName: "Browse-only source",
+    category: "jav",
+    url: "https://example.com/",
+  }]);
+  assert.equal(result.meta.failedSources, 0);
+});
+
 test("reports an unavailable adapter when no implementation is registered", async () => {
   const result = await executeSearch(
     request,
