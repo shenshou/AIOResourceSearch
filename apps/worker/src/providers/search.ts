@@ -26,6 +26,7 @@ export interface ExternalSearchLink {
   sourceId: string;
   sourceName: string;
   category: SourceDefinition["category"];
+  kind: "search" | "homepage";
   url: string;
 }
 
@@ -263,6 +264,7 @@ export async function executeSearch(
           sourceId: source.id,
           sourceName: source.name,
           category: source.category,
+          kind: source.searchUrlTemplate ? "search" : "homepage",
           url: parsed.toString(),
         }];
       } catch {
