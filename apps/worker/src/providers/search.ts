@@ -101,7 +101,7 @@ function normalizeResource(
     sourceId: source.id,
     sourceName: source.name,
     category: source.category,
-    ...(source.contentCategory ? { contentCategory: source.contentCategory } : {}),
+    contentCategory: source.contentCategory ?? "jav",
     title: value.title.trim(),
     url: value.url,
     ...(typeof value.catalogNumber === "string" && value.catalogNumber.length <= 100
@@ -153,7 +153,7 @@ function resolveProvider(
     provider.categories.includes(source.category) &&
     metadata.categories.includes(source.category) &&
     (!provider.contentCategories || provider.contentCategories.includes(source.contentCategory ?? "jav")) &&
-    (!metadata.contentCategories || metadata.contentCategories.includes(source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"))) &&
+    (!metadata.contentCategories || metadata.contentCategories.includes(source.contentCategory ?? "jav")) &&
     provider.searchModes.includes(mode) &&
     source.searchModes.includes(mode) &&
     source.capabilities.every((capability) => provider.capabilities.includes(capability)) &&
@@ -250,7 +250,7 @@ export async function executeSearch(
   const matchesContentCategory = (source: SourceDefinition) =>
     request.contentCategory === undefined ||
     request.contentCategory === "all" ||
-    (source.contentCategory ?? (source.category === "other-index" ? "general" : "jav")) === request.contentCategory;
+    (source.contentCategory ?? "jav") === request.contentCategory;
   const enabledSources = sourceConfig.sources.filter(
     (source) => source.enabled && (source.type ?? "provider") === "provider" && matchesContentCategory(source),
   );
