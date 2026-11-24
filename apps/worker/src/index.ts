@@ -176,7 +176,7 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (type === "provider" && value.providerSearchUrlTemplate !== undefined) {
     if (typeof value.providerSearchUrlTemplate !== "string" ||
         value.providerSearchUrlTemplate.length > 2048 ||
-        (value.providerSearchUrlTemplate.match(/\\{query\\}/g) ?? []).length !== 1 ||
+        (value.providerSearchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1 ||
         typeof value.baseUrl !== "string") return null;
     try {
       const base = new URL(value.baseUrl);
