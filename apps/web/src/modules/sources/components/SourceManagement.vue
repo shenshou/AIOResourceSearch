@@ -57,6 +57,8 @@ const emptyForm = (): SourceDefinition => ({
   type: "provider",
   adapterId: "",
   searchUrlTemplate: "",
+  providerSearchUrlTemplate: "",
+  htmlSelectors: { result: "", title: "", link: "" },
   enabled: true,
   baseUrl: "",
   searchModes: ["keyword"],
@@ -147,6 +149,8 @@ function beginEdit(source: SourceDefinition) {
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
     searchUrlTemplate: source.searchUrlTemplate ?? "",
+    providerSearchUrlTemplate: source.providerSearchUrlTemplate ?? "",
+    htmlSelectors: source.htmlSelectors ? { ...source.htmlSelectors } : { result: "", title: "", link: "" },
     searchModes: [...source.searchModes],
     capabilities: [...source.capabilities],
   });
@@ -180,6 +184,9 @@ async function submitForm() {
     ...(form.type === "external-search"
       ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined }
       : { searchUrlTemplate: undefined }),
+    ...(form.type === "provider" && form.adapterId === "generic-html"
+      ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: form.htmlSelectors }
+      : { providerSearchUrlTemplate: undefined, htmlSelectors: undefined }),
     baseUrl: form.baseUrl?.trim() || undefined,
     credentialBinding: form.credentialBinding?.trim() || undefined,
     notes: form.notes?.trim() || undefined,
@@ -348,9 +355,20 @@ async function submitLogin() {
                 <option v-for="adapter in availableAdapters" :key="adapter.id" :value="adapter.id">{{ adapter.name }} · {{ adapter.id }}</option>
               </select>
             </label>
-            <label v-else class="wide">搜索 URL 模板（可选；必须包含 {query}，留空则使用基础 URL）
+            <label v-if="form.type === 'external-search'" class="wide">搜索 URL 模板（可选；必须包含 {query}，留空则使用基础 URL）
               <input v-model="form.searchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
+            <template v-if="form.type === 'provider' && form.adapterId === 'generic-html'">
+              <label class="wide">Worker 搜索 URL 模板（必须包含且仅包含一个 {query}，并与基础 URL 同域）
+                <input v-model="form.providerSearchUrlTemplate" type="text" maxlength="2048" required placeholder="https://example.com/search?q={query}" />
+              </label>
+              <label>结果卡片 CSS 选择器<input v-model="form.htmlSelectors!.result" required maxlength="200" placeholder="article.result" /></label>
+              <label>标题 CSS 选择器<input v-model="form.htmlSelectors!.title" required maxlength="200" placeholder=".title" /></label>
+              <label>详情链接 CSS 选择器<input v-model="form.htmlSelectors!.link" required maxlength="200" placeholder="a.title" /></label>
+              <label>图片 CSS 选择器（可选）<input v-model="form.htmlSelectors!.image" maxlength="200" placeholder="img.cover" /></label>
+              <label>简介 CSS 选择器（可选）<input v-model="form.htmlSelectors!.description" maxlength="200" placeholder=".description" /></label>
+              <label>Magnet 链接 CSS 选择器（可选）<input v-model="form.htmlSelectors!.magnet" maxlength="200" placeholder="a[href^='magnet:']" /></label>
+            </template>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="form.type === 'external-search' && !form.searchUrlTemplate?.trim()" placeholder="https://example.com" /></label>
             <label v-if="form.type === 'provider'">请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" /> 保存后启用</label>
@@ -365,7 +383,7 @@ async function submitLogin() {
             <label v-if="form.type === 'provider'" class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
+          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；通用 HTML 适配器只访问基础 URL 同域的 HTTPS 搜索页，使用 CSS 选择器提取结果，拒绝重定向并限制响应体为 2 MiB；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="closeEditor">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
