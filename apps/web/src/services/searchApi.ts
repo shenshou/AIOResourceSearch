@@ -1,4 +1,4 @@
-import type { SearchMode } from "@aio-resource-search/shared";
+import type { ContentCategory, SearchMode } from "@aio-resource-search/shared";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
 
@@ -7,6 +7,7 @@ export interface SearchResource {
   sourceId: string;
   sourceName: string;
   category: string;
+  contentCategory?: ContentCategory;
   title: string;
   url: string;
   catalogNumber?: string;
@@ -48,7 +49,7 @@ export interface SearchResponse {
   };
 }
 
-export async function searchResources(query: string, mode: SearchMode): Promise<SearchResponse> {
+export async function searchResources(query: string, mode: SearchMode, contentCategory: ContentCategory | "all" = "all"): Promise<SearchResponse> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}/api/search`, {
@@ -57,7 +58,7 @@ export async function searchResources(query: string, mode: SearchMode): Promise<
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, mode }),
+      body: JSON.stringify({ query, mode, contentCategory }),
     });
   } catch {
     throw new Error("无法连接搜索 API。请检查 Worker 地址和服务状态。");
