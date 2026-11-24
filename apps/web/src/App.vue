@@ -2,8 +2,9 @@
 import { ref } from "vue";
 import { SOURCE_CATEGORIES } from "@aio-resource-search/shared";
 import SourceManagement from "./modules/sources/components/SourceManagement.vue";
+import AdapterManagement from "./modules/adapters/components/AdapterManagement.vue";
 
-const activeView = ref<"search" | "sources">("search");
+const activeView = ref<"search" | "sources" | "adapters">("search");
 const categoryLabels: Record<(typeof SOURCE_CATEGORIES)[number], string> = {
   jav: "JAV 资源站",
   torrent: "BT / Torrent 搜索引擎",
@@ -22,11 +23,13 @@ const categoryLabels: Record<(typeof SOURCE_CATEGORIES)[number], string> = {
       <nav class="main-nav" aria-label="主导航">
         <button :class="{ active: activeView === 'search' }" type="button" @click="activeView = 'search'">聚合搜索</button>
         <button :class="{ active: activeView === 'sources' }" type="button" @click="activeView = 'sources'">数据源管理</button>
+        <button :class="{ active: activeView === 'adapters' }" type="button" @click="activeView = 'adapters'">适配器管理</button>
       </nav>
       <span class="header-caption">多数据源聚合搜索</span>
     </header>
 
     <SourceManagement v-if="activeView === 'sources'" />
+    <AdapterManagement v-else-if="activeView === 'adapters'" />
 
     <main v-else class="main-content">
       <section class="intro">
