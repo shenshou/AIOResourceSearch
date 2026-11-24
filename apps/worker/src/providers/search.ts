@@ -136,12 +136,14 @@ function resolveProvider(
   mode: SearchRequest["mode"],
   getAdapter: (adapterId: string) => ProviderAdapter | null,
 ): ProviderResolution {
-  const metadata = adapterConfig.adapters.find((adapter) => adapter.id === source.adapterId);
+  const adapterId = source.adapterId ?? "";
+  if (!adapterId) return { provider: null, errorCode: "adapter_unavailable" };
+  const metadata = adapterConfig.adapters.find((adapter) => adapter.id === adapterId);
   if (!metadata || !metadata.enabled || !metadata.implemented) {
     return { provider: null, errorCode: "adapter_unavailable" };
   }
 
-  const provider = getAdapter(source.adapterId);
+  const provider = getAdapter(adapterId);
   if (!provider) return { provider: null, errorCode: "adapter_unavailable" };
 
   const compatible =
