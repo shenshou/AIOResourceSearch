@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { SearchMode } from "@aio-resource-search/shared";
+import { CONTENT_CATEGORIES, CONTENT_CATEGORY_LABELS, type ContentCategory, type SearchMode } from "@aio-resource-search/shared";
 import { searchResources, type SearchResponse } from "../../../services/searchApi";
 
 const query = ref("");
 const mode = ref<SearchMode>("number");
+const contentCategory = ref<ContentCategory | "all">("all");
 const loading = ref(false);
 const errorMessage = ref("");
 const copyMessage = ref("");
@@ -66,7 +67,7 @@ async function submitSearch() {
   copyMessage.value = "";
   response.value = null;
   try {
-    response.value = await searchResources(normalizedQuery, mode.value);
+    response.value = await searchResources(normalizedQuery, mode.value, contentCategory.value);
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : "搜索失败，请稍后重试。";
   } finally {
@@ -96,6 +97,13 @@ async function submitSearch() {
 
       <form class="search-form" @submit.prevent="submitSearch">
         <div class="search-controls">
+          <label class="search-mode content-category">
+            <span>内容分类</span>
+            <select v-model="contentCategory">
+              <option value="all">全部分类</option>
+              <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ CONTENT_CATEGORY_LABELS[category] }}</option>
+            </select>
+          </label>
           <label class="search-mode">
             <span>搜索类型</span>
             <select v-model="mode">
@@ -110,8 +118,8 @@ async function submitSearch() {
               type="search"
               maxlength="120"
               autocomplete="off"
-              placeholder="输入番号或关键词"
-              aria-label="输入番号或关键词"
+              placeholder="输入番号、标题或关键词"
+              aria-label="输入番号、标题或关键词"
             >
           </label>
           <button class="primary-button search-submit" type="submit" :disabled="loading || !query.trim()">
@@ -127,7 +135,7 @@ async function submitSearch() {
       <div class="results-heading">
         <div>
           <h2>搜索结果</h2>
-          <p>“{{ response.query }}” · {{ response.mode === "number" ? "番号搜索" : "关键词搜索" }}</p>
+          <p>“{{ response.query }}” · {{ response.mode === "number" ? "番号搜索" : "关键词搜索" }} · {{ contentCategory === "all" ? "全部分类" : CONTENT_CATEGORY_LABELS[contentCategory] }}</p>
         </div>
         <strong>{{ response.meta.totalResults }} 条结果</strong>
       </div>
