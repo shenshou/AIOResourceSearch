@@ -1,4 +1,5 @@
 import type { ProviderAdapter } from "./types";
+import { genericHtmlProvider } from "./generic-html";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 import { torlockProvider } from "./torlock-torznab";
@@ -11,6 +12,7 @@ import { yourBittorrentProvider } from "./yourbittorrent-json";
  * in the same Worker change. Never populate this registry from KV or user input.
  */
 const providerAdapters: readonly ProviderAdapter[] = [
+  genericHtmlProvider,
   sukebeiRssProvider,
   perverzijaDbProvider,
   torlockProvider,
