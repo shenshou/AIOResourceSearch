@@ -14,6 +14,7 @@ export interface SearchResource {
   releaseDate?: string;
   imageUrl?: string;
   description?: string;
+  metadata?: Record<string, string>;
   magnetUri?: string;
   ed2kUri?: string;
   torrentUrl?: string;
