@@ -56,6 +56,7 @@ const form = reactive<SourceDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
 
 onMounted(async () => {
+  if (manager.authenticated.value) await manager.reload();
   try {
     const result = await adapterApi.getPublicAdapters();
     availableAdapters.value = result.adapters;
