@@ -31,6 +31,7 @@ export interface ExternalSearchLink {
   sourceId: string;
   sourceName: string;
   category: string;
+  kind: "search" | "homepage";
   url: string;
 }
 
