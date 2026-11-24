@@ -22,6 +22,8 @@ export interface NormalizedResource {
   releaseDate?: string;
   imageUrl?: string;
   description?: string;
+  /** Extensible category-specific metadata; values are normalized strings. */
+  metadata?: Record<string, string>;
   magnetUri?: string;
   ed2kUri?: string;
   torrentUrl?: string;
@@ -44,7 +46,7 @@ export interface ProviderContext {
   /** Optional Cloudflare edge cache for upstream APIs with explicit cache intervals. */
   cache?: Cache;
   /** Cloudflare HTMLRewriter-backed parser, injected by the Worker runtime. */
-  parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string }>>;
+  parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; metadata?: Record<string, string> }>>;
 }
 
 export interface ProviderAdapter {
