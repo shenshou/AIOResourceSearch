@@ -20,11 +20,18 @@ export const SOURCE_CAPABILITIES = [
 ] as const;
 export type SourceCapability = (typeof SOURCE_CAPABILITIES)[number];
 
+export const SOURCE_TYPES = ["provider", "external-search"] as const;
+export type SourceType = (typeof SOURCE_TYPES)[number];
+
 export interface SourceDefinition {
   id: string;
   name: string;
   category: SourceCategory;
-  adapterId: string;
+  /** provider calls a Worker implementation; external-search only builds a destination URL. */
+  type?: SourceType;
+  adapterId?: string;
+  /** HTTPS search URL template for external-search sources; must contain {query}. */
+  searchUrlTemplate?: string;
   enabled: boolean;
   baseUrl?: string;
   searchModes: SearchMode[];
