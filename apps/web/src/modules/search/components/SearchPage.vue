@@ -81,7 +81,7 @@ async function submitSearch() {
       <p class="eyebrow">MULTI-SOURCE SEARCH</p>
       <h1>一个入口，聚合多个资源数据源</h1>
       <p class="intro-copy">
-        输入番号或关键词，统一查询已启用的数据源。结果只展示元数据和资源站提供的外部链接。
+        输入番号或关键词，自动查询已实现的 Provider，并为启用的外部搜索入口生成原站链接。结果只展示元数据和资源站提供的外部链接。
       </p>
     </section>
 
@@ -119,7 +119,7 @@ async function submitSearch() {
           </button>
         </div>
       </form>
-      <p class="panel-note">目前已接通搜索 API；具体结果取决于已审查并注册的适配器。</p>
+      <p class="panel-note">Worker 自动抓取结果取决于已审查并注册的适配器；外部搜索入口会单独列出。</p>
       <p v-if="errorMessage" class="feedback error" role="alert">{{ errorMessage }}</p>
     </section>
 
@@ -154,7 +154,7 @@ async function submitSearch() {
 
       <div v-if="!hasResults" class="empty-state">
         <strong>暂无搜索结果</strong>
-        <span>当前可能尚无可用适配器，或已启用数据源没有返回匹配内容。</span>
+        <span>当前没有 Worker 抓取结果；可以使用上方外部搜索入口，或等待已启用的 Provider 返回结果。</span>
       </div>
 
       <div v-else class="result-list">
@@ -190,7 +190,7 @@ async function submitSearch() {
             <small>{{ source.resultCount }} 条{{ source.errorCode ? " · " + (errorLabels[source.errorCode] || source.errorCode) : "" }}</small>
           </div>
         </div>
-        <p v-else class="panel-note">没有已启用的数据源。</p>
+        <p v-else class="panel-note">本次没有执行 Worker 抓取源；外部入口见上方。</p>
       </div>
     </section>
   </main>
