@@ -119,6 +119,8 @@ function parseResults(payload: unknown) {
 export const yourBittorrentProvider: ProviderAdapter = {
   id: "yourbittorrent-json",
   version: "1.0.0",
+  mechanism: "api",
+  contentCategories: ["jav"],
   categories: ["torrent"],
   capabilities: ["magnet"],
   searchModes: ["number", "keyword"],
