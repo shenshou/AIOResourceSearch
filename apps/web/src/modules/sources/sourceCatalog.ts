@@ -102,7 +102,7 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
   { id: "nextjav", name: "NextJAV", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://nextjav.com", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
   { id: "onejav", name: "OneJAV", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://onejav.com", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
   { id: "projectjav", name: "Project Jav", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://projectjav.com", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
-  { id: "sukebei", name: "Sukebei", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://sukebei.nyaa.si", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
+  { id: "sukebei", name: "Sukebei", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://sukebei.nyaa.net", note: "Atlas 默认搜索源清单（003_search_sources.sql）；当前入口已更新为 Sukebei 官方公开 RSS 文档所列域名。Worker Provider 使用公开 /feed/magnet RSS，仍需 Cloudflare 线上验证后才能启用。" },
   { id: "torrentkitty", name: "TorrentKitty", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://www.torrentkitty.tv", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
   { id: "xxxclub", name: "XXXClub", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://xxxclub.to", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
 ];
