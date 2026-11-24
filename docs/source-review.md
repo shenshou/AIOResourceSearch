@@ -51,13 +51,13 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - The provider is registered in the Worker compile-time allowlist. It is not configured in production KV and must remain disabled until live Cloudflare verification.
 - The API advertises `Cache-Control: public, max-age=300, s-maxage=1800`; cached responses served by its CDN do not consume the API quota. Distinct queries still count, so monitor 429 responses and do not retry in a tight loop.
 
-### Torlock
+### Torlock — implemented
 
-- Documented endpoint: `https://www.torlock.com/torznab/api?t=search&q=...`.
-- Category filter supports Newznab category `6000` for Adult.
-- Parse only documented Torznab RSS/XML fields; do not scrape HTML.
-- Respect its stated minimum one-minute repeat interval for the same URL and cache responses.
-- No challenge solving, proxy rotation, or datacenter-block bypass. If ordinary Worker requests are blocked, leave the source disabled.
+- Adapter documentation: `docs/providers/torlock-torznab.md`.
+- Registered Worker adapter: `torlock-torznab` v1.0.0.
+- Uses the official Torznab endpoint, Adult category 6000, strict result URL and Magnet validation, manual redirects, a 2 MiB response cap, and a 60-second Cloudflare edge cache.
+- Cache is per edge location and is not a global atomic rate limiter.
+- Keep disabled until a live Cloudflare request succeeds; do not request whitelisting or bypass datacenter filtering.
 
 ### Bitsearch
 
@@ -85,6 +85,8 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - Perverzija DB API data model: https://api.perverzija.com/docs/objects
 - Perverzija DB API terms: https://api.perverzija.com/docs/terms
 - Torlock Torznab and RSS API documentation: https://www.torlock2.com/apis.html
+- Torlock FAQ and scraping guidance: https://www.torlock.com/faq.html
+- Torlock Provider implementation: `docs/providers/torlock-torznab.md`
 - Bitsearch API documentation: https://bitsearch.eu/api
 - Bitsearch content removal / DMCA process: https://bitsearch.eu/content-removal
 - apiJAV WordPress API reference: https://apijav.com/api-reference.html
