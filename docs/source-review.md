@@ -23,8 +23,9 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 | DMM / FANZA | Conditional official-API candidate; not implemented | DMM's official help says Web Service API access requires a DMM member account, affiliate registration, and API registration; the API ID is issued after registration. This is not a paid metadata API, but it is an affiliate program with eligibility and display conditions. Do not add it until the operator confirms they want affiliate registration and the current API terms/attribution requirements are reviewed. |
 | Nyaa (work-safe) | Out of scope for the adult-resource Provider set | Nyaa's own help distinguishes its work-safe index from Sukebei's non-work-safe index. Do not add it as an adult source merely because it shares the RSS protocol. |
 | Perverzija DB | Provider implemented; live Worker verification pending | Implemented as `perverzija-db` v1.0.0 using the documented no-key v1 JSON API. The adapter maps the DB scene page as the primary attribution link and the watch page as an external link; it deliberately omits cover images and player/embed fields. The API terms allow free commercial/non-commercial use with visible attribution, require adults-only use, prohibit bulk standalone resale and rate-limit circumvention, and recommend caching. Keep disabled until live Cloudflare connectivity and audience/legal review are complete. |
+| YourBittorrent | Provider implemented; live Worker verification pending | Its official API documentation explicitly offers a free JSON API for websites/apps/scripts with no key or account, documents Adult category ID 7, and returns title, detail URL, Magnet URI, torrent URL, size, seeds, peers, and verified status. The API asks clients to cache search results for 15 minutes and warns that datacenter traffic may be filtered. Implemented as `yourbittorrent-json` v1.0.0 with strict host validation and a 15-minute Cloudflare edge cache; no bypass or automatic whitelisting. Keep disabled until live Worker connectivity is confirmed. |
 | Torlock | Provider implemented; live Worker verification pending | Implemented as `torlock-torznab` v1.0.0 using the documented no-key Torznab endpoint and Adult category 6000. The adapter validates Magnet hashes and Torlock detail URLs, rejects redirects, caps responses at 2 MiB, and uses a 60-second Cloudflare edge cache. Torlock permits feeds for apps, asks clients to cache, and warns datacenter traffic may be filtered. No bypass or automatic whitelisting; if ordinary Worker traffic is blocked, keep the Provider disabled and use the external site link. |
-| Bitsearch | Free REST Provider candidate; pending terms and live verification | Official API documentation advertises 200 unauthenticated requests/day/IP, or 1,000/day with a free account key; it documents search, categories, infohash, magnet URI, and rate-limit headers, including an Adult Content category. Its content-removal page describes DMCA and prohibited-content reporting. The API documentation is clear, but a separate API data-use licence/terms permitting republication in this aggregator was not established. Do not implement until that is clarified. |
+| Bitsearch | External-search only / pending API data-use terms | Official API documentation advertises 200 unauthenticated requests/day/IP, or 1,000/day with a free account key; it documents search, categories, infohash, magnet URI, and rate-limit headers, including an Adult Content category. Its content-removal page describes DMCA and prohibited-content reporting. A separate API data-use licence/terms permitting republication in this aggregator was not established. Keep as a browser-opened site link until clarified. |
 | apiJAV WordPress API | Not a general-purpose catalogue source | The documented API is part of a server/client WordPress video-import plugin system. Its sample server exposes posts, player/embed URLs, and webhooks; the public documentation does not establish a general catalogue licence for this project. Player/iframe/import features are also outside this metadata-and-external-links search product. |
 | PornAPI (apiJAV) | Conditional free-tier candidate; pending terms and scope | Documentation advertises a free plan (30 requests/minute, 20,000 API requests/month, one approved domain) and a key-protected JSON catalogue, but also offers paid tiers. The API returns metadata plus player/embed fields; this project would use metadata and external links only. No sufficiently clear data-use licence/attribution terms were confirmed in the reviewed material. Do not register or implement until those terms and free-tier domain requirements are reviewed. |
 
@@ -50,6 +51,14 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - Covers and player/embed data are not consumed.
 - The provider is registered in the Worker compile-time allowlist. It is not configured in production KV and must remain disabled until live Cloudflare verification.
 - The API advertises `Cache-Control: public, max-age=300, s-maxage=1800`; cached responses served by its CDN do not consume the API quota. Distinct queries still count, so monitor 429 responses and do not retry in a tight loop.
+
+### YourBittorrent — implemented
+
+- Adapter documentation: `docs/providers/yourbittorrent-json.md`.
+- Registered Worker adapter: `yourbittorrent-json` v1.0.0.
+- Uses the documented JSON search API and Adult category 7; maps detail, Magnet and optional torrent-file URLs, with a 15-minute edge cache.
+- Does not mistake `added_iso` (indexing time) for media release date.
+- Keep disabled until live Cloudflare connectivity succeeds; do not bypass datacenter filtering or automate whitelisting.
 
 ### Torlock — implemented
 
@@ -88,6 +97,9 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - Torlock FAQ and scraping guidance: https://www.torlock.com/faq.html
 - Torlock Provider implementation: `docs/providers/torlock-torznab.md`
 - Bitsearch API documentation: https://bitsearch.eu/api
+- YourBittorrent JSON API documentation: https://yourbittorrent2.com/api.html
+- YourBittorrent FAQ: https://yourbittorrent2.com/faq.html
+- YourBittorrent Provider implementation: `docs/providers/yourbittorrent-json.md`
 - Bitsearch content removal / DMCA process: https://bitsearch.eu/content-removal
 - apiJAV WordPress API reference: https://apijav.com/api-reference.html
 - PornAPI documentation and free-tier limits: https://apijav.com/pornapi.html
