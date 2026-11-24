@@ -170,8 +170,11 @@ function validateSource(input: unknown): SourceDefinition | null {
         value.searchUrlTemplate.length > 2048 ||
         (value.searchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1) return null;
     try {
-      const templateUrl = new URL(value.searchUrlTemplate.replace("{query}", "sample-query"));
-      if (templateUrl.protocol !== "https:" || templateUrl.username || templateUrl.password) return null;
+      const templateUrl = new URL(value.searchUrlTemplate.replace("{query}", "AIO_QUERY_TOKEN"));
+      if (templateUrl.protocol !== "https:" ||
+          templateUrl.username ||
+          templateUrl.password ||
+          templateUrl.hostname.includes("AIO_QUERY_TOKEN")) return null;
     } catch {
       return null;
     }
@@ -179,6 +182,9 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof value.enabled !== "boolean") return null;
   if (!Array.isArray(value.searchModes) || !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
   if (!Array.isArray(value.capabilities) || !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
+  if (type === "external-search" &&
+      (value.capabilities.length > 0 || value.adapterId !== undefined || value.credentialBinding !== undefined)) return null;
+  if (type === "provider" && value.searchUrlTemplate !== undefined) return null;
   if (typeof value.timeoutMs !== "number" || !Number.isInteger(value.timeoutMs) || value.timeoutMs < 1000 || value.timeoutMs > 30000) return null;
 
   if (value.baseUrl !== undefined) {
