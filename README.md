@@ -17,6 +17,12 @@ The application does not host media files. It does not include user accounts, cl
 
 The only planned browser-persisted preferences are the image-display toggle and theme.
 
+## Source catalog
+
+The candidate source inventory collected from Atlas, Lustpress, and FetchJAV is documented in [docs/source-catalog.md](./docs/source-catalog.md). Sources are not automatically enabled: each candidate must be checked for canonical URLs, search URL format, access policy, and Cloudflare Workers compatibility.
+
+The platform distinguishes Worker-backed **Provider** sources from **External Search** entries. External Search only generates a user-opened HTTPS search link and does not trigger a Worker fetch.
+
 ## Architecture
 
 - `apps/web`: Vue 3 + TypeScript + Vite frontend, deployed to Cloudflare Pages.
