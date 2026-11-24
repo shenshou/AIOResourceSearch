@@ -7,6 +7,7 @@ const query = ref("");
 const mode = ref<SearchMode>("number");
 const loading = ref(false);
 const errorMessage = ref("");
+const copyMessage = ref("");
 const response = ref<SearchResponse | null>(null);
 const showImages = ref(readImagePreference());
 
@@ -24,6 +25,15 @@ function updateImagePreference(value: boolean) {
     localStorage.setItem("aio-resource-search:show-images", String(value));
   } catch {
     // Storage can be unavailable in private or restricted browsing contexts.
+  }
+}
+
+async function copyResourceLink(value: string, label: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    copyMessage.value = `${label}链接已复制。`;
+  } catch {
+    copyMessage.value = "复制失败：浏览器未授予剪贴板权限。";
   }
 }
 
@@ -53,6 +63,7 @@ async function submitSearch() {
 
   loading.value = true;
   errorMessage.value = "";
+  copyMessage.value = "";
   response.value = null;
   try {
     response.value = await searchResources(normalizedQuery, mode.value);
@@ -144,14 +155,17 @@ async function submitSearch() {
             <h3><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h3>
             <p v-if="item.description" class="result-description">{{ item.description }}</p>
             <div v-if="item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
-              <a v-if="item.magnetUri" :href="item.magnetUri">Magnet</a>
-              <a v-if="item.ed2kUri" :href="item.ed2kUri">ED2K</a>
-              <a v-if="item.torrentUrl" :href="item.torrentUrl" target="_blank" rel="noopener noreferrer">Torrent</a>
+              <button v-if="item.magnetUri" type="button" @click="copyResourceLink(item.magnetUri, 'Magnet')">复制 Magnet</button>
+              <a v-if="item.magnetUri" :href="item.magnetUri">打开 Magnet</a>
+              <button v-if="item.ed2kUri" type="button" @click="copyResourceLink(item.ed2kUri, 'ED2K')">复制 ED2K</button>
+              <a v-if="item.ed2kUri" :href="item.ed2kUri">打开 ED2K</a>
+              <a v-if="item.torrentUrl" :href="item.torrentUrl" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
               <a v-for="(link, index) in item.externalLinks || []" :key="index" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
             </div>
           </div>
         </article>
       </div>
+      <p v-if="copyMessage" class="copy-feedback" role="status">{{ copyMessage }}</p>
 
       <div class="source-status-section">
         <h3>数据源执行状态</h3>
