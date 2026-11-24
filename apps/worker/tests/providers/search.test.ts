@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
 const adapterMetadata: AdapterDefinition = {
@@ -297,4 +298,74 @@ test("caps concurrent provider calls at ten", async () => {
   assert.equal(result.sources.length, 12);
   assert.equal(result.results.length, 12);
   assert.equal(maximumActive, 10);
+});
+
+test("parses Sukebei's documented RSS magnet feed without browser or cookie emulation", async () => {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  <rss version="2.0" xmlns:nyaa="https://sukebei.nyaa.net/xmlns/nyaa"><channel>
+    <item>
+      <title><![CDATA[ABP-123 Sample Release]]></title>
+      <guid isPermaLink="true">https://sukebei.nyaa.si/view/123456</guid>
+      <link>magnet:?xt=urn:btih:0123456789012345678901234567890123456789&amp;dn=ABP-123</link>
+      <pubDate>Tue, 25 Nov 2026 00:00:00 +0000</pubDate>
+      <nyaa:infoHash>0123456789012345678901234567890123456789</nyaa:infoHash>
+    </item>
+  </channel></rss>`;
+  let requestedUrl = "";
+  const resources = await sukebeiRssProvider.search(
+    { query: "ABP-123", mode: "number" },
+    {
+      source: source({
+        id: "sukebei",
+        name: "Sukebei",
+        category: "torrent",
+        adapterId: "sukebei-rss",
+        capabilities: ["magnet"],
+      }),
+      signal: new AbortController().signal,
+      fetch: async (input) => {
+        requestedUrl = String(input);
+        return new Response(xml, {
+          status: 200,
+          headers: { "Content-Type": "application/rss+xml" },
+        });
+      },
+    },
+  );
+
+  assert.match(requestedUrl, /^https:\/\/sukebei\.nyaa\.net\/feed\/magnet\?/);
+  assert.match(requestedUrl, /q=ABP-123/);
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.id, "123456");
+  assert.equal(resources[0]?.title, "ABP-123 Sample Release");
+  assert.equal(resources[0]?.url, "https://sukebei.nyaa.net/view/123456");
+  assert.match(resources[0]?.magnetUri ?? "", /^magnet:\?xt=urn:btih:/);
+});
+
+test("rejects malformed Sukebei feed responses", async () => {
+  await assert.rejects(
+    sukebeiRssProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({ id: "sukebei", category: "torrent", adapterId: "sukebei-rss" }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response("<html>challenge page</html>", { status: 200 }),
+      },
+    ),
+    /unexpected feed format/,
+  );
+});
+
+test("fails closed when Sukebei returns a non-success HTTP status", async () => {
+  await assert.rejects(
+    sukebeiRssProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({ id: "sukebei", category: "torrent", adapterId: "sukebei-rss" }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response("Unavailable", { status: 503 }),
+      },
+    ),
+    /HTTP 503/,
+  );
 });
