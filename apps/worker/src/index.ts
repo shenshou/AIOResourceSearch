@@ -98,8 +98,8 @@ async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
       const implemented = isProviderImplemented(adapter.id);
       return {
         ...adapter,
-        mechanism: adapter.mechanism ?? implementation?.mechanism ?? "api",
-        contentCategories: adapter.contentCategories ?? implementation?.contentCategories ?? ["jav"],
+        mechanism: implementation?.mechanism ?? adapter.mechanism ?? "api",
+        contentCategories: implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"],
         implemented,
         enabled: Boolean(adapter.enabled && implemented),
       };
@@ -320,8 +320,8 @@ function validateAdapter(input: unknown): AdapterDefinition | null {
     id: value.id,
     name: value.name.trim(),
     description: value.description.trim(),
-    mechanism: (value.mechanism ?? implementation?.mechanism ?? "api") as AdapterDefinition["mechanism"],
-    contentCategories: (value.contentCategories ?? implementation?.contentCategories ?? ["jav"]) as AdapterDefinition["contentCategories"],
+    mechanism: (implementation?.mechanism ?? value.mechanism ?? "api") as AdapterDefinition["mechanism"],
+    contentCategories: (implementation?.contentCategories ?? value.contentCategories ?? ["jav"]) as AdapterDefinition["contentCategories"],
     version: value.version.trim(),
     enabled: value.enabled,
     categories: [...new Set(value.categories as SourceDefinition["category"][])],
