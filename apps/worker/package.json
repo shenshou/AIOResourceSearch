@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "wrangler dev --config wrangler.jsonc",
     "deploy": "wrangler deploy --config wrangler.jsonc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@aio-resource-search/shared": "0.1.0"
   },
   "devDependencies": {
     "typescript": "~5.7.2",
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.0.0",
+    "tsx": "^4.20.6"
   }
 }
