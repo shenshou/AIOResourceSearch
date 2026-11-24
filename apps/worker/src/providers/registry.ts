@@ -1,6 +1,7 @@
 import type { ProviderAdapter } from "./types";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
+import { torlockProvider } from "./torlock-torznab";
 
 /**
  * Compile-time allowlist of executable provider adapters.
@@ -11,6 +12,7 @@ import { sukebeiRssProvider } from "./sukebei-rss";
 const providerAdapters: readonly ProviderAdapter[] = [
   sukebeiRssProvider,
   perverzijaDbProvider,
+  torlockProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
