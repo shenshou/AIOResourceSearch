@@ -22,7 +22,7 @@ The only planned browser-persisted preferences are the image-display toggle and 
 - `apps/web`: Vue 3 + TypeScript + Vite frontend, deployed to Cloudflare Pages.
 - `apps/worker`: Cloudflare Worker API, deployed independently.
 - `packages/shared`: shared TypeScript contracts.
-- Cloudflare KV: shared source configuration only. No D1 database is planned.
+- Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
 See [docs/architecture.md](docs/architecture.md) for boundaries and data flow.
 
@@ -73,12 +73,15 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Public enabled-source endpoint
 - [x] Protected source configuration CRUD API backed by KV
 - [x] Frontend source-management interface (CRUD, enable/disable, in-memory admin token)
-- [ ] Provider adapter registry and provider audits
+- [x] Adapter metadata contract and KV-backed administration API
+- [x] Adapter-management UI (CRUD, implementation status, enable/disable)
+- [ ] Runtime Provider interface and concrete adapter implementations
+- [ ] Provider audits
 - [ ] Search orchestration and result normalization
 - [ ] Result presentation and resource-link actions
 - [ ] Deployment and end-to-end verification
 
-Source configuration changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. New adapter code or protocol support still requires a Worker deployment.
+Source and adapter metadata changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. Adapter records are metadata only; the Worker accepts an adapter as usable only when its ID is registered in compiled Worker code. New adapter code or protocol support still requires a Worker deployment.
 
 A configured source is not automatically searchable: its adapter must exist in code and its access method must be permitted by the source operator.
 
