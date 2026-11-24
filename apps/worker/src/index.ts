@@ -121,6 +121,11 @@ function publicSource(source: SourceDefinition): Omit<SourceDefinition, "credent
   return safeSource;
 }
 
+function publicAdapter(adapter: AdapterDefinition): Omit<AdapterDefinition, "notes"> {
+  const { notes: _notes, ...safeAdapter } = adapter;
+  return safeAdapter;
+}
+
 async function authorize(request: Request, env: Env): Promise<boolean> {
   if (!env.ADMIN_API_TOKEN) return false;
   const authorization = request.headers.get("Authorization") ?? "";
@@ -375,8 +380,13 @@ async function handleAdmin(
     const source = validateSource((body as { source?: unknown } | null)?.source);
     if (!source) return json({ error: { code: "invalid_source", message: "The source definition is invalid." } }, 422);
     const adapters = await readAdaptersConfig(env);
-    if (!adapters.adapters.some((adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented)) {
+    const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented);
+    if (!selectedAdapter) {
       return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+    }
+    if (!selectedAdapter.categories.includes(source.category) ||
+        !source.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
+      return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
     }
     if (current.sources.some((item) => item.id === source.id)) {
       return json({ error: { code: "source_exists", message: "A source with this ID already exists." } }, 409);
@@ -419,8 +429,13 @@ async function handleAdmin(
   const updated = validateSource({ ...current.sources[sourceIndex], ...(patch as Record<string, unknown>), id: sourceId });
   if (!updated) return json({ error: { code: "invalid_source", message: "The updated source definition is invalid." } }, 422);
   const adapters = await readAdaptersConfig(env);
-  if (!adapters.adapters.some((adapter) => adapter.id === updated.adapterId && adapter.enabled && adapter.implemented)) {
+  const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === updated.adapterId && adapter.enabled && adapter.implemented);
+  if (!selectedAdapter) {
     return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+  }
+  if (!selectedAdapter.categories.includes(updated.category) ||
+      !updated.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
+    return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
   }
   const sources = [...current.sources];
   sources[sourceIndex] = updated;
@@ -447,7 +462,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     const config = await readAdaptersConfig(env);
     return withEtag(json({
       version: config.version,
-      adapters: config.adapters.filter((adapter) => adapter.enabled && adapter.implemented),
+      adapters: config.adapters.filter((adapter) => adapter.enabled && adapter.implemented).map(publicAdapter),
     }), config.version);
   }
 
