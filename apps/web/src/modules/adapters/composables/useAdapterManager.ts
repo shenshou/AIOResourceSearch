@@ -1,10 +1,12 @@
 import { computed, ref } from "vue";
+import { useAdminSession } from "../../admin/composables/useAdminSession";
 import type { AdapterDefinition } from "@aio-resource-search/shared";
 import { AdapterApiError, adapterApi } from "../../../services/adapterApi";
 
 export function useAdapterManager() {
-  const token = ref("");
-  const authenticated = ref(false);
+  const session = useAdminSession();
+  const token = session.token;
+  const authenticated = session.authenticated;
   const adapters = ref<AdapterDefinition[]>([]);
   const revision = ref(0);
   const etag = ref("");
@@ -34,7 +36,7 @@ export function useAdapterManager() {
       return true;
     } catch (cause) {
       if (cause instanceof AdapterApiError && cause.status === 401) {
-        authenticated.value = false;
+        session.clear();
         error.value = "管理员令牌无效，请重新输入。";
       } else {
         error.value = cause instanceof Error ? cause.message : "读取适配器失败。";
@@ -53,13 +55,12 @@ export function useAdapterManager() {
     }
     const success = await reload();
     if (success) notice.value = "管理员验证成功。";
-    else token.value = "";
+    else session.clear();
     return success;
   }
 
   function logout() {
-    token.value = "";
-    authenticated.value = false;
+    session.clear();
     adapters.value = [];
     etag.value = "";
     revision.value = 0;
