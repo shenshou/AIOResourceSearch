@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
+  type AdapterDefinition,
   type SearchMode,
   type SourceCapability,
   type SourceCategory,
   type SourceDefinition,
 } from "@aio-resource-search/shared";
 import { useSourceManager } from "../composables/useSourceManager";
+import { adapterApi } from "../../../services/adapterApi";
 
 const manager = useSourceManager();
+const availableAdapters = ref<AdapterDefinition[]>([]);
 const loginToken = ref("");
 const showEditor = ref(false);
 const editingId = ref<string | null>(null);
@@ -51,6 +54,15 @@ const emptyForm = (): SourceDefinition => ({
 
 const form = reactive<SourceDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
+
+onMounted(async () => {
+  try {
+    const result = await adapterApi.getPublicAdapters();
+    availableAdapters.value = result.adapters;
+  } catch {
+    availableAdapters.value = [];
+  }
+});
 
 function beginCreate() {
   Object.assign(form, emptyForm());
@@ -215,7 +227,13 @@ async function submitLogin() {
                 <option v-for="category in SOURCE_CATEGORIES" :key="category" :value="category">{{ categoryLabels[category] }}</option>
               </select>
             </label>
-            <label>适配器 ID<input v-model="form.adapterId" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="example-index" /></label>
+            <label>适配器
+              <select v-model="form.adapterId" required :disabled="!availableAdapters.length">
+                <option value="" disabled>选择已实现且启用的适配器</option>
+                <option v-if="form.adapterId && !availableAdapters.some((adapter) => adapter.id === form.adapterId)" :value="form.adapterId">{{ form.adapterId }}（当前不可用）</option>
+                <option v-for="adapter in availableAdapters" :key="adapter.id" :value="adapter.id">{{ adapter.name }} · {{ adapter.id }}</option>
+              </select>
+            </label>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" placeholder="https://example.com" /></label>
             <label>请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" /> 保存后启用</label>
@@ -230,7 +248,7 @@ async function submitLogin() {
             <label class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">这里配置的是已实现的适配器实例。仅填写网址并不会自动生成网站解析能力。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
+          <p class="form-hint">这里只能选择已在 Worker 中实现并启用的适配器。当前没有可用适配器时，需要先完成适配器代码并部署 Worker。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="closeEditor">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
