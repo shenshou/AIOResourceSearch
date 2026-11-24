@@ -27,11 +27,19 @@ export interface SourceSearchStatus {
   errorCode?: string;
 }
 
+export interface ExternalSearchLink {
+  sourceId: string;
+  sourceName: string;
+  category: string;
+  url: string;
+}
+
 export interface SearchResponse {
   query: string;
   mode: SearchMode;
   results: SearchResource[];
   sources: SourceSearchStatus[];
+  externalSearches: ExternalSearchLink[];
   meta: {
     totalResults: number;
     successfulSources: number;
