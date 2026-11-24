@@ -1,4 +1,5 @@
 import type { ProviderAdapter } from "./types";
+import { sukebeiRssProvider } from "./sukebei-rss";
 
 /**
  * Compile-time allowlist of executable provider adapters.
@@ -7,8 +8,7 @@ import type { ProviderAdapter } from "./types";
  * in the same Worker change. Never populate this registry from KV or user input.
  */
 const providerAdapters: readonly ProviderAdapter[] = [
-  // Concrete adapters are registered here after their source access method,
-  // parsing behavior, and normalized output have been reviewed and tested.
+  sukebeiRssProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
