@@ -99,6 +99,14 @@ export function useSourceManager() {
     );
   }
 
+  async function importExternalSources(importedSources: SourceDefinition[]) {
+    if (!etag.value || importedSources.length === 0) return false;
+    return persist(
+      () => sourceApi.importExternalSources(token.value, etag.value, importedSources),
+      `${importedSources.length} 个候选来源已登记，全部保持禁用状态。`,
+    );
+  }
+
   async function remove(sourceId: string) {
     if (!etag.value) return false;
     return persist(
@@ -113,6 +121,6 @@ export function useSourceManager() {
 
   return {
     token, authenticated, sources, revision, loading, saving, error, notice,
-    enabledCount, login, logout, reload, save, remove, toggle, clearMessages,
+    enabledCount, login, logout, reload, save, importExternalSources, remove, toggle, clearMessages,
   };
 }
