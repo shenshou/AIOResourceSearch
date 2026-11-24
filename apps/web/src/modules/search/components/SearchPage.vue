@@ -177,6 +177,9 @@ async function submitSearch() {
             </div>
             <h3><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h3>
             <p v-if="item.description" class="result-description">{{ item.description }}</p>
+            <div v-if="item.metadata && Object.keys(item.metadata).length" class="result-meta">
+              <span v-for="(value, key) in item.metadata" :key="key">{{ key }}：{{ value }}</span>
+            </div>
             <div v-if="item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
               <button v-if="item.magnetUri" type="button" @click="copyResourceLink(item.magnetUri, 'Magnet')">复制 Magnet</button>
               <a v-if="item.magnetUri" :href="item.magnetUri">打开 Magnet</a>
