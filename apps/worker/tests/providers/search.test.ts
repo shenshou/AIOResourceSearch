@@ -115,6 +115,7 @@ test("builds external search destinations without invoking a provider", async ()
     sourceId: "external-index",
     sourceName: "External index",
     category: "jav",
+    kind: "search",
     url: "https://example.com/search?q=ABP%20123",
   }]);
 });
@@ -138,6 +139,7 @@ test("returns a homepage link for a browse-only external source", async () => {
     sourceId: "browse-only",
     sourceName: "Browse-only source",
     category: "jav",
+    kind: "homepage",
     url: "https://example.com/",
   }]);
   assert.equal(result.meta.failedSources, 0);
