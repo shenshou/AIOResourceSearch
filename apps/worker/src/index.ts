@@ -338,8 +338,15 @@ async function handleAdminAdapters(
   const updated = validateAdapter({ ...current.adapters[adapterIndex], ...(patch as Record<string, unknown>), id: adapterId });
   if (!updated) return json({ error: { code: "invalid_adapter", message: "The adapter definition is invalid or cannot be enabled without a Worker implementation." } }, 422);
   const sources = await readConfig(env);
-  if (!updated.enabled && sources.sources.some((source) => source.adapterId === adapterId && source.enabled)) {
+  const linkedSources = sources.sources.filter((source) => source.adapterId === adapterId);
+  if (!updated.enabled && linkedSources.some((source) => source.enabled)) {
     return json({ error: { code: "adapter_has_enabled_sources", message: "Disable or reassign enabled sources before disabling this adapter." } }, 409);
+  }
+  if (linkedSources.some((source) =>
+    !updated.categories.includes(source.category) ||
+    !source.capabilities.every((capability) => updated.capabilities.includes(capability))
+  )) {
+    return json({ error: { code: "adapter_incompatible_with_sources", message: "The updated adapter metadata would invalidate one or more linked source configurations." } }, 409);
   }
   const adapters = [...current.adapters];
   adapters[adapterIndex] = updated;
