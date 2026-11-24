@@ -2,6 +2,8 @@ import type {
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
+  AdapterDefinition,
+  AdaptersConfig,
   SourceDefinition,
   SourcesConfig,
 } from "@aio-resource-search/shared";
@@ -18,11 +20,24 @@ interface Env {
 }
 
 const CONFIG_KEY = "sources:config:v1";
+const ADAPTER_CONFIG_KEY = "adapters:config:v1";
 const MAX_CONFIG_BYTES = 64 * 1024;
+
+/**
+ * Adapter implementations are compiled into the Worker. Add an ID here only
+ * in the same change that adds and tests its actual runtime implementation.
+ * KV records are metadata/configuration, never executable code.
+ */
+const IMPLEMENTED_ADAPTER_IDS: readonly string[] = [];
 const DEFAULT_CONFIG: SourcesConfig = {
   version: 0,
   updatedAt: null,
   sources: [],
+};
+const DEFAULT_ADAPTERS_CONFIG: AdaptersConfig = {
+  version: 0,
+  updatedAt: null,
+  adapters: [],
 };
 
 const categories = ["jav", "torrent", "forum", "other-index"] satisfies readonly (typeof SOURCE_CATEGORIES)[number][];
@@ -57,6 +72,24 @@ function getCorsHeaders(request: Request, env: Env): Headers | Response {
   headers.set("Access-Control-Expose-Headers", "ETag");
   headers.set("Access-Control-Max-Age", "86400");
   return headers;
+}
+
+async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
+  const raw = await env.SOURCES_KV.get(ADAPTER_CONFIG_KEY, "text", { cacheTtl: 30 });
+  if (!raw) return { ...DEFAULT_ADAPTERS_CONFIG, adapters: [] };
+
+  const parsed: unknown = JSON.parse(raw);
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("version" in parsed) ||
+    !("adapters" in parsed) ||
+    !Array.isArray(parsed.adapters)
+  ) {
+    throw new Error("Stored adapter configuration is invalid.");
+  }
+
+  return parsed as AdaptersConfig;
 }
 
 async function readConfig(env: Env): Promise<SourcesConfig> {
@@ -168,6 +201,51 @@ function expectedVersion(request: Request): number | null {
   return Number(value);
 }
 
+async function saveAdaptersConfig(
+  env: Env,
+  current: AdaptersConfig,
+  adapters: AdapterDefinition[],
+): Promise<AdaptersConfig> {
+  const next: AdaptersConfig = {
+    version: current.version + 1,
+    updatedAt: new Date().toISOString(),
+    adapters,
+  };
+  await env.SOURCES_KV.put(ADAPTER_CONFIG_KEY, JSON.stringify(next));
+  return next;
+}
+
+function validateAdapter(input: unknown): AdapterDefinition | null {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
+  const value = input as Record<string, unknown>;
+
+  if (typeof value.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.id)) return null;
+  if (typeof value.name !== "string" || value.name.trim().length < 1 || value.name.length > 80) return null;
+  if (typeof value.description !== "string" || value.description.length > 500) return null;
+  if (typeof value.version !== "string" || value.version.trim().length < 1 || value.version.length > 40) return null;
+  if (typeof value.enabled !== "boolean") return null;
+  if (!Array.isArray(value.categories) || value.categories.length < 1 ||
+      !value.categories.every((item) => categories.includes(item as SourceDefinition["category"]))) return null;
+  if (!Array.isArray(value.capabilities) ||
+      !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
+  if (value.notes !== undefined && (typeof value.notes !== "string" || value.notes.length > 500)) return null;
+
+  const implemented = IMPLEMENTED_ADAPTER_IDS.includes(value.id);
+  if (value.enabled && !implemented) return null;
+
+  return {
+    id: value.id,
+    name: value.name.trim(),
+    description: value.description.trim(),
+    version: value.version.trim(),
+    enabled: value.enabled,
+    categories: [...new Set(value.categories as SourceDefinition["category"][])],
+    capabilities: [...new Set(value.capabilities as SourceDefinition["capabilities"])],
+    implemented,
+    ...(typeof value.notes === "string" ? { notes: value.notes } : {}),
+  };
+}
+
 async function saveConfig(env: Env, current: SourcesConfig, sources: SourceDefinition[]): Promise<SourcesConfig> {
   const next: SourcesConfig = {
     version: current.version + 1,
@@ -176,6 +254,91 @@ async function saveConfig(env: Env, current: SourcesConfig, sources: SourceDefin
   };
   await env.SOURCES_KV.put(CONFIG_KEY, JSON.stringify(next));
   return next;
+}
+
+async function handleAdminAdapters(
+  request: Request,
+  url: URL,
+  env: Env,
+): Promise<Response> {
+  if (!env.ADMIN_API_TOKEN) {
+    return json({ error: { code: "admin_not_configured", message: "ADMIN_API_TOKEN is not configured." } }, 503);
+  }
+  if (!(await authorize(request, env))) {
+    return json({ error: { code: "unauthorized", message: "Administrator authorization is required." } }, 401);
+  }
+
+  const current = await readAdaptersConfig(env);
+  const sources = await readConfig(env);
+  const path = url.pathname.replace(/^\/api\/admin\/adapters/, "").replace(/\/$/, "");
+
+  if (path === "" && request.method === "GET") {
+    return withEtag(json(current), current.version);
+  }
+
+  if (path === "" && request.method === "POST") {
+    const version = expectedVersion(request);
+    if (version === null) return json({ error: { code: "precondition_required", message: "Send the current ETag in If-Match." } }, 428);
+    if (version !== current.version) return json({ error: { code: "version_conflict", message: "The adapter configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
+
+    let body: unknown;
+    try {
+      body = await readJsonBody(request);
+    } catch {
+      return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
+    }
+    const adapter = validateAdapter((body as { adapter?: unknown } | null)?.adapter);
+    if (!adapter) return json({ error: { code: "invalid_adapter", message: "The adapter definition is invalid or cannot be enabled without a Worker implementation." } }, 422);
+    if (current.adapters.some((item) => item.id === adapter.id)) {
+      return json({ error: { code: "adapter_exists", message: "An adapter with this ID already exists." } }, 409);
+    }
+    if (current.adapters.length >= 100) return json({ error: { code: "adapter_limit", message: "The adapter limit has been reached." } }, 422);
+
+    const next = await saveAdaptersConfig(env, current, [...current.adapters, adapter]);
+    return withEtag(json(next, 201), next.version);
+  }
+
+  const match = path.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+  if (!match) return json({ error: { code: "not_found", message: "Route not found." } }, 404);
+  const adapterId = match[1];
+  const adapterIndex = current.adapters.findIndex((item) => item.id === adapterId);
+  if (adapterIndex < 0) return json({ error: { code: "adapter_not_found", message: "Adapter not found." } }, 404);
+
+  if (request.method !== "DELETE" && request.method !== "PATCH") {
+    return json({ error: { code: "method_not_allowed", message: "Method not allowed." } }, 405);
+  }
+
+  const version = expectedVersion(request);
+  if (version === null) return json({ error: { code: "precondition_required", message: "Send the current ETag in If-Match." } }, 428);
+  if (version !== current.version) return json({ error: { code: "version_conflict", message: "The adapter configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
+
+  if (request.method === "DELETE") {
+    if (sources.sources.some((source) => source.adapterId === adapterId)) {
+      return json({ error: { code: "adapter_in_use", message: "This adapter is still referenced by one or more sources. Reassign or delete those sources first." } }, 409);
+    }
+    const next = await saveAdaptersConfig(env, current, current.adapters.filter((item) => item.id !== adapterId));
+    return withEtag(json(next), next.version);
+  }
+
+  let body: unknown;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
+  }
+  const patch = (body as { adapter?: unknown } | null)?.adapter;
+  if (typeof patch !== "object" || patch === null || Array.isArray(patch)) {
+    return json({ error: { code: "invalid_adapter", message: "The request must contain an adapter object." } }, 422);
+  }
+  const updated = validateAdapter({ ...current.adapters[adapterIndex], ...(patch as Record<string, unknown>), id: adapterId });
+  if (!updated) return json({ error: { code: "invalid_adapter", message: "The adapter definition is invalid or cannot be enabled without a Worker implementation." } }, 422);
+  if (!updated.enabled && sources.sources.some((source) => source.adapterId === adapterId && source.enabled)) {
+    return json({ error: { code: "adapter_has_enabled_sources", message: "Disable or reassign enabled sources before disabling this adapter." } }, 409);
+  }
+  const adapters = [...current.adapters];
+  adapters[adapterIndex] = updated;
+  const next = await saveAdaptersConfig(env, current, adapters);
+  return withEtag(json(next), next.version);
 }
 
 async function handleAdmin(
@@ -210,6 +373,10 @@ async function handleAdmin(
     }
     const source = validateSource((body as { source?: unknown } | null)?.source);
     if (!source) return json({ error: { code: "invalid_source", message: "The source definition is invalid." } }, 422);
+    const adapters = await readAdaptersConfig(env);
+    if (!adapters.adapters.some((adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented)) {
+      return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+    }
     if (current.sources.some((item) => item.id === source.id)) {
       return json({ error: { code: "source_exists", message: "A source with this ID already exists." } }, 409);
     }
@@ -250,6 +417,10 @@ async function handleAdmin(
   }
   const updated = validateSource({ ...current.sources[sourceIndex], ...(patch as Record<string, unknown>), id: sourceId });
   if (!updated) return json({ error: { code: "invalid_source", message: "The updated source definition is invalid." } }, 422);
+  const adapters = await readAdaptersConfig(env);
+  if (!adapters.adapters.some((adapter) => adapter.id === updated.adapterId && adapter.enabled && adapter.implemented)) {
+    return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+  }
   const sources = [...current.sources];
   sources[sourceIndex] = updated;
   const next = await saveConfig(env, current, sources);
@@ -269,6 +440,18 @@ async function route(request: Request, env: Env): Promise<Response> {
       version: config.version,
       sources: config.sources.filter((source) => source.enabled).map(publicSource),
     }), config.version);
+  }
+
+  if (url.pathname === "/api/adapters" && request.method === "GET") {
+    const config = await readAdaptersConfig(env);
+    return withEtag(json({
+      version: config.version,
+      adapters: config.adapters.filter((adapter) => adapter.enabled && adapter.implemented),
+    }), config.version);
+  }
+
+  if (url.pathname === "/api/admin/adapters" || url.pathname.startsWith("/api/admin/adapters/")) {
+    return handleAdminAdapters(request, url, env);
   }
 
   if (url.pathname === "/api/admin/sources") {
