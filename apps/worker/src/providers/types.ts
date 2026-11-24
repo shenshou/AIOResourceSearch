@@ -1,4 +1,6 @@
 import type {
+  ContentCategory,
+  FetchMechanism,
   SearchMode,
   SourceCapability,
   SourceCategory,
@@ -12,6 +14,7 @@ export interface NormalizedResource {
   sourceId: string;
   sourceName: string;
   category: SourceCategory;
+  contentCategory?: ContentCategory;
   title: string;
   url: string;
   catalogNumber?: string;
@@ -44,6 +47,8 @@ export interface ProviderContext {
 export interface ProviderAdapter {
   readonly id: string;
   readonly version: string;
+  readonly mechanism?: FetchMechanism;
+  readonly contentCategories?: readonly ContentCategory[];
   readonly categories: readonly SourceCategory[];
   readonly capabilities: readonly SourceCapability[];
   readonly searchModes: readonly SearchMode[];
