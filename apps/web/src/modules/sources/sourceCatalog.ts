@@ -105,4 +105,7 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
   { id: "sukebei", name: "Sukebei", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://sukebei.nyaa.net", note: "Atlas 默认搜索源清单（003_search_sources.sql）；当前入口已更新为 Sukebei 官方公开 RSS 文档所列域名。Worker Provider 使用公开 /feed/magnet RSS，仍需 Cloudflare 线上验证后才能启用。" },
   { id: "torrentkitty", name: "TorrentKitty", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://www.torrentkitty.tv", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
   { id: "xxxclub", name: "XXXClub", category: "torrent", searchModes: ["number","keyword"], projects: ["Atlas"], baseUrl: "https://xxxclub.to", note: "Atlas 默认搜索源清单（003_search_sources.sql）；原模板/首页地址需重新核验。当前仅有站点入口，未提供搜索模板。" },
+
+  { id: "torlock", name: "Torlock", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://www.torlock.com", note: "官方提供 Torznab API；Worker Provider 已实现，原站首页作为外部跳转备用入口。需要先审查内容与条款，并在 Cloudflare 测试环境验证访问。"},
+  { id: "bitsearch", name: "Bitsearch", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://bitsearch.eu", note: "官方提供免费 REST API，但 API 数据再展示许可尚未确认；暂时只提供原站首页跳转，不自动抓取。"},
 ];
