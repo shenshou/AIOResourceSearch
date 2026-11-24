@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import {
+  CONTENT_CATEGORIES,
+  CONTENT_CATEGORY_LABELS,
+  FETCH_MECHANISMS,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
   type AdapterDefinition,
+  type ContentCategory,
+  type FetchMechanism,
   type SourceCapability,
   type SourceCategory,
 } from "@aio-resource-search/shared";
@@ -21,6 +26,7 @@ const categoryLabels: Record<SourceCategory, string> = {
   forum: "论坛",
   "other-index": "其他资源索引",
 };
+const mechanismLabels: Record<FetchMechanism, string> = { api: "API（JSON / XML 等）", rss: "RSS / Atom", html: "HTML 网页解析" };
 const capabilityLabels: Record<SourceCapability, string> = {
   metadata: "元数据",
   image: "图片",
@@ -34,6 +40,8 @@ const emptyForm = (): AdapterDefinition => ({
   id: "",
   name: "",
   description: "",
+  mechanism: "api",
+  contentCategories: ["jav"],
   version: "1.0.0",
   enabled: false,
   categories: ["other-index"],
@@ -59,6 +67,7 @@ function beginEdit(adapter: AdapterDefinition) {
   Object.assign(form, {
     ...adapter,
     categories: [...adapter.categories],
+    contentCategories: [...(adapter.contentCategories ?? ["jav"])],
     capabilities: [...adapter.capabilities],
   });
   editingId.value = adapter.id;
@@ -72,6 +81,11 @@ function toggleCategory(category: SourceCategory) {
     : [...form.categories, category];
 }
 
+function toggleContentCategory(category: ContentCategory) {
+  const selected = form.contentCategories ?? [];
+  form.contentCategories = selected.includes(category) ? selected.filter((item) => item !== category) : [...selected, category];
+}
+
 function toggleCapability(capability: SourceCapability) {
   form.capabilities = form.capabilities.includes(capability)
     ? form.capabilities.filter((item) => item !== capability)
@@ -79,8 +93,8 @@ function toggleCapability(capability: SourceCapability) {
 }
 
 async function submitForm() {
-  if (!form.categories.length) {
-    manager.error.value = "至少选择一个适用的数据源分类。";
+  if (!form.categories.length || !(form.contentCategories?.length)) {
+    manager.error.value = "至少选择一个来源类型和内容分类。";
     return;
   }
   const adapter: AdapterDefinition = {
@@ -91,6 +105,7 @@ async function submitForm() {
     version: form.version.trim(),
     notes: form.notes?.trim() || undefined,
     categories: [...form.categories],
+    contentCategories: [...(form.contentCategories ?? [])],
     capabilities: [...form.capabilities],
     // The Worker determines this from its compiled implementation registry.
     implemented: false,
@@ -165,7 +180,7 @@ async function submitLogin() {
                 {{ adapter.enabled && adapter.implemented ? "可用" : adapter.implemented ? "已实现 / 未启用" : "仅登记 / 未实现" }}
               </span>
             </div>
-            <p class="source-meta">{{ adapter.id }} · v{{ adapter.version }} · {{ adapter.categories.map((item) => categoryLabels[item]).join("、") }}</p>
+            <p class="source-meta">{{ adapter.id }} · v{{ adapter.version }} · {{ mechanismLabels[adapter.mechanism ?? "api"] }} · {{ (adapter.contentCategories ?? ["jav"]).map((item) => CONTENT_CATEGORY_LABELS[item]).join("、") }}</p>
             <p v-if="adapter.description" class="source-url">{{ adapter.description }}</p>
             <div class="source-tags">
               <span v-for="capability in adapter.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
@@ -196,6 +211,11 @@ async function submitLogin() {
           <div class="form-grid">
             <label>适配器名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example JSON API" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-json-api" /></label>
+            <label>获取机制
+              <select v-model="form.mechanism">
+                <option v-for="mechanism in FETCH_MECHANISMS" :key="mechanism" :value="mechanism">{{ mechanismLabels[mechanism] }}</option>
+              </select>
+            </label>
             <label>版本<input v-model="form.version" required maxlength="40" placeholder="1.0.0" /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" :disabled="!form.implemented" /> 启用适配器</label>
             <label class="wide">功能说明<textarea v-model="form.description" maxlength="500" rows="2" placeholder="描述适配器支持的协议或数据结构"></textarea></label>
@@ -203,6 +223,12 @@ async function submitLogin() {
               <legend>适用的数据源分类</legend>
               <label v-for="category in SOURCE_CATEGORIES" :key="category" class="choice">
                 <input type="checkbox" :checked="form.categories.includes(category)" @change="toggleCategory(category)" />{{ categoryLabels[category] }}
+              </label>
+            </fieldset>
+            <fieldset class="wide choice-field">
+              <legend>支持的内容分类</legend>
+              <label v-for="category in CONTENT_CATEGORIES" :key="category" class="choice">
+                <input type="checkbox" :checked="(form.contentCategories ?? []).includes(category)" @change="toggleContentCategory(category)" />{{ CONTENT_CATEGORY_LABELS[category] }}
               </label>
             </fieldset>
             <fieldset class="wide choice-field">
