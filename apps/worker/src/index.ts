@@ -1,3 +1,4 @@
+import { isProviderImplemented } from "./providers/registry";
 import type {
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
@@ -23,12 +24,6 @@ const CONFIG_KEY = "sources:config:v1";
 const ADAPTER_CONFIG_KEY = "adapters:config:v1";
 const MAX_CONFIG_BYTES = 64 * 1024;
 
-/**
- * Adapter implementations are compiled into the Worker. Add an ID here only
- * in the same change that adds and tests its actual runtime implementation.
- * KV records are metadata/configuration, never executable code.
- */
-const IMPLEMENTED_ADAPTER_IDS: readonly string[] = [];
 const DEFAULT_CONFIG: SourcesConfig = {
   version: 0,
   updatedAt: null,
