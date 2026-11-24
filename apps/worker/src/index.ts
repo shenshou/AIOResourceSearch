@@ -541,6 +541,8 @@ async function route(request: Request, env: Env): Promise<Response> {
       { query: value.query.trim(), mode: value.mode },
       sources,
       adapters,
+      undefined,
+      (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default,
     );
     return json(result);
   }
