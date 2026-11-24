@@ -42,22 +42,14 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 
 ## New provider candidates — implementation gates
 
-### Perverzija DB
+### Perverzija DB — implemented
 
-- Search endpoint: `GET https://api.perverzija.com/v1/scenes?q=...&per_page=...`.
-- Authentication: none.
-- Documented limit: 120 requests/minute/IP; respect `429` and `Retry-After`.
-- Freshness: source says its data refreshes every 3 hours and explicitly recommends caching.
-- Candidate result mapping:
-  - `id` → stable provider result ID.
-  - `title` → normalized result title.
-  - `release_date` → release date.
-  - `urls.page` → primary result URL, satisfying the visible Perverzija DB attribution link.
-  - `urls.watch` → separately labelled external watch link.
-  - `urls.official` → optional official studio link.
-  - studio, performers, tags and duration → concise description text.
-- Do not map `cover` to `imageUrl` until image-display rights/conditions are confirmed.
-- Before coding, add a cache/rate-control layer suitable for Cloudflare's shared Worker egress. A per-isolate in-memory cache alone is not sufficient to enforce a per-IP quota across isolates.
+- Adapter documentation: `docs/providers/perverzija-db.md`.
+- The implementation uses the documented search endpoint, strict host validation, manual redirect handling, a 2 MiB streaming response limit, and fixture-based tests.
+- The DB scene page is the primary result link to satisfy visible attribution; the watch page is a separate external link.
+- Covers and player/embed data are not consumed.
+- The provider is registered in the Worker compile-time allowlist. It is not configured in production KV and must remain disabled until live Cloudflare verification.
+- The API advertises `Cache-Control: public, max-age=300, s-maxage=1800`; cached responses served by its CDN do not consume the API quota. Distinct queries still count, so monitor 429 responses and do not retry in a tight loop.
 
 ### Torlock
 
