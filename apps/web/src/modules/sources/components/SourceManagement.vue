@@ -295,7 +295,7 @@ async function submitLogin() {
               </select>
             </label>
             <label v-else class="wide">搜索 URL 模板（必须包含 {query}）
-              <input v-model="form.searchUrlTemplate" type="url" required maxlength="2048" placeholder="https://example.com/search?q={query}" />
+              <input v-model="form.searchUrlTemplate" type="text" required maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" placeholder="https://example.com" /></label>
             <label>请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
