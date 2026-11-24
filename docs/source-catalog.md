@@ -2,7 +2,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并在管理页面提供预置登记入口。
 
-<badge>共 88 个去重候选</badge>
+<badge>共 90 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -47,7 +47,7 @@
 | r/JAV | Atlas | 有上游搜索模板，需复核 |
 | SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-## BT / Torrent（15）
+## BT / Torrent（17）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -65,6 +65,8 @@
 | Project Jav | Atlas | 仅首页入口或 URL 待补 |
 | Sukebei | Atlas | 仅首页入口或 URL 待补 |
 | TorrentKitty | Atlas | 仅首页入口或 URL 待补 |
+| Torlock | AIOResourceSearch | 已实现 Torznab Provider；同时保留原站首页入口 |
+| Bitsearch | AIOResourceSearch | 仅首页入口；API 数据再展示许可待确认 |
 | XXXClub | Atlas | 仅首页入口或 URL 待补 |
 
 ## 论坛（16）
