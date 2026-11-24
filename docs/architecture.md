@@ -32,7 +32,9 @@ Vue 3 frontend (Cloudflare Pages)
         v
 Cloudflare Worker API
         |
-        +---- Workers KV: source configuration
+        +---- Workers KV: source configuration (sources:config:v1)
+        |
+        +---- Workers KV: adapter metadata (adapters:config:v1)
         |
         +---- Provider adapters (one adapter per supported protocol/source family)
                     |
@@ -44,21 +46,26 @@ Pages and Worker are separate deployable targets in one repository. The frontend
 ## Module responsibilities
 
 - `apps/web`: routes, page composition, UI components, browser-only preferences, API client.
-- `apps/worker`: HTTP routing, admin authorization, input validation, source configuration persistence, provider orchestration.
+- `apps/worker`: HTTP routing, admin authorization, input validation, source/adapter configuration persistence, provider orchestration.
 - `packages/shared`: framework-independent API and source configuration contracts.
+- Adapter management records: describe adapter identity, version, supported categories/capabilities, and administrative state. They do not contain executable code.
 - Provider adapters: translate one source's permitted protocol into the shared result contract. An adapter is code, not a URL entered in the management UI.
 
-A source can be added through configuration only when its `adapterId` is already implemented. A new protocol or page structure requires a reviewed code adapter first.
+A source can be added through configuration only when its `adapterId` exists in adapter metadata, is enabled, and has a matching implementation registered in Worker code. The Worker maintains an explicit implementation allowlist; changing a KV record cannot claim that code exists. A new protocol or page structure requires a reviewed code adapter first.
 
 ## Source configuration
 
-The first implementation stores one versioned JSON document under the KV key `sources:config:v1`. This keeps the initial management model small and makes a full configuration read inexpensive.
+The configuration layer stores two independent versioned JSON documents in the same KV namespace:
+- `sources:config:v1`: data-source definitions.
+- `adapters:config:v1`: adapter administrative metadata.
+
+This keeps source and adapter edits independent without introducing another storage product.
 
 KV is eventually consistent and does not provide compare-and-swap transactions. The API uses a revision precondition to catch ordinary stale-editor updates, but this is not a distributed lock. Avoid concurrent administrator edits; if multi-admin transactional editing becomes a real requirement, revisit the storage primitive.
 
-Only source configuration belongs in KV. Search responses, images, media, favorites, and search history are not persisted there.
+Only source and adapter management configuration belongs in KV. Adapter executable code remains in the Worker bundle. Search responses, images, media, favorites, and search history are not persisted there.
 
-Configuration CRUD is a runtime operation. The admin page sends authenticated requests to the Worker, which validates and writes the configuration to KV. It does not modify source code or trigger a deployment. KV propagation can be delayed by its eventual-consistency model and the configured edge cache TTL. A new provider adapter or parser is code and requires a Worker deployment.
+Source and adapter metadata CRUD are runtime operations. The admin page sends authenticated requests to the Worker, which validates and writes configuration to KV. These changes do not modify source code or trigger a deployment. KV propagation can be delayed by its eventual-consistency model and the configured edge cache TTL. A new provider implementation, protocol, or parser is code and requires a Worker deployment. Deleting an adapter is rejected while any source still references it; disabling an adapter is rejected while enabled sources reference it.
 
 ## Security
 
