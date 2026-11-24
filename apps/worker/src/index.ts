@@ -7,7 +7,7 @@ import type {
 } from "@aio-resource-search/shared";
 
 interface KVNamespace {
-  get(key: string, type: "text"): Promise<string | null>;
+  get(key: string, type: "text", options?: { cacheTtl?: number }): Promise<string | null>;
   put(key: string, value: string): Promise<void>;
 }
 
@@ -54,12 +54,13 @@ function getCorsHeaders(request: Request, env: Env): Headers | Response {
   headers.set("Vary", "Origin");
   headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type, If-Match");
+  headers.set("Access-Control-Expose-Headers", "ETag");
   headers.set("Access-Control-Max-Age", "86400");
   return headers;
 }
 
 async function readConfig(env: Env): Promise<SourcesConfig> {
-  const raw = await env.SOURCES_KV.get(CONFIG_KEY, "text");
+  const raw = await env.SOURCES_KV.get(CONFIG_KEY, "text", { cacheTtl: 30 });
   if (!raw) return { ...DEFAULT_CONFIG, sources: [] };
 
   const parsed: unknown = JSON.parse(raw);
@@ -82,8 +83,8 @@ function withEtag(response: Response, version: number): Response {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
-function publicSource(source: SourceDefinition): Omit<SourceDefinition, "credentialBinding"> {
-  const { credentialBinding: _credentialBinding, ...safeSource } = source;
+function publicSource(source: SourceDefinition): Omit<SourceDefinition, "credentialBinding" | "notes"> {
+  const { credentialBinding: _credentialBinding, notes: _notes, ...safeSource } = source;
   return safeSource;
 }
 
@@ -224,6 +225,10 @@ async function handleAdmin(
   const sourceIndex = current.sources.findIndex((item) => item.id === sourceId);
   if (sourceIndex < 0) return json({ error: { code: "source_not_found", message: "Source not found." } }, 404);
 
+  if (request.method !== "DELETE" && request.method !== "PATCH") {
+    return json({ error: { code: "method_not_allowed", message: "Method not allowed." } }, 405);
+  }
+
   const version = expectedVersion(request);
   if (version === null) return json({ error: { code: "precondition_required", message: "Send the current ETag in If-Match." } }, 428);
   if (version !== current.version) return json({ error: { code: "version_conflict", message: "The source configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
@@ -233,29 +238,22 @@ async function handleAdmin(
     return withEtag(json(next), next.version);
   }
 
-  if (request.method === "PATCH") {
-    let body: unknown;
-    try {
-      body = await readJsonBody(request);
-    } catch {
-      return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
-    }
-    const patch = (body as { source?: unknown } | null)?.source;
-    if (typeof patch !== "object" || patch === null || Array.isArray(patch)) {
-      return json({ error: { code: "invalid_source", message: "The request must contain a source object." } }, 422);
-    }
-    const updated = validateSource({ ...current.sources[sourceIndex], ...(patch as Record<string, unknown>), id: sourceId });
-    if (!updated) return json({ error: { code: "invalid_source", message: "The updated source definition is invalid." } }, 422);
-    if (current.sources.some((item) => item.id === updated.id && item.id !== sourceId)) {
-      return json({ error: { code: "source_exists", message: "A source with this ID already exists." } }, 409);
-    }
-    const sources = [...current.sources];
-    sources[sourceIndex] = updated;
-    const next = await saveConfig(env, current, sources);
-    return withEtag(json(next), next.version);
+  let body: unknown;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
   }
-
-  return json({ error: { code: "method_not_allowed", message: "Method not allowed." } }, 405);
+  const patch = (body as { source?: unknown } | null)?.source;
+  if (typeof patch !== "object" || patch === null || Array.isArray(patch)) {
+    return json({ error: { code: "invalid_source", message: "The request must contain a source object." } }, 422);
+  }
+  const updated = validateSource({ ...current.sources[sourceIndex], ...(patch as Record<string, unknown>), id: sourceId });
+  if (!updated) return json({ error: { code: "invalid_source", message: "The updated source definition is invalid." } }, 422);
+  const sources = [...current.sources];
+  sources[sourceIndex] = updated;
+  const next = await saveConfig(env, current, sources);
+  return withEtag(json(next), next.version);
 }
 
 async function route(request: Request, env: Env): Promise<Response> {
