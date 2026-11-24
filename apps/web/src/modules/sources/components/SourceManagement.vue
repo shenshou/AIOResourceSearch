@@ -8,7 +8,6 @@ import {
   SOURCE_CATEGORIES,
   SOURCE_TYPES,
   type AdapterDefinition,
-  type ContentCategory,
   type SearchMode,
   type SourceCapability,
   type SourceCategory,
@@ -144,7 +143,7 @@ function beginCreate() {
 function beginEdit(source: SourceDefinition) {
   Object.assign(form, {
     ...source,
-    contentCategory: source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"),
+    contentCategory: source.contentCategory ?? "jav",
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
     searchUrlTemplate: source.searchUrlTemplate ?? "",
