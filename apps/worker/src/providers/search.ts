@@ -164,6 +164,7 @@ async function searchOneSource(
   request: SearchRequest,
   adapterConfig: AdaptersConfig,
   getAdapter: (adapterId: string) => ProviderAdapter | null,
+  cache?: Cache,
 ): Promise<{
   status: SourceSearchStatus;
   resources: NormalizedResource[];
@@ -197,7 +198,7 @@ async function searchOneSource(
 
     const providerResult = provider.search(
       { query: request.query, mode: request.mode },
-      { source, fetch, signal: controller.signal },
+      { source, fetch, signal: controller.signal, cache },
     );
     const resources = await Promise.race([providerResult, timeout]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
@@ -239,6 +240,7 @@ export async function executeSearch(
   sourceConfig: SourcesConfig,
   adapterConfig: AdaptersConfig,
   getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
+  cache?: Cache,
 ): Promise<SearchResponse> {
   const enabledSources = sourceConfig.sources.filter(
     (source) => source.enabled && (source.type ?? "provider") === "provider",
@@ -275,7 +277,7 @@ export async function executeSearch(
   await Promise.all(Array.from({ length: workerCount }, async () => {
     while (nextIndex < enabledSources.length) {
       const index = nextIndex++;
-      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter);
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache);
     }
   }));
 
