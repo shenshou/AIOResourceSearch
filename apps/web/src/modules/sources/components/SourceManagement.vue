@@ -239,7 +239,7 @@ async function submitLogin() {
     <template v-else>
       <details class="source-catalog-panel">
         <summary>预置来源目录 · {{ unregisteredCatalogEntries.length }} 个尚未登记</summary>
-        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的 88 个候选来源。登记时默认创建禁用的外部入口；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的 {{ SOURCE_CATALOG.length }} 个候选来源。登记时默认创建禁用的外部入口；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
         <div class="source-catalog-toolbar">
           <input v-model="catalogQuery" class="catalog-search" type="search" placeholder="搜索来源名称、项目或分类…" aria-label="搜索预置来源目录">
           <button class="primary-button small" type="button" :disabled="manager.saving.value || !unregisteredCatalogEntries.length" @click="importAllCatalogSources">
