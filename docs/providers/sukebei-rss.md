@@ -3,7 +3,7 @@
 ## Implementation
 
 - Adapter ID: `sukebei-rss`
-- Version: `1.0.0`
+- Version: `1.0.1`
 - Source ID: `sukebei`
 - Category: `torrent`
 - Search modes: `number`, `keyword`
@@ -11,7 +11,7 @@
 - Endpoint: `https://sukebei.nyaa.net/feed/magnet`
 - Query parameters: `q`, `limit=50`
 
-The adapter uses the site's documented public RSS magnet feed. It does not use HTML scraping, browser emulation, cookies, CAPTCHA handling, or challenge-solving code.
+The adapter uses the site's documented public RSS magnet feed. It does not use HTML scraping, browser emulation, cookies, CAPTCHA handling, or challenge-solving code. The response body is read with a 2 MiB streaming limit, redirects are not followed, and malformed RSS documents are rejected.
 
 ## Admin configuration
 
@@ -20,7 +20,7 @@ After deploying a Worker build containing this adapter:
 1. Open Adapter Management and add:
    - ID: `sukebei-rss`
    - Name: `Sukebei RSS`
-   - Version: `1.0.0`
+   - Version: `1.0.1`
    - Categories: `torrent`
    - Capabilities: `magnet`
    - Enabled: on
