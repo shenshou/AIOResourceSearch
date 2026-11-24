@@ -925,3 +925,48 @@ test("generic HTML adapter rejects cross-origin search templates and redirects",
     /redirected/,
   );
 });
+
+test("generic HTML adapter enforces the streamed 2 MiB response limit", async () => {
+  await assert.rejects(
+    genericHtmlProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({
+          adapterId: "generic-html",
+          baseUrl: "https://example.com",
+          providerSearchUrlTemplate: "https://example.com/search?q={query}",
+          htmlSelectors: { result: "article", title: "h2", link: "a" },
+        }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response(new Uint8Array(2 * 1024 * 1024 + 1), {
+          status: 200,
+          headers: { "Content-Type": "text/html" },
+        }),
+        parseHtml: async () => [],
+      },
+    ),
+    /2 MiB limit/,
+  );
+});
+
+test("generic HTML adapter drops detail links outside the configured source host", async () => {
+  const results = await genericHtmlProvider.search(
+    { query: "test", mode: "keyword" },
+    {
+      source: source({
+        adapterId: "generic-html",
+        baseUrl: "https://example.com",
+        providerSearchUrlTemplate: "https://example.com/search?q={query}",
+        htmlSelectors: { result: "article", title: "h2", link: "a" },
+      }),
+      signal: new AbortController().signal,
+      fetch: async () => new Response("<html></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+      parseHtml: async () => [{ title: "Untrusted result", url: "https://other.example/item" }],
+    },
+  );
+
+  assert.deepEqual(results, []);
+});
