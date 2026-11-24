@@ -6,8 +6,8 @@ import type {
   SourceDefinition,
   SourcesConfig,
 } from "@aio-resource-search/shared";
-import { executeSearch } from "../src/providers/search.ts";
-import type { NormalizedResource, ProviderAdapter } from "../src/providers/types.ts";
+import { executeSearch } from "../../src/providers/search.ts";
+import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
 const adapterMetadata: AdapterDefinition = {
   id: "test-adapter",
