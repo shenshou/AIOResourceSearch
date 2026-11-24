@@ -93,7 +93,7 @@ async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
   return {
     ...config,
     adapters: config.adapters.map((adapter) => {
-      const implemented = IMPLEMENTED_ADAPTER_IDS.includes(adapter.id);
+      const implemented = isProviderImplemented(adapter.id);
       return {
         ...adapter,
         implemented,
@@ -246,7 +246,7 @@ function validateAdapter(input: unknown): AdapterDefinition | null {
       !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
   if (value.notes !== undefined && (typeof value.notes !== "string" || value.notes.length > 500)) return null;
 
-  const implemented = IMPLEMENTED_ADAPTER_IDS.includes(value.id);
+  const implemented = isProviderImplemented(value.id);
   if (value.enabled && !implemented) return null;
 
   return {
