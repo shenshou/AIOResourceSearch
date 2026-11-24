@@ -105,6 +105,8 @@ function parseItems(xml: string) {
 export const torlockProvider: ProviderAdapter = {
   id: "torlock-torznab", version: "1.0.0", categories: ["torrent"], capabilities: ["magnet"],
   searchModes: ["number", "keyword"],
+  mechanism: "api",
+  contentCategories: ["jav"],
   async search(input, context) {
     const url = new URL(API_ENDPOINT);
     url.searchParams.set("t", "search");
