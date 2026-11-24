@@ -129,61 +129,94 @@ function compatibleProvider(
   return provider;
 }
 
+async function searchOneSource(
+  source: SourceDefinition,
+  request: SearchRequest,
+  adapterConfig: AdaptersConfig,
+): Promise<{
+  status: SourceSearchStatus;
+  resources: NormalizedResource[];
+}> {
+  const provider = compatibleProvider(source, adapterConfig, request.mode);
+  if (!provider) {
+    return {
+      status: {
+        sourceId: source.id,
+        sourceName: source.name,
+        status: "unavailable",
+        resultCount: 0,
+        errorCode: "adapter_unavailable",
+      },
+      resources: [],
+    };
+  }
+
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        const error = new Error("Provider timed out.");
+        error.name = "TimeoutError";
+        reject(error);
+      }, source.timeoutMs);
+    });
+
+    const providerResult = provider.search(
+      { query: request.query, mode: request.mode },
+      { source, fetch, signal: controller.signal },
+    );
+    const resources = await Promise.race([providerResult, timeout]);
+    if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
+
+    const normalized = resources
+      .slice(0, MAX_RESULTS_PER_SOURCE)
+      .map((resource) => normalizeResource(resource, source))
+      .filter((resource): resource is NormalizedResource => resource !== null);
+
+    return {
+      status: {
+        sourceId: source.id,
+        sourceName: source.name,
+        status: "ok",
+        resultCount: normalized.length,
+      },
+      resources: normalized,
+    };
+  } catch (error) {
+    const timedOut = error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError");
+    return {
+      status: {
+        sourceId: source.id,
+        sourceName: source.name,
+        status: timedOut ? "timeout" : "error",
+        resultCount: 0,
+        errorCode: timedOut ? "provider_timeout" : "provider_failed",
+      },
+      resources: [],
+    };
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
+}
+
 export async function executeSearch(
   request: SearchRequest,
   sourceConfig: SourcesConfig,
   adapterConfig: AdaptersConfig,
 ): Promise<SearchResponse> {
   const enabledSources = sourceConfig.sources.filter((source) => source.enabled);
-  const settled = await Promise.all(enabledSources.map(async (source) => {
-    const provider = compatibleProvider(source, adapterConfig, request.mode);
-    if (!provider) {
-      return {
-        status: {
-          sourceId: source.id,
-          sourceName: source.name,
-          status: "unavailable" as const,
-          resultCount: 0,
-          errorCode: "adapter_unavailable" as const,
-        },
-        resources: [] as NormalizedResource[],
-      };
-    }
+  const settled: Array<Awaited<ReturnType<typeof searchOneSource>>> = new Array(enabledSources.length);
+  let nextIndex = 0;
 
-    try {
-      const resources = await provider.search(
-        { query: request.query, mode: request.mode },
-        { source, fetch, signal: AbortSignal.timeout(source.timeoutMs) },
-      );
-      if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
-
-      const normalized = resources
-        .slice(0, MAX_RESULTS_PER_SOURCE)
-        .map((resource) => normalizeResource(resource, source))
-        .filter((resource): resource is NormalizedResource => resource !== null);
-
-      return {
-        status: {
-          sourceId: source.id,
-          sourceName: source.name,
-          status: "ok" as const,
-          resultCount: normalized.length,
-        },
-        resources: normalized,
-      };
-    } catch (error) {
-      const timedOut = error instanceof Error &&
-        (error.name === "TimeoutError" || error.name === "AbortError");
-      return {
-        status: {
-          sourceId: source.id,
-          sourceName: source.name,
-          status: timedOut ? "timeout" as const : "error" as const,
-          resultCount: 0,
-          errorCode: timedOut ? "provider_timeout" as const : "provider_failed" as const,
-        },
-        resources: [] as NormalizedResource[],
-      };
+  // Bound outbound fan-out so a large source list cannot start 100 requests at once.
+  const workerCount = Math.min(10, enabledSources.length);
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < enabledSources.length) {
+      const index = nextIndex++;
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig);
     }
   }));
 
