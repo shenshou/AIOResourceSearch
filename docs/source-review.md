@@ -20,6 +20,7 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 | JAVLibrary | External-search only / pending interface review | The site describes itself as a metadata library, but no stable public API contract was identified. Existing search URL may be offered as a user-opened link; do not infer that automated Worker scraping is authorized. |
 | javinfo | Not eligible | Its API requires a key and usage is billed per request/result after a limited trial. The project requirement excludes paid metadata APIs. |
 | JAV.guru | External-search only | A public usage example points to the WordPress-style `/?s={query}` search URL. The site's `/feed/` exists, but the attempted query-feed and REST search endpoints could not be verified from available documentation. No stable documented API or explicit automated-access permission was established; do not implement a Worker scraper. |
+| DMM / FANZA | Conditional official-API candidate; not implemented | DMM's official help says Web Service API access requires a DMM member account, affiliate registration, and API registration; the API ID is issued after registration. This is not a paid metadata API, but it is an affiliate program with eligibility and display conditions. Do not add it until the operator confirms they want affiliate registration and the current API terms/attribution requirements are reviewed. |
 | Nyaa (work-safe) | Out of scope for the adult-resource Provider set | Nyaa's own help distinguishes its work-safe index from Sukebei's non-work-safe index. Do not add it as an adult source merely because it shares the RSS protocol. |
 
 ## Sukebei implementation notes
@@ -42,6 +43,8 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - JAVLibrary About: https://www.javlibrary.com/en/about.php
 - JAVLibrary Help: https://www.javlibrary.com/en/help.php
 - javinfo API overview and billing: https://docs.javinfo.dev/docs
+- DMM Web Service registration requirement: https://support.dmm.com/affiliate/article/44077
+- DMM API ID registration help: https://support.dmm.com/affiliate/article/47546
 - Nyaa help / work-safe and RSS notes: https://nyaa.wiki/help
 - JAV.guru public search-link usage example (third-party, not an official API contract): https://sleazyfork.org/en/scripts/502894-javlibrary-improvements/code
 
