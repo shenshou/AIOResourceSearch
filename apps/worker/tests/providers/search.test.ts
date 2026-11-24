@@ -832,3 +832,23 @@ test("rejects malformed YourBittorrent JSON and does not retry server errors", a
   );
   assert.equal(requestCount, 1);
 });
+
+test("filters provider sources by user-facing content category", async () => {
+  const categoryProvider = provider(
+    async (_input, context) => [resource({ id: context.source.id, url: `https://example.com/${context.source.id}` })],
+    { contentCategories: ["jav", "anime"] },
+  );
+  const result = await executeSearch(
+    { query: "test", mode: "keyword", contentCategory: "anime" },
+    sourceConfig(
+      source({ id: "adult", contentCategory: "jav" }),
+      source({ id: "anime", contentCategory: "anime" }),
+    ),
+    adapters,
+    resolve(categoryProvider),
+  );
+
+  assert.deepEqual(result.sources.map((item) => item.sourceId), ["anime"]);
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.contentCategory, "anime");
+});
