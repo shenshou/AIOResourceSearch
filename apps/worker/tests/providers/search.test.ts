@@ -10,6 +10,7 @@ import { executeSearch } from "../../src/providers/search.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import { torlockProvider } from "../../src/providers/torlock-torznab.ts";
+import { yourBittorrentProvider } from "../../src/providers/yourbittorrent-json.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
 const adapterMetadata: AdapterDefinition = {
@@ -675,6 +676,157 @@ test("does not retry Torlock rate limits", async () => {
       }),
     ),
     /HTTP 429/,
+  );
+  assert.equal(requestCount, 1);
+});
+
+
+const yourBittorrentFixture = {
+  status: "ok",
+  endpoint: "search",
+  page: 1,
+  limit: 20,
+  count: 1,
+  total_found: 1,
+  query: "ABP-123",
+  results: [{
+    id: 38839040,
+    name: "ABP-123 Sample Release",
+    infohash: "0123456789012345678901234567890123456789",
+    magnet: "magnet:?xt=urn:btih:0123456789012345678901234567890123456789&dn=ABP-123",
+    torrent_file: "https://yourbittorrent.com/down/38839040.torrent",
+    url: "https://yourbittorrent.com/torrent/38839040/abp-123-sample.html",
+    category: "Adult",
+    category_id: 7,
+    size_bytes: 123456789,
+    size: "117.7 MB",
+    seeds: 47,
+    peers: 3,
+    verified: true,
+    added: 1795564800,
+    added_iso: "2026-11-25T00:00:00+00:00",
+  }],
+};
+
+function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache) {
+  return {
+    source: source({
+      id: "yourbittorrent",
+      name: "YourBittorrent",
+      category: "torrent",
+      adapterId: "yourbittorrent-json",
+      capabilities: ["magnet"],
+    }),
+    signal: new AbortController().signal,
+    fetch: fetchImpl,
+    ...(cache ? { cache } : {}),
+  };
+}
+
+test("searches YourBittorrent's documented JSON API using the Adult category and maps links", async () => {
+  let requestedUrl = "";
+  let cacheTtl = "";
+  const cache = {
+    match: async () => null,
+    put: async (_request: RequestInfo | URL, response: Response) => {
+      cacheTtl = response.headers.get("Cache-Control") ?? "";
+    },
+  } as unknown as Cache;
+
+  const resources = await yourBittorrentProvider.search(
+    { query: "ABP-123", mode: "number" },
+    yourBittorrentContext(async (input, init) => {
+      requestedUrl = String(input);
+      assert.equal(init?.redirect, "manual");
+      return new Response(JSON.stringify(yourBittorrentFixture), {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
+    }, cache),
+  );
+
+  const parsedUrl = new URL(requestedUrl);
+  assert.equal(parsedUrl.origin, "https://yourbittorrent.com");
+  assert.equal(parsedUrl.pathname, "/api/search.json");
+  assert.equal(parsedUrl.searchParams.get("q"), "ABP-123");
+  assert.equal(parsedUrl.searchParams.get("category"), "7");
+  assert.equal(parsedUrl.searchParams.get("limit"), "50");
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.title, "ABP-123 Sample Release");
+  assert.equal(resources[0]?.url, "https://yourbittorrent.com/torrent/38839040/abp-123-sample.html");
+  assert.equal(resources[0]?.torrentUrl, "https://yourbittorrent.com/down/38839040.torrent");
+  assert.match(resources[0]?.magnetUri ?? "", /^magnet:\?xt=urn:btih:/);
+  assert.match(resources[0]?.description ?? "", /Seeds: 47/);
+  assert.match(resources[0]?.description ?? "", /Verified/);
+  assert.equal(resources[0]?.releaseDate, undefined);
+  assert.equal(cacheTtl, "public, max-age=900");
+});
+
+test("uses cached YourBittorrent JSON without another upstream request", async () => {
+  let fetchCount = 0;
+  const cache = {
+    match: async () => new Response(JSON.stringify(yourBittorrentFixture), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }),
+    put: async () => {
+      throw new Error("Cache hit must not write a new entry.");
+    },
+  } as unknown as Cache;
+
+  const resources = await yourBittorrentProvider.search(
+    { query: "ABP-123", mode: "number" },
+    yourBittorrentContext(async () => {
+      fetchCount += 1;
+      throw new Error("Unexpected upstream fetch.");
+    }, cache),
+  );
+
+  assert.equal(fetchCount, 0);
+  assert.equal(resources.length, 1);
+});
+
+test("drops YourBittorrent records with untrusted detail or torrent URLs", async () => {
+  const unsafe = {
+    ...yourBittorrentFixture,
+    results: [{
+      ...yourBittorrentFixture.results[0],
+      url: "https://evil.example/torrent/38839040",
+      torrent_file: "https://evil.example/down/38839040.torrent",
+    }],
+  };
+  const resources = await yourBittorrentProvider.search(
+    { query: "ABP-123", mode: "number" },
+    yourBittorrentContext(async () => new Response(JSON.stringify(unsafe), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })),
+  );
+  assert.deepEqual(resources, []);
+});
+
+test("rejects malformed YourBittorrent JSON and does not retry server errors", async () => {
+  await assert.rejects(
+    yourBittorrentProvider.search(
+      { query: "ABP-123", mode: "number" },
+      yourBittorrentContext(async () => new Response("{bad", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })),
+    ),
+    /malformed JSON/,
+  );
+
+  let requestCount = 0;
+  await assert.rejects(
+    yourBittorrentProvider.search(
+      { query: "ABP-123", mode: "number" },
+      yourBittorrentContext(async () => {
+        requestCount += 1;
+        return new Response("Unavailable", { status: 503 });
+      }),
+    ),
+    /HTTP 503/,
   );
   assert.equal(requestCount, 1);
 });
