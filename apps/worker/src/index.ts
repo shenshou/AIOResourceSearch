@@ -196,6 +196,14 @@ function validateSource(input: unknown): SourceDefinition | null {
     for (const key of ["image", "description", "magnet"]) {
       if (selectors[key] !== undefined && (typeof selectors[key] !== "string" || !selectors[key].trim() || selectors[key].length > 200)) return null;
     }
+    if (selectors.fields !== undefined) {
+      if (typeof selectors.fields !== "object" || selectors.fields === null || Array.isArray(selectors.fields)) return null;
+      const fields = Object.entries(selectors.fields as Record<string, unknown>);
+      if (fields.length > 20 || fields.some(([key, selector]) =>
+        !/^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) ||
+        typeof selector !== "string" || !selector.trim() || selector.length > 200
+      )) return null;
+    }
   }
   if (type === "provider" && value.adapterId === "generic-html" &&
       (typeof value.baseUrl !== "string" || typeof value.providerSearchUrlTemplate !== "string" || !value.htmlSelectors)) return null;
