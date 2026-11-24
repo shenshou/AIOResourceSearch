@@ -19,7 +19,7 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 | JAVDB | External-search only / pending permission | No official public API contract was identified in the reviewed material. Its Terms reserve rights and state that use of the site/service to promote or operate another service requires prior written consent. Do not copy community scrapers or Cloudflare bypass behavior. |
 | JAVLibrary | External-search only / pending interface review | The site describes itself as a metadata library, but no stable public API contract was identified. Existing search URL may be offered as a user-opened link; do not infer that automated Worker scraping is authorized. |
 | javinfo | Not eligible | Its API requires a key and usage is billed per request/result after a limited trial. The project requirement excludes paid metadata APIs. |
-| JAV.guru | Pending | A public search page is referenced by third-party link lists, but a stable documented API or explicit automated-access permission has not been established. Keep as an external link only until reviewed. |
+| JAV.guru | External-search only | A public usage example points to the WordPress-style `/?s={query}` search URL. The site's `/feed/` exists, but the attempted query-feed and REST search endpoints could not be verified from available documentation. No stable documented API or explicit automated-access permission was established; do not implement a Worker scraper. |
 | Nyaa (work-safe) | Out of scope for the adult-resource Provider set | Nyaa's own help distinguishes its work-safe index from Sukebei's non-work-safe index. Do not add it as an adult source merely because it shares the RSS protocol. |
 
 ## Sukebei implementation notes
@@ -43,6 +43,7 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - JAVLibrary Help: https://www.javlibrary.com/en/help.php
 - javinfo API overview and billing: https://docs.javinfo.dev/docs
 - Nyaa help / work-safe and RSS notes: https://nyaa.wiki/help
+- JAV.guru public search-link usage example (third-party, not an official API contract): https://sleazyfork.org/en/scripts/502894-javlibrary-improvements/code
 
 ## Review policy
 
