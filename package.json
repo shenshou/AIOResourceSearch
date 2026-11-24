@@ -11,7 +11,8 @@
     "dev:web": "npm run dev --workspace @aio-resource-search/web",
     "dev:worker": "npm run dev --workspace @aio-resource-search/worker",
     "build": "npm run build --workspace @aio-resource-search/web && npm run typecheck --workspace @aio-resource-search/worker",
-    "typecheck:worker": "npm run typecheck --workspace @aio-resource-search/worker"
+    "typecheck:worker": "npm run typecheck --workspace @aio-resource-search/worker",
+    "test:worker": "npm run test --workspace @aio-resource-search/worker"
   },
   "engines": {
     "node": ">=20.19.0"
