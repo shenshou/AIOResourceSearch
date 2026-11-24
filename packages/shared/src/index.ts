@@ -55,6 +55,8 @@ export interface SourceDefinition {
   id: string;
   name: string;
   category: SourceCategory;
+  /** User-facing content category. Missing legacy values are interpreted by the Worker. */
+  contentCategory?: ContentCategory;
   /** provider calls a Worker implementation; external-search only builds a destination URL. */
   type?: SourceType;
   adapterId?: string;
@@ -85,6 +87,10 @@ export interface AdapterDefinition {
   id: string;
   name: string;
   description: string;
+  /** Protocol used by this adapter implementation. */
+  mechanism?: FetchMechanism;
+  /** Content categories the adapter can normalize. Omitted legacy metadata defaults to JAV. */
+  contentCategories?: ContentCategory[];
   version: string;
   enabled: boolean;
   categories: SourceCategory[];
