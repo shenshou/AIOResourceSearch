@@ -12,6 +12,7 @@ import {
   type SourceDefinition,
   type SourceType,
 } from "@aio-resource-search/shared";
+import { SOURCE_CATALOG, type SourceCatalogEntry } from "../sourceCatalog";
 import { useSourceManager } from "../composables/useSourceManager";
 import { adapterApi } from "../../../services/adapterApi";
 
@@ -62,6 +63,10 @@ const emptyForm = (): SourceDefinition => ({
 
 const form = reactive<SourceDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
+const unregisteredCatalogEntries = computed(() => {
+  const registeredIds = new Set(manager.sources.value.map((source) => source.id));
+  return SOURCE_CATALOG.filter((entry) => !registeredIds.has(entry.id));
+});
 
 onMounted(async () => {
   if (manager.authenticated.value) await manager.reload();
@@ -72,6 +77,25 @@ onMounted(async () => {
     availableAdapters.value = [];
   }
 });
+
+function beginCatalogCreate(entry: SourceCatalogEntry) {
+  Object.assign(form, {
+    ...emptyForm(),
+    id: entry.id,
+    name: entry.name,
+    category: entry.category,
+    type: "external-search" as const,
+    adapterId: "",
+    searchUrlTemplate: "",
+    enabled: false,
+    searchModes: [...entry.searchModes],
+    capabilities: [],
+    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note} 尚未核验搜索 URL、访问规则和 Workers 可用性。`,
+  });
+  editingId.value = null;
+  showEditor.value = true;
+  manager.clearMessages();
+}
 
 function beginCreate() {
   Object.assign(form, emptyForm());
@@ -125,8 +149,8 @@ async function submitForm() {
     searchModes: [...form.searchModes],
     capabilities: [...form.capabilities],
   };
-  if (!source.searchModes.length || !source.capabilities.length) {
-    manager.error.value = "至少选择一种搜索方式和一种结果能力。";
+  if (!source.searchModes.length || (source.type === "provider" && !source.capabilities.length)) {
+    manager.error.value = "至少选择一种搜索方式；Worker 抓取源还必须选择一种结果能力。";
     return;
   }
   const saved = await manager.save(source, !isEditing.value);
@@ -179,6 +203,22 @@ async function submitLogin() {
     </div>
 
     <template v-else>
+      <details class="source-catalog-panel">
+        <summary>预置来源目录 · {{ unregisteredCatalogEntries.length }} 个尚未登记</summary>
+        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的候选来源。登记时会先创建禁用的外部搜索入口；你需要核对并填写搜索 URL 模板后才能保存。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <div class="source-catalog-list">
+          <article v-for="entry in unregisteredCatalogEntries" :key="entry.id" class="source-catalog-item">
+            <div>
+              <strong>{{ entry.name }}</strong>
+              <small>{{ categoryLabels[entry.category] }} · {{ entry.projects.join(" / ") }}</small>
+              <small>{{ entry.note }}</small>
+            </div>
+            <button class="secondary-button small" type="button" @click="beginCatalogCreate(entry)">配置并登记</button>
+          </article>
+        </div>
+        <p v-if="!unregisteredCatalogEntries.length" class="panel-note">所有预置候选来源均已登记。</p>
+      </details>
+
       <div class="manager-toolbar">
         <div class="stats">
           <div class="stat-card"><strong>{{ manager.sources.value.length }}</strong><span>全部数据源</span></div>
