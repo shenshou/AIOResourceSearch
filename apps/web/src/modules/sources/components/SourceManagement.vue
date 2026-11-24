@@ -45,6 +45,7 @@ const emptyForm = (): SourceDefinition => ({
   searchModes: ["keyword"],
   capabilities: ["metadata"],
   timeoutMs: 10000,
+  credentialBinding: "",
   notes: "",
 });
 
@@ -92,6 +93,7 @@ async function submitForm() {
     name: form.name.trim(),
     adapterId: form.adapterId.trim(),
     baseUrl: form.baseUrl?.trim() || undefined,
+    credentialBinding: form.credentialBinding?.trim() || undefined,
     notes: form.notes?.trim() || undefined,
     searchModes: [...form.searchModes],
     capabilities: [...form.capabilities],
@@ -225,9 +227,10 @@ async function submitLogin() {
               <legend>可提供的结果能力</legend>
               <label v-for="capability in SOURCE_CAPABILITIES" :key="capability" class="choice"><input type="checkbox" :checked="form.capabilities.includes(capability)" @change="toggleCapability(capability)" />{{ capabilityLabels[capability] }}</label>
             </fieldset>
+            <label class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">这里配置的是已实现的适配器实例。仅填写网址并不会自动生成网站解析能力；不要在此填写密码、Cookie 或 API Token。</p>
+          <p class="form-hint">这里配置的是已实现的适配器实例。仅填写网址并不会自动生成网站解析能力。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="closeEditor">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>

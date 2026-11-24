@@ -58,17 +58,18 @@ KV is eventually consistent and does not provide compare-and-swap transactions. 
 
 Only source configuration belongs in KV. Search responses, images, media, favorites, and search history are not persisted there.
 
+Configuration CRUD is a runtime operation. The admin page sends authenticated requests to the Worker, which validates and writes the configuration to KV. It does not modify source code or trigger a deployment. KV propagation can be delayed by its eventual-consistency model and the configured edge cache TTL. A new provider adapter or parser is code and requires a Worker deployment.
+
 ## Security
 
 - All source mutations require a Worker secret named `ADMIN_API_TOKEN`.
 - The browser must send the token as a Bearer token; never place it in a URL or commit it.
+- The frontend keeps the administrator token in component memory only; it is not persisted to LocalStorage or SessionStorage.
 - CORS must be restricted to exact frontend origins using `ALLOWED_ORIGINS`.
 - Per-source credentials belong in Worker secrets. KV may contain a credential binding name, never the credential value.
 - Source URLs must use HTTPS and must not embed credentials or query-string secrets.
-- Public source listings omit private credential-binding metadata.
+- Public source listings omit private credential-binding metadata and administrator notes.
 - Validate all management input before writing it to KV.
-
-The initial admin API is a backend foundation. The frontend management screen and a complete administrator interaction flow are separate implementation steps.
 
 ## Search flow
 

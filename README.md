@@ -41,6 +41,8 @@ In a second terminal:
 npm run dev:worker
 ```
 
+The frontend defaults to `http://localhost:8787` for the Worker API. Override it with `VITE_API_BASE_URL` (see [apps/web/.env.example](apps/web/.env.example)).
+
 The Worker requires a KV namespace binding before remote deployment. Create one:
 
 ```bash
@@ -70,11 +72,13 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Worker health endpoint
 - [x] Public enabled-source endpoint
 - [x] Protected source configuration CRUD API backed by KV
-- [ ] Frontend source-management interface
+- [x] Frontend source-management interface (CRUD, enable/disable, in-memory admin token)
 - [ ] Provider adapter registry and provider audits
 - [ ] Search orchestration and result normalization
 - [ ] Result presentation and resource-link actions
 - [ ] Deployment and end-to-end verification
+
+Source configuration changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. New adapter code or protocol support still requires a Worker deployment.
 
 A configured source is not automatically searchable: its adapter must exist in code and its access method must be permitted by the source operator.
 

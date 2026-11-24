@@ -21,7 +21,7 @@ export function useSourceManager() {
   }
 
   async function reload() {
-    if (!token.value) return;
+    if (!token.value) return false;
     loading.value = true;
     clearMessages();
     try {
@@ -30,6 +30,7 @@ export function useSourceManager() {
       revision.value = result.config.version;
       etag.value = result.etag;
       authenticated.value = true;
+      return true;
     } catch (cause) {
       if (cause instanceof SourceApiError && cause.status === 401) {
         authenticated.value = false;
@@ -37,7 +38,7 @@ export function useSourceManager() {
       } else {
         error.value = cause instanceof Error ? cause.message : "读取数据源失败。";
       }
-      throw cause;
+      return false;
     } finally {
       loading.value = false;
     }
@@ -49,14 +50,10 @@ export function useSourceManager() {
       error.value = "请输入管理员令牌。";
       return false;
     }
-    try {
-      await reload();
-      notice.value = "管理员验证成功。";
-      return true;
-    } catch {
-      token.value = "";
-      return false;
-    }
+    const success = await reload();
+    if (success) notice.value = "管理员验证成功。";
+    else token.value = "";
+    return success;
   }
 
   function logout() {
@@ -81,11 +78,7 @@ export function useSourceManager() {
     } catch (cause) {
       if (cause instanceof SourceApiError && cause.status === 409) {
         error.value = "配置已被其他操作更新。已尝试重新载入，请确认最新数据后再操作。";
-        try {
-          await reload();
-        } catch {
-          // Preserve the original conflict message if the refresh also fails.
-        }
+        await reload();
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
       }
