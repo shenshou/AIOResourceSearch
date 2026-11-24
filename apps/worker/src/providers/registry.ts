@@ -1,4 +1,5 @@
 import type { ProviderAdapter } from "./types";
+import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 
 /**
@@ -9,6 +10,7 @@ import { sukebeiRssProvider } from "./sukebei-rss";
  */
 const providerAdapters: readonly ProviderAdapter[] = [
   sukebeiRssProvider,
+  perverzijaDbProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
