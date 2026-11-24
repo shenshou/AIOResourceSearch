@@ -235,7 +235,7 @@ async function submitLogin() {
       <div v-if="manager.loading.value" class="empty-state">正在读取数据源配置…</div>
       <div v-else-if="!manager.sources.value.length" class="empty-state">
         <strong>还没有配置数据源</strong>
-        <span>先添加已经实现对应 Provider 适配器的数据源。</span>
+        <span>可以从上方预置来源目录登记外部搜索入口，或添加已实现适配器的 Worker 抓取源。</span>
       </div>
       <div v-else class="source-list">
         <article v-for="source in manager.sources.value" :key="source.id" class="source-row">
@@ -298,17 +298,17 @@ async function submitLogin() {
               <input v-model="form.searchUrlTemplate" type="text" required maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" placeholder="https://example.com" /></label>
-            <label>请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
+            <label v-if="form.type === 'provider'">请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" /> 保存后启用</label>
             <fieldset class="wide choice-field">
               <legend>支持的搜索方式</legend>
               <label v-for="mode in SEARCH_MODES" :key="mode" class="choice"><input type="checkbox" :checked="form.searchModes.includes(mode)" @change="toggleMode(mode)" />{{ modeLabels[mode] }}</label>
             </fieldset>
-            <fieldset class="wide choice-field">
+            <fieldset v-if="form.type === 'provider'" class="wide choice-field">
               <legend>可提供的结果能力</legend>
               <label v-for="capability in SOURCE_CAPABILITIES" :key="capability" class="choice"><input type="checkbox" :checked="form.capabilities.includes(capability)" @change="toggleCapability(capability)" />{{ capabilityLabels[capability] }}</label>
             </fieldset>
-            <label class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
+            <label v-if="form.type === 'provider'" class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
           <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
