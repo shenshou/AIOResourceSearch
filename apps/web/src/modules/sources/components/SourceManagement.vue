@@ -25,6 +25,7 @@ const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 const showToken = ref(false);
 const catalogQuery = ref("");
+const htmlFieldsJson = ref("{}");
 const contentCategoryLabels = CONTENT_CATEGORY_LABELS;
 const categoryLabels: Record<SourceCategory, string> = {
   jav: "JAV 资源站",
@@ -58,7 +59,7 @@ const emptyForm = (): SourceDefinition => ({
   adapterId: "",
   searchUrlTemplate: "",
   providerSearchUrlTemplate: "",
-  htmlSelectors: { result: "", title: "", link: "" },
+  htmlSelectors: { result: "", title: "", link: "", fields: {} },
   enabled: true,
   baseUrl: "",
   searchModes: ["keyword"],
@@ -115,6 +116,7 @@ async function importAllCatalogSources() {
 }
 
 function beginCatalogCreate(entry: SourceCatalogEntry) {
+  htmlFieldsJson.value = "{}";
   Object.assign(form, {
     ...emptyForm(),
     id: entry.id,
@@ -136,6 +138,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
 }
 
 function beginCreate() {
+  htmlFieldsJson.value = "{}";
   Object.assign(form, emptyForm());
   editingId.value = null;
   showEditor.value = true;
@@ -143,6 +146,7 @@ function beginCreate() {
 }
 
 function beginEdit(source: SourceDefinition) {
+  htmlFieldsJson.value = JSON.stringify(source.htmlSelectors?.fields ?? {}, null, 2);
   Object.assign(form, {
     ...source,
     contentCategory: source.contentCategory ?? "jav",
@@ -176,6 +180,22 @@ function toggleCapability(capability: SourceCapability) {
 }
 
 async function submitForm() {
+  let htmlFields: Record<string, string> | undefined;
+  if (form.type === "provider" && form.adapterId === "generic-html") {
+    try {
+      const parsed: unknown = JSON.parse(htmlFieldsJson.value || "{}");
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("字段映射必须是 JSON 对象。");
+      const entries = Object.entries(parsed as Record<string, unknown>);
+      if (entries.length > 20 || entries.some(([key, selector]) =>
+        !/^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) ||
+        typeof selector !== "string" || !selector.trim() || selector.length > 200
+      )) throw new Error("字段映射最多 20 项；键名必须是字母开头的字段名，选择器长度不能超过 200。");
+      htmlFields = Object.fromEntries(entries) as Record<string, string>;
+    } catch (error) {
+      manager.error.value = error instanceof Error ? error.message : "HTML 字段映射 JSON 无效。";
+      return;
+    }
+  }
   const source: SourceDefinition = {
     ...form,
     id: form.id.trim(),
@@ -185,7 +205,7 @@ async function submitForm() {
       ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined }
       : { searchUrlTemplate: undefined }),
     ...(form.type === "provider" && form.adapterId === "generic-html"
-      ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: form.htmlSelectors }
+      ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: { ...form.htmlSelectors!, fields: htmlFields } }
       : { providerSearchUrlTemplate: undefined, htmlSelectors: undefined }),
     baseUrl: form.baseUrl?.trim() || undefined,
     credentialBinding: form.credentialBinding?.trim() || undefined,
@@ -368,6 +388,9 @@ async function submitLogin() {
               <label>图片 CSS 选择器（可选）<input v-model="form.htmlSelectors!.image" maxlength="200" placeholder="img.cover" /></label>
               <label>简介 CSS 选择器（可选）<input v-model="form.htmlSelectors!.description" maxlength="200" placeholder=".description" /></label>
               <label>Magnet 链接 CSS 选择器（可选）<input v-model="form.htmlSelectors!.magnet" maxlength="200" placeholder="a[href^='magnet:']" /></label>
+              <label class="wide">分类专属字段选择器映射（JSON，可选）
+                <textarea v-model="htmlFieldsJson" rows="4" maxlength="5000" placeholder='{"releaseDate":".release-date","author":".author","isbn":".isbn"}'></textarea>
+              </label>
             </template>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="form.type === 'external-search' && !form.searchUrlTemplate?.trim()" placeholder="https://example.com" /></label>
             <label v-if="form.type === 'provider'">请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
@@ -383,7 +406,7 @@ async function submitLogin() {
             <label v-if="form.type === 'provider'" class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；通用 HTML 适配器只访问基础 URL 同域的 HTTPS 搜索页，使用 CSS 选择器提取结果，拒绝重定向并限制响应体为 2 MiB；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
+          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；通用 HTML 适配器只访问基础 URL 同域的 HTTPS 搜索页，使用 CSS 选择器提取结果，拒绝重定向并限制响应体为 2 MiB；支持最多 20 个自定义元数据字段选择器；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="closeEditor">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
