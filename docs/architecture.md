@@ -108,7 +108,7 @@ The registry is intentionally empty until a concrete provider has passed source-
 
 ## Search orchestration
 
-The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker separates enabled sources by type. It resolves Provider sources against the compile-time registry and invokes compatible providers concurrently. It expands External-search templates (or returns homepage URLs for browse-only entries) into HTTPS destinations and returns them separately as `externalSearches`; these links do not count as Provider executions or failures.
+The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker separates enabled sources by type. It resolves Provider sources against the compile-time registry and invokes compatible providers concurrently. It expands External-search templates (or returns homepage URLs for browse-only entries) into HTTPS destinations and returns them separately as `externalSearches`; these links do not count as Provider executions or failures. Each returned external link also identifies whether it is a site search or a homepage fallback, so the UI labels the action clearly.
 
 Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. The scheduler distinguishes:
 - `adapter_unavailable`: adapter metadata is missing/disabled/not implemented, or no matching implementation is registered in Worker code.
