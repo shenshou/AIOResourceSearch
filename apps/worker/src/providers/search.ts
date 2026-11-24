@@ -1,4 +1,4 @@
-import type { AdaptersConfig, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
+import type { AdaptersConfig, ContentCategory, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 import { getProviderAdapter } from "./registry";
 import type { NormalizedResource, ProviderAdapter } from "./types";
 
@@ -8,6 +8,7 @@ const MAX_TOTAL_RESULTS = 100;
 export interface SearchRequest {
   query: string;
   mode: "number" | "keyword";
+  contentCategory?: ContentCategory | "all";
 }
 
 export interface SourceSearchStatus {
@@ -100,6 +101,7 @@ function normalizeResource(
     sourceId: source.id,
     sourceName: source.name,
     category: source.category,
+    ...(source.contentCategory ? { contentCategory: source.contentCategory } : {}),
     title: value.title.trim(),
     url: value.url,
     ...(typeof value.catalogNumber === "string" && value.catalogNumber.length <= 100
@@ -150,6 +152,8 @@ function resolveProvider(
   const compatible =
     provider.categories.includes(source.category) &&
     metadata.categories.includes(source.category) &&
+    (!provider.contentCategories || provider.contentCategories.includes(source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"))) &&
+    (!metadata.contentCategories || metadata.contentCategories.includes(source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"))) &&
     provider.searchModes.includes(mode) &&
     source.searchModes.includes(mode) &&
     source.capabilities.every((capability) => provider.capabilities.includes(capability)) &&
@@ -243,13 +247,18 @@ export async function executeSearch(
   getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
   cache?: Cache,
 ): Promise<SearchResponse> {
+  const matchesContentCategory = (source: SourceDefinition) =>
+    request.contentCategory === undefined ||
+    request.contentCategory === "all" ||
+    (source.contentCategory ?? (source.category === "other-index" ? "general" : "jav")) === request.contentCategory;
   const enabledSources = sourceConfig.sources.filter(
-    (source) => source.enabled && (source.type ?? "provider") === "provider",
+    (source) => source.enabled && (source.type ?? "provider") === "provider" && matchesContentCategory(source),
   );
   const externalSearches: ExternalSearchLink[] = sourceConfig.sources
     .filter((source) =>
       source.enabled &&
       source.type === "external-search" &&
+      matchesContentCategory(source) &&
       source.searchModes.includes(request.mode) &&
       (typeof source.searchUrlTemplate === "string" || typeof source.baseUrl === "string"),
     )
