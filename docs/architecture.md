@@ -51,7 +51,11 @@ Pages and Worker are separate deployable targets in one repository. The frontend
 - Adapter management records: describe adapter identity, version, supported categories/capabilities, and administrative state. They do not contain executable code.
 - Provider adapters: translate one source's permitted protocol into the shared result contract. An adapter is code, not a URL entered in the management UI.
 
-A source can be added through configuration only when its `adapterId` exists in adapter metadata, is enabled, and has a matching implementation registered in Worker code. The Worker maintains an explicit implementation allowlist; changing a KV record cannot claim that code exists. A new protocol or page structure requires a reviewed code adapter first.
+A source has one of two types:
+- `provider`: its `adapterId` must exist in adapter metadata, be enabled, and have a matching implementation registered in Worker code. The Worker maintains an explicit implementation allowlist; changing a KV record cannot claim that code exists.
+- `external-search`: it has an HTTPS `searchUrlTemplate` containing exactly one `{query}` placeholder. The Worker URL-encodes the query and returns the destination to the frontend; it never fetches or parses the target site.
+
+A new protocol or page structure requires a reviewed code adapter first. Existing provider records without a `type` field are interpreted as `provider` for backwards compatibility.
 
 ## Source configuration
 
@@ -92,7 +96,7 @@ Search page
   -> result cards and link actions
 ```
 
-Search orchestration is not enabled until the provider audit identifies sources and access methods that can be integrated appropriately.
+Provider orchestration is enabled only for reviewed, implemented adapters. External-search sources are not outbound Worker requests: the Worker only expands their configured HTTPS search templates and returns links for the user to open in a new tab.
 
 ## Provider adapter runtime
 
@@ -104,7 +108,7 @@ The registry is intentionally empty until a concrete provider has passed source-
 
 ## Search orchestration
 
-The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker loads enabled source and adapter metadata, resolves each source's adapter from the compile-time registry, and invokes compatible providers concurrently.
+The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker separates enabled sources by type. It resolves Provider sources against the compile-time registry and invokes compatible providers concurrently. It expands External-search templates into HTTPS destinations and returns them separately as `externalSearches`; these links do not count as Provider executions or failures.
 
 Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. The scheduler distinguishes:
 - `adapter_unavailable`: adapter metadata is missing/disabled/not implemented, or no matching implementation is registered in Worker code.
@@ -113,7 +117,9 @@ Each source receives its own timeout signal. A provider failure or timeout is is
 
 Provider output is validated and normalized against the configured source identity. Result URLs and optional external links must be HTTPS. Magnet links are parsed as URIs and must contain a valid BitTorrent Info Hash (`xt=urn:btih`); the `xt` parameter may appear in any query-parameter position. ED2K values are checked against their expected URI format. Results are deduplicated by canonical result URL, capped at 50 per source and 100 total.
 
-The registry currently contains no concrete adapters, so the endpoint can return an empty result set with explicit unavailable source statuses until a reviewed provider implementation is added. No source is fetched merely because a URL was entered in its configuration.
+The registry currently contains no concrete adapters, so the endpoint can return an empty result set with explicit unavailable Provider statuses while still returning configured external search links. No source is fetched merely because a URL was entered in its configuration.
+
+The initial candidate inventory from Atlas, Lustpress, and FetchJAV is documented in [Source Catalog](./source-catalog.md). It is an inventory only: candidates remain disabled until their canonical URL, search template, access policy, and Cloudflare compatibility have been reviewed.
 
 
 ## Worker tests
