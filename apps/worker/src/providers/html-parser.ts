@@ -27,6 +27,7 @@ interface MutableItem {
   imageUrl?: string;
   description: string;
   magnetUri?: string;
+  metadata: Record<string, string>;
 }
 
 const MAX_PARSED_RESULTS = 50;
@@ -45,7 +46,7 @@ export async function parseHtmlResults(
     .on(selectors.result, {
       element() {
         if (stack.length < 4 && results.length + stack.length < MAX_PARSED_RESULTS) {
-          stack.push({ title: "", url: "", description: "" });
+          stack.push({ title: "", url: "", description: "", metadata: {} });
         }
       },
       end() {
@@ -92,6 +93,18 @@ export async function parseHtmlResults(
     });
   }
 
+  for (const [key, selector] of Object.entries(selectors.fields ?? {}).slice(0, 20)) {
+    if (!/^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) || typeof selector !== "string" || !selector.trim()) continue;
+    rewriter.on(selector, {
+      text(text) {
+        const item = stack[stack.length - 1];
+        if (item && (item.metadata[key]?.length ?? 0) < 500) {
+          item.metadata[key] = (item.metadata[key] ?? "") + text.text;
+        }
+      },
+    });
+  }
+
   if (selectors.magnet) {
     rewriter.on(selectors.magnet, {
       element(element) {
@@ -110,5 +123,6 @@ export async function parseHtmlResults(
     ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
     ...(item.description ? { description: item.description } : {}),
     ...(item.magnetUri ? { magnetUri: item.magnetUri } : {}),
+    ...(Object.keys(item.metadata).length ? { metadata: Object.fromEntries(Object.entries(item.metadata).map(([key, value]) => [key, value.replace(/\\s+/g, " ").trim().slice(0, 500)]).filter(([, value]) => Boolean(value))) } : {}),
   }));
 }
