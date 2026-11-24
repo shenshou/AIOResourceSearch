@@ -37,6 +37,7 @@ const DEFAULT_ADAPTERS_CONFIG: AdaptersConfig = {
 };
 
 const categories = ["jav", "torrent", "forum", "other-index"] satisfies readonly (typeof SOURCE_CATEGORIES)[number][];
+const sourceTypes = ["provider", "external-search"] as const;
 const searchModes = ["number", "keyword"] satisfies readonly (typeof SEARCH_MODES)[number][];
 const capabilities = ["metadata", "image", "magnet", "ed2k", "torrent", "forum-post"] satisfies readonly (typeof SOURCE_CAPABILITIES)[number][];
 
@@ -160,7 +161,21 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof value.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.id)) return null;
   if (typeof value.name !== "string" || value.name.trim().length < 1 || value.name.length > 80) return null;
   if (typeof value.category !== "string" || !categories.includes(value.category as SourceDefinition["category"])) return null;
-  if (typeof value.adapterId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.adapterId)) return null;
+  const type = value.type === undefined ? "provider" : value.type;
+  if (typeof type !== "string" || !sourceTypes.includes(type as (typeof sourceTypes)[number])) return null;
+  if (type === "provider" &&
+      (typeof value.adapterId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.adapterId))) return null;
+  if (type === "external-search") {
+    if (typeof value.searchUrlTemplate !== "string" ||
+        value.searchUrlTemplate.length > 2048 ||
+        (value.searchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1) return null;
+    try {
+      const templateUrl = new URL(value.searchUrlTemplate.replace("{query}", "sample-query"));
+      if (templateUrl.protocol !== "https:" || templateUrl.username || templateUrl.password) return null;
+    } catch {
+      return null;
+    }
+  }
   if (typeof value.enabled !== "boolean") return null;
   if (!Array.isArray(value.searchModes) || !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
   if (!Array.isArray(value.capabilities) || !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
@@ -186,7 +201,9 @@ function validateSource(input: unknown): SourceDefinition | null {
     id: value.id,
     name: value.name.trim(),
     category: value.category as SourceDefinition["category"],
-    adapterId: value.adapterId,
+    type: type as SourceDefinition["type"],
+    ...(typeof value.adapterId === "string" ? { adapterId: value.adapterId } : {}),
+    ...(typeof value.searchUrlTemplate === "string" ? { searchUrlTemplate: value.searchUrlTemplate } : {}),
     enabled: value.enabled,
     ...(typeof value.baseUrl === "string" ? { baseUrl: value.baseUrl } : {}),
     searchModes: value.searchModes as SourceDefinition["searchModes"],
@@ -325,7 +342,7 @@ async function handleAdminAdapters(
 
   if (request.method === "DELETE") {
     const sources = await readConfig(env);
-    if (sources.sources.some((source) => source.adapterId === adapterId)) {
+    if (sources.sources.some((source) => (source.type ?? "provider") === "provider" && source.adapterId === adapterId)) {
       return json({ error: { code: "adapter_in_use", message: "This adapter is still referenced by one or more sources. Reassign or delete those sources first." } }, 409);
     }
     const next = await saveAdaptersConfig(env, current, current.adapters.filter((item) => item.id !== adapterId));
@@ -345,7 +362,7 @@ async function handleAdminAdapters(
   const updated = validateAdapter({ ...current.adapters[adapterIndex], ...(patch as Record<string, unknown>), id: adapterId });
   if (!updated) return json({ error: { code: "invalid_adapter", message: "The adapter definition is invalid or cannot be enabled without a Worker implementation." } }, 422);
   const sources = await readConfig(env);
-  const linkedSources = sources.sources.filter((source) => source.adapterId === adapterId);
+  const linkedSources = sources.sources.filter((source) => (source.type ?? "provider") === "provider" && source.adapterId === adapterId);
   if (!updated.enabled && linkedSources.some((source) => source.enabled)) {
     return json({ error: { code: "adapter_has_enabled_sources", message: "Disable or reassign enabled sources before disabling this adapter." } }, 409);
   }
@@ -393,14 +410,16 @@ async function handleAdmin(
     }
     const source = validateSource((body as { source?: unknown } | null)?.source);
     if (!source) return json({ error: { code: "invalid_source", message: "The source definition is invalid." } }, 422);
-    const adapters = await readAdaptersConfig(env);
-    const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented);
-    if (!selectedAdapter) {
-      return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
-    }
-    if (!selectedAdapter.categories.includes(source.category) ||
-        !source.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
-      return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
+    if ((source.type ?? "provider") === "provider") {
+      const adapters = await readAdaptersConfig(env);
+      const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented);
+      if (!selectedAdapter) {
+        return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+      }
+      if (!selectedAdapter.categories.includes(source.category) ||
+          !source.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
+        return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
+      }
     }
     if (current.sources.some((item) => item.id === source.id)) {
       return json({ error: { code: "source_exists", message: "A source with this ID already exists." } }, 409);
@@ -442,14 +461,16 @@ async function handleAdmin(
   }
   const updated = validateSource({ ...current.sources[sourceIndex], ...(patch as Record<string, unknown>), id: sourceId });
   if (!updated) return json({ error: { code: "invalid_source", message: "The updated source definition is invalid." } }, 422);
-  const adapters = await readAdaptersConfig(env);
-  const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === updated.adapterId && adapter.enabled && adapter.implemented);
-  if (!selectedAdapter) {
-    return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
-  }
-  if (!selectedAdapter.categories.includes(updated.category) ||
-      !updated.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
-    return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
+  if ((updated.type ?? "provider") === "provider") {
+    const adapters = await readAdaptersConfig(env);
+    const selectedAdapter = adapters.adapters.find((adapter) => adapter.id === updated.adapterId && adapter.enabled && adapter.implemented);
+    if (!selectedAdapter) {
+      return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
+    }
+    if (!selectedAdapter.categories.includes(updated.category) ||
+        !updated.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
+      return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
+    }
   }
   const sources = [...current.sources];
   sources[sourceIndex] = updated;
