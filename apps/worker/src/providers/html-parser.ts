@@ -52,8 +52,8 @@ export async function parseHtmlResults(
       end() {
         const item = stack.pop();
         if (!item) return;
-        item.title = item.title.replace(/\\s+/g, " ").trim();
-        item.description = item.description.replace(/\\s+/g, " ").trim();
+        item.title = item.title.replace(/\s+/g, " ").trim();
+        item.description = item.description.replace(/\s+/g, " ").trim();
         if (item.title && item.url && results.length < MAX_PARSED_RESULTS) results.push(item);
       },
     })
@@ -123,6 +123,6 @@ export async function parseHtmlResults(
     ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
     ...(item.description ? { description: item.description } : {}),
     ...(item.magnetUri ? { magnetUri: item.magnetUri } : {}),
-    ...(Object.keys(item.metadata).length ? { metadata: Object.fromEntries(Object.entries(item.metadata).map(([key, value]) => [key, value.replace(/\\s+/g, " ").trim().slice(0, 500)]).filter(([, value]) => Boolean(value))) } : {}),
+    ...(Object.keys(item.metadata).length ? { metadata: Object.fromEntries(Object.entries(item.metadata).map(([key, value]) => [key, value.replace(/\s+/g, " ").trim().slice(0, 500)]).filter(([, value]) => Boolean(value))) } : {}),
   }));
 }
