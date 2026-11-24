@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import {
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
@@ -43,6 +43,10 @@ const emptyForm = (): AdapterDefinition => ({
 });
 const form = reactive<AdapterDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
+
+onMounted(() => {
+  if (manager.authenticated.value) void manager.reload();
+});
 
 function beginCreate() {
   Object.assign(form, emptyForm());
