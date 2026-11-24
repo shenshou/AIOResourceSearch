@@ -186,7 +186,7 @@ function validateSource(input: unknown): SourceDefinition | null {
       (value.capabilities.length > 0 ||
        value.adapterId !== undefined ||
        value.credentialBinding !== undefined ||
-       (value.searchUrlTemplate === undefined && typeof value.baseUrl !== "string"))) return null;
+       (value.searchUrlTemplate === undefined && typeof value.baseUrl !== "string" && value.enabled !== false))) return null;
   if (type === "provider" && value.searchUrlTemplate !== undefined) return null;
   if (typeof value.timeoutMs !== "number" || !Number.isInteger(value.timeoutMs) || value.timeoutMs < 1000 || value.timeoutMs > 30000) return null;
 
