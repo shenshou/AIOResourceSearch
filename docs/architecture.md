@@ -94,7 +94,6 @@ Search page
 
 Search orchestration is not enabled until the provider audit identifies sources and access methods that can be integrated appropriately.
 
-
 ## Provider adapter runtime
 
 Executable adapters are registered in `apps/worker/src/providers/registry.ts`. The registry is a compile-time allowlist backed by imported TypeScript implementations; it is never populated from KV. `isProviderImplemented` is the single source of truth used by adapter administration to determine whether an adapter ID has executable code.
@@ -103,11 +102,15 @@ The Provider contract lives in `apps/worker/src/providers/types.ts`. Each implem
 
 The registry is intentionally empty until a concrete provider has passed source-access review and implementation tests. An adapter record in KV alone cannot make an adapter executable or searchable. Registering or changing executable code requires a Worker deployment; changing administrative metadata remains a KV-only operation.
 
-
 ## Search orchestration
 
 The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker loads enabled source and adapter metadata, resolves each source's adapter from the compile-time registry, and invokes compatible providers concurrently.
 
-Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. Provider output is validated and normalized against the configured source identity. Result URLs and optional external links must be HTTPS; Magnet and ED2K values are checked against their expected URI formats. Results are deduplicated by canonical result URL, capped at 50 per source and 100 total.
+Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. The scheduler distinguishes:
+- `adapter_unavailable`: adapter metadata is missing/disabled/not implemented, or no matching implementation is registered in Worker code.
+- `adapter_incompatible`: an implementation exists, but its category, search mode, or declared capabilities do not satisfy the source configuration and request.
+- `provider_failed` / `provider_timeout`: the provider ran but failed or exceeded its configured timeout.
+
+Provider output is validated and normalized against the configured source identity. Result URLs and optional external links must be HTTPS. Magnet links are parsed as URIs and must contain a valid BitTorrent Info Hash (`xt=urn:btih`); the `xt` parameter may appear in any query-parameter position. ED2K values are checked against their expected URI format. Results are deduplicated by canonical result URL, capped at 50 per source and 100 total.
 
 The registry currently contains no concrete adapters, so the endpoint can return an empty result set with explicit unavailable source statuses until a reviewed provider implementation is added. No source is fetched merely because a URL was entered in its configuration.
