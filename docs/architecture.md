@@ -106,7 +106,7 @@ Two independent versioned JSON documents use the same KV namespace:
 - `sources:config:v1`: data-source definitions.
 - `adapters:config:v1`: adapter administrative metadata.
 
-Source records include source kind, user-facing `contentCategory`, adapter ID, capabilities, search modes, timeout, and optional protocol-specific configuration. HTML sources additionally store `providerSearchUrlTemplate` and declarative `htmlSelectors`.
+Source records include source kind, user-facing `contentCategory`, adapter ID, capabilities, search modes, timeout, and optional protocol-specific configuration. HTML sources additionally store `providerSearchUrlTemplate` and declarative `htmlSelectors`, including an optional mapping of up to 20 category-specific metadata field names to CSS selectors.
 
 KV is eventually consistent and does not provide compare-and-swap transactions. ETag/revision preconditions catch ordinary stale-editor updates but are not distributed locks. Avoid concurrent administrator edits.
 
@@ -148,7 +148,7 @@ External-search sources
   -> user opens the original site
 ```
 
-The search category defaults to `all`. Legacy sources with no `contentCategory` are treated as `jav`. Each result is stamped with the configured source identity and effective content category.
+The search category defaults to `all`. Legacy sources with no `contentCategory` are treated as `jav`. Each result is stamped with the configured source identity and effective content category. The normalized result contract keeps stable common fields (title, URL, release date, image, resource links) and an optional bounded `metadata` string map for category-specific fields such as author, ISBN, publisher, season, episode, platform, or artist.
 
 The scheduler limits outbound concurrency, applies per-source timeouts, isolates failures, and caps results at 50 per source and 100 total. HTTPS result links are validated. Magnet links require a valid `xt=urn:btih`; ED2K values are checked against their expected URI format.
 
