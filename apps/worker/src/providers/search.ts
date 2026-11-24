@@ -84,6 +84,12 @@ function normalizeResource(
   if (typeof value.title !== "string" || !value.title.trim() || value.title.length > 500) return null;
   if (!isHttpsUrl(value.url)) return null;
 
+  const metadata = value.metadata && typeof value.metadata === "object"
+    ? Object.fromEntries(Object.entries(value.metadata)
+        .filter(([key, item]) => /^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) && typeof item === "string" && item.length <= 500)
+        .slice(0, 20))
+    : undefined;
+
   const externalLinks = Array.isArray(value.externalLinks)
     ? value.externalLinks
         .filter((link) =>
@@ -115,6 +121,7 @@ function normalizeResource(
     ...(typeof value.description === "string" && value.description.length <= 4000
       ? { description: value.description }
       : {}),
+    ...(metadata && Object.keys(metadata).length ? { metadata } : {}),
     ...(isMagnetUri(value.magnetUri) ? { magnetUri: value.magnetUri } : {}),
     ...(isEd2kUri(value.ed2kUri) ? { ed2kUri: value.ed2kUri } : {}),
     ...(isHttpsUrl(value.torrentUrl) ? { torrentUrl: value.torrentUrl } : {}),
