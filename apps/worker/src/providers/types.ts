@@ -37,6 +37,8 @@ export interface ProviderContext {
   /** Use the Worker Fetch API; adapters must honor the supplied abort signal. */
   fetch: typeof fetch;
   signal: AbortSignal;
+  /** Optional Cloudflare edge cache for upstream APIs with explicit cache intervals. */
+  cache?: Cache;
 }
 
 export interface ProviderAdapter {
