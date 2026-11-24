@@ -1,6 +1,6 @@
 # AIOResourceSearch
 
-A multi-source resource search and aggregation platform.
+A multi-category, multi-mechanism resource search and aggregation platform.
 
 ## Project scope
 
@@ -8,10 +8,16 @@ AIOResourceSearch provides one search entry point for multiple independently ada
 
 Source categories:
 
-- JAV metadata sources
-- BT / Torrent indexers
-- Forums
-- Other resource indexes
+- JAV / adult video metadata
+- Anime and animation
+- Films and television
+- Manga and comics
+- Novels and books
+- Games
+- Music
+- General public resource indexes
+
+Content categories are independent from source kinds (JAV site, torrent index, forum, or other index).
 
 The application does not host media files. It does not include user accounts, cloud favorites, search history, a media library, or cross-device user-data synchronization.
 
@@ -82,8 +88,10 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Adapter metadata contract and KV-backed administration API
 - [x] Adapter-management UI (CRUD, implementation status, enable/disable)
 - [x] Runtime Provider interface and compile-time adapter registry
-- [ ] Concrete provider implementations
-- [ ] Provider audits and first reviewed source integration
+- [x] Content-category model and category-filtered search
+- [x] API, RSS, and configurable HTML acquisition mechanisms
+- [x] Four site-specific API/RSS providers plus reusable HTML adapter
+- [ ] Per-source HTML selector review and live Cloudflare connectivity verification
 - [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
 - [x] Frontend aggregated-search page, result presentation, and resource-link actions
 - [x] Worker scheduler unit tests (availability, compatibility, normalization, deduplication, failure isolation, timeout, result cap, and concurrency)
