@@ -89,7 +89,18 @@ async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
     throw new Error("Stored adapter configuration is invalid.");
   }
 
-  return parsed as AdaptersConfig;
+  const config = parsed as AdaptersConfig;
+  return {
+    ...config,
+    adapters: config.adapters.map((adapter) => {
+      const implemented = IMPLEMENTED_ADAPTER_IDS.includes(adapter.id);
+      return {
+        ...adapter,
+        implemented,
+        enabled: Boolean(adapter.enabled && implemented),
+      };
+    }),
+  };
 }
 
 async function readConfig(env: Env): Promise<SourcesConfig> {
