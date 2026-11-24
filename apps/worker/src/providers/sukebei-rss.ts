@@ -88,7 +88,7 @@ function parseItems(xml: string, query: string) {
   }
 
   const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
-  const searchUrl = new URL(FEED_ENDPOINT);
+  const searchUrl = new URL("https://sukebei.nyaa.net/");
   searchUrl.searchParams.set("q", query);
 
   return items.flatMap((item) => {
