@@ -53,7 +53,7 @@ Pages and Worker are separate deployable targets in one repository. The frontend
 
 A source has one of two types:
 - `provider`: its `adapterId` must exist in adapter metadata, be enabled, and have a matching implementation registered in Worker code. The Worker maintains an explicit implementation allowlist; changing a KV record cannot claim that code exists.
-- `external-search`: it has an HTTPS `searchUrlTemplate` containing exactly one `{query}` placeholder. The Worker URL-encodes the query and returns the destination to the frontend; it never fetches or parses the target site.
+- `external-search`: it has either an HTTPS `searchUrlTemplate` containing exactly one `{query}` placeholder, or an HTTPS `baseUrl` homepage. The Worker URL-encodes the query when a template exists; otherwise it returns the homepage. It never fetches or parses the target site.
 
 A new protocol or page structure requires a reviewed code adapter first. Existing provider records without a `type` field are interpreted as `provider` for backwards compatibility.
 
@@ -108,7 +108,7 @@ The registry is intentionally empty until a concrete provider has passed source-
 
 ## Search orchestration
 
-The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker separates enabled sources by type. It resolves Provider sources against the compile-time registry and invokes compatible providers concurrently. It expands External-search templates into HTTPS destinations and returns them separately as `externalSearches`; these links do not count as Provider executions or failures.
+The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker separates enabled sources by type. It resolves Provider sources against the compile-time registry and invokes compatible providers concurrently. It expands External-search templates (or returns homepage URLs for browse-only entries) into HTTPS destinations and returns them separately as `externalSearches`; these links do not count as Provider executions or failures.
 
 Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. The scheduler distinguishes:
 - `adapter_unavailable`: adapter metadata is missing/disabled/not implemented, or no matching implementation is registered in Worker code.
