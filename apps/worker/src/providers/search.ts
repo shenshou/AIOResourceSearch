@@ -152,7 +152,7 @@ function resolveProvider(
   const compatible =
     provider.categories.includes(source.category) &&
     metadata.categories.includes(source.category) &&
-    (!provider.contentCategories || provider.contentCategories.includes(source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"))) &&
+    (!provider.contentCategories || provider.contentCategories.includes(source.contentCategory ?? "jav")) &&
     (!metadata.contentCategories || metadata.contentCategories.includes(source.contentCategory ?? (source.category === "other-index" ? "general" : "jav"))) &&
     provider.searchModes.includes(mode) &&
     source.searchModes.includes(mode) &&
