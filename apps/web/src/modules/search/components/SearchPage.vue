@@ -171,6 +171,7 @@ async function submitSearch() {
           <div class="result-body">
             <div class="result-meta">
               <span class="result-source">{{ item.sourceName }}</span>
+              <span v-if="item.contentCategory">{{ CONTENT_CATEGORY_LABELS[item.contentCategory] }}</span>
               <span v-if="item.catalogNumber">{{ item.catalogNumber }}</span>
               <span v-if="item.releaseDate">{{ item.releaseDate }}</span>
             </div>
