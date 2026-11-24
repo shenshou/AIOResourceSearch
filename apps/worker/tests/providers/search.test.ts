@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
@@ -419,4 +420,123 @@ test("does not follow redirects to a different host", async () => {
     /HTTP 302/,
   );
   assert.equal(redirectMode, "manual");
+});
+
+
+const perverzijaFixture = {
+  data: [{
+    id: 1611928,
+    title: "Studio - Performer - Sample Scene",
+    release_date: "2026-11-20",
+    duration: 3661,
+    studio: { slug: "sample-studio", name: "Sample Studio" },
+    performers: [{ slug: "sample-performer", name: "Sample Performer", gender: "female" }],
+    tags: [{ slug: "drama", name: "Drama" }],
+    urls: {
+      page: "https://db.perverzija.com/scene/1611928-sample-scene",
+      watch: "https://tube.perverzija.com/watch/sample-scene",
+    },
+  }],
+};
+
+function perverzijaContext(fetchImpl: typeof fetch) {
+  return {
+    source: source({
+      id: "perverzija-db",
+      name: "Perverzija DB",
+      category: "other-index",
+      adapterId: "perverzija-db",
+      capabilities: ["metadata"],
+    }),
+    signal: new AbortController().signal,
+    fetch: fetchImpl,
+  };
+}
+
+test("searches the documented Perverzija DB JSON API and maps attributed metadata", async () => {
+  let requestedUrl = "";
+  let redirectMode: RequestRedirect | undefined;
+  const resources = await perverzijaDbProvider.search(
+    { query: "sample scene", mode: "keyword" },
+    perverzijaContext(async (input, init) => {
+      requestedUrl = String(input);
+      redirectMode = init?.redirect;
+      return new Response(JSON.stringify(perverzijaFixture), {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
+    }),
+  );
+
+  const parsedUrl = new URL(requestedUrl);
+  assert.equal(parsedUrl.origin, "https://api.perverzija.com");
+  assert.equal(parsedUrl.pathname, "/v1/scenes");
+  assert.equal(parsedUrl.searchParams.get("q"), "sample scene");
+  assert.equal(parsedUrl.searchParams.get("per_page"), "50");
+  assert.equal(redirectMode, "manual");
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.id, "1611928");
+  assert.equal(resources[0]?.category, "other-index");
+  assert.equal(resources[0]?.url, "https://db.perverzija.com/scene/1611928-sample-scene");
+  assert.equal(resources[0]?.releaseDate, "2026-11-20");
+  assert.match(resources[0]?.description ?? "", /Studio: Sample Studio/);
+  assert.match(resources[0]?.description ?? "", /Cast: Sample Performer/);
+  assert.match(resources[0]?.description ?? "", /Duration: 01:01:01/);
+  assert.deepEqual(resources[0]?.externalLinks, [{
+    label: "观看页面",
+    url: "https://tube.perverzija.com/watch/sample-scene",
+  }]);
+  assert.equal(resources[0]?.imageUrl, undefined);
+});
+
+test("rejects Perverzija records with untrusted attribution or watch URLs", async () => {
+  const unsafeFixture = {
+    data: [{
+      ...perverzijaFixture.data[0],
+      urls: {
+        page: "https://evil.example/scene/123",
+        watch: "https://tube.perverzija.com/watch/sample-scene",
+      },
+    }],
+  };
+  const resources = await perverzijaDbProvider.search(
+    { query: "sample", mode: "keyword" },
+    perverzijaContext(async () => new Response(JSON.stringify(unsafeFixture), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })),
+  );
+  assert.deepEqual(resources, []);
+});
+
+test("does not retry Perverzija rate limits or follow redirects", async () => {
+  let requestCount = 0;
+  await assert.rejects(
+    perverzijaDbProvider.search(
+      { query: "sample", mode: "keyword" },
+      perverzijaContext(async (_input, init) => {
+        requestCount += 1;
+        assert.equal(init?.redirect, "manual");
+        return new Response(JSON.stringify({ error: { code: "rate_limited" } }), {
+          status: 429,
+          headers: { "Content-Type": "application/json", "Retry-After": "10" },
+        });
+      }),
+    ),
+    /HTTP 429/,
+  );
+  assert.equal(requestCount, 1);
+});
+
+test("rejects malformed Perverzija JSON responses", async () => {
+  await assert.rejects(
+    perverzijaDbProvider.search(
+      { query: "sample", mode: "keyword" },
+      perverzijaContext(async () => new Response("{invalid", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })),
+    ),
+    /malformed JSON/,
+  );
 });
