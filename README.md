@@ -78,7 +78,7 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Runtime Provider interface and compile-time adapter registry
 - [ ] Concrete provider implementations
 - [ ] Provider audits
-- [ ] Search orchestration and result normalization
+- [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
 - [ ] Result presentation and resource-link actions
 - [ ] Deployment and end-to-end verification
 
