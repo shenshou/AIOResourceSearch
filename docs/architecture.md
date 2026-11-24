@@ -102,3 +102,12 @@ Executable adapters are registered in `apps/worker/src/providers/registry.ts`. T
 The Provider contract lives in `apps/worker/src/providers/types.ts`. Each implementation declares its stable ID, code version, supported source categories, capabilities, and search modes, and exposes a `search` method that returns normalized resources. The context supplies the configured source, Worker Fetch API, and abort signal.
 
 The registry is intentionally empty until a concrete provider has passed source-access review and implementation tests. An adapter record in KV alone cannot make an adapter executable or searchable. Registering or changing executable code requires a Worker deployment; changing administrative metadata remains a KV-only operation.
+
+
+## Search orchestration
+
+The public `POST /api/search` endpoint accepts a query and either `number` or `keyword` mode. The Worker loads enabled source and adapter metadata, resolves each source's adapter from the compile-time registry, and invokes compatible providers concurrently.
+
+Each source receives its own timeout signal. A provider failure or timeout is isolated to that source and reported as a source status; other sources can still contribute results. Provider output is validated and normalized against the configured source identity. Result URLs and optional external links must be HTTPS; Magnet and ED2K values are checked against their expected URI formats. Results are deduplicated by canonical result URL, capped at 50 per source and 100 total.
+
+The registry currently contains no concrete adapters, so the endpoint can return an empty result set with explicit unavailable source statuses until a reviewed provider implementation is added. No source is fetched merely because a URL was entered in its configuration.
