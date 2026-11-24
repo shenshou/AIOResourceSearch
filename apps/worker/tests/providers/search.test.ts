@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import { torlockProvider } from "../../src/providers/torlock-torznab.ts";
@@ -851,4 +852,76 @@ test("filters provider sources by user-facing content category", async () => {
   assert.deepEqual(result.sources.map((item) => item.sourceId), ["anime"]);
   assert.equal(result.results.length, 1);
   assert.equal(result.results[0]?.contentCategory, "anime");
+});
+
+test("generic HTML adapter requests only the configured HTTPS origin and normalizes parsed cards", async () => {
+  let requestedUrl = "";
+  let redirectMode = "";
+  const results = await genericHtmlProvider.search(
+    { query: "Blue Sky 01", mode: "keyword" },
+    {
+      source: source({
+        id: "html-source",
+        name: "HTML source",
+        adapterId: "generic-html",
+        baseUrl: "https://example.com",
+        providerSearchUrlTemplate: "https://example.com/search?q={query}",
+        htmlSelectors: { result: "article.result", title: ".title", link: "a.title", image: "img.cover" },
+      }),
+      signal: new AbortController().signal,
+      fetch: async (input, init) => {
+        requestedUrl = String(input);
+        redirectMode = String(init?.redirect);
+        return new Response("<html><body>fixture</body></html>", {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      },
+      parseHtml: async () => [{
+        title: "Example HTML result",
+        url: "/item/1",
+        imageUrl: "/cover.jpg",
+        description: "Example description",
+      }],
+    },
+  );
+
+  assert.match(requestedUrl, /q=Blue%20Sky%2001/);
+  assert.equal(redirectMode, "manual");
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.url, "https://example.com/item/1");
+  assert.equal(results[0]?.imageUrl, "https://example.com/cover.jpg");
+});
+
+test("generic HTML adapter rejects cross-origin search templates and redirects", async () => {
+  const base = source({
+    adapterId: "generic-html",
+    baseUrl: "https://example.com",
+    providerSearchUrlTemplate: "https://other.example/search?q={query}",
+    htmlSelectors: { result: "article", title: "h2", link: "a" },
+  });
+  await assert.rejects(
+    genericHtmlProvider.search(
+      { query: "test", mode: "keyword" },
+      { source: base, signal: new AbortController().signal, fetch, parseHtml: async () => [] },
+    ),
+    /configured HTTPS source origin/,
+  );
+
+  const redirectSource = {
+    ...base,
+    providerSearchUrlTemplate: "https://example.com/search?q={query}",
+  };
+  await assert.rejects(
+    genericHtmlProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: redirectSource,
+        signal: new AbortController().signal,
+        fetch: async () => new Response(null, { status: 302, headers: { Location: "https://other.example/" } }),
+        parseHtml: async () => [],
+      },
+    ),
+    /redirected/,
+  );
 });
