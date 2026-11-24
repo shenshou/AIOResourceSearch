@@ -248,11 +248,13 @@ export async function executeSearch(
       source.enabled &&
       source.type === "external-search" &&
       source.searchModes.includes(request.mode) &&
-      typeof source.searchUrlTemplate === "string",
+      (typeof source.searchUrlTemplate === "string" || typeof source.baseUrl === "string"),
     )
     .flatMap((source) => {
       try {
-        const url = source.searchUrlTemplate!.replace("{query}", encodeURIComponent(request.query));
+        const url = source.searchUrlTemplate
+          ? source.searchUrlTemplate.replace("{query}", encodeURIComponent(request.query))
+          : source.baseUrl!;
         const parsed = new URL(url);
         if (parsed.protocol !== "https:" || parsed.username || parsed.password) return [];
         return [{
