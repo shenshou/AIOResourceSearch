@@ -7,6 +7,34 @@ export const SOURCE_CATEGORIES = [
 
 export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
 
+// User-facing content categories are independent from source transport/type.
+// "torrent", "forum", and "other-index" remain source-kind categories for compatibility.
+export const CONTENT_CATEGORIES = [
+  "jav",
+  "anime",
+  "film-tv",
+  "manga",
+  "novel",
+  "game",
+  "music",
+  "general",
+] as const;
+export type ContentCategory = (typeof CONTENT_CATEGORIES)[number];
+
+export const CONTENT_CATEGORY_LABELS: Record<ContentCategory, string> = {
+  jav: "JAV / 成人影视",
+  anime: "动漫",
+  "film-tv": "电影 / 电视剧",
+  manga: "漫画",
+  novel: "小说",
+  game: "游戏",
+  music: "音乐",
+  general: "通用资源",
+};
+
+export const FETCH_MECHANISMS = ["api", "rss", "html"] as const;
+export type FetchMechanism = (typeof FETCH_MECHANISMS)[number];
+
 export const SEARCH_MODES = ["number", "keyword"] as const;
 export type SearchMode = (typeof SEARCH_MODES)[number];
 
