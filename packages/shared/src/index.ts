@@ -51,6 +51,18 @@ export type SourceCapability = (typeof SOURCE_CAPABILITIES)[number];
 export const SOURCE_TYPES = ["provider", "external-search"] as const;
 export type SourceType = (typeof SOURCE_TYPES)[number];
 
+export interface HtmlSelectorConfig {
+  /** CSS selector for one result card. */
+  result: string;
+  /** CSS selector for the title inside each result card. */
+  title: string;
+  /** CSS selector for the canonical detail link inside each result card. */
+  link: string;
+  image?: string;
+  description?: string;
+  magnet?: string;
+}
+
 export interface SourceDefinition {
   id: string;
   name: string;
@@ -62,6 +74,9 @@ export interface SourceDefinition {
   adapterId?: string;
   /** Optional HTTPS search URL template for external-search sources; must contain exactly one {query}. If omitted, baseUrl is opened as a homepage link. */
   searchUrlTemplate?: string;
+  /** Worker-side search URL template used by reviewed HTML adapters. */
+  providerSearchUrlTemplate?: string;
+  htmlSelectors?: HtmlSelectorConfig;
   enabled: boolean;
   baseUrl?: string;
   searchModes: SearchMode[];
