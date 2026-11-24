@@ -15,7 +15,11 @@ export interface SourceSearchStatus {
   sourceName: string;
   status: "ok" | "error" | "timeout" | "unavailable";
   resultCount: number;
-  errorCode?: "adapter_unavailable" | "adapter_incompatible" | "provider_failed" | "provider_timeout";
+  errorCode?:
+    | "adapter_unavailable"
+    | "adapter_incompatible"
+    | "provider_failed"
+    | "provider_timeout";
 }
 
 export interface SearchResponse {
@@ -41,9 +45,17 @@ function isHttpsUrl(value: unknown): value is string {
 }
 
 function isMagnetUri(value: unknown): value is string {
-  return typeof value === "string" &&
-    value.length <= 4096 &&
-    /^magnet:\?xt=urn:btih:[a-z0-9]{32,40}(?:&|$)/i.test(value);
+  if (typeof value !== "string" || value.length > 4096) return false;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "magnet:") return false;
+    return url.searchParams.getAll("xt").some((topic) => {
+      const match = /^urn:btih:([a-z0-9]{32}|[a-f0-9]{40})$/i.exec(topic);
+      return Boolean(match);
+    });
+  } catch {
+    return false;
+  }
 }
 
 function isEd2kUri(value: unknown): value is string {
@@ -106,27 +118,34 @@ function canonicalUrl(value: string): string {
   return url.toString();
 }
 
-function compatibleProvider(
+type ProviderResolution =
+  | { provider: ProviderAdapter; errorCode?: never }
+  | { provider: null; errorCode: "adapter_unavailable" | "adapter_incompatible" };
+
+function resolveProvider(
   source: SourceDefinition,
   adapterConfig: AdaptersConfig,
   mode: SearchRequest["mode"],
-): ProviderAdapter | null {
-  const metadata = adapterConfig.adapters.find(
-    (adapter) => adapter.id === source.adapterId && adapter.enabled && adapter.implemented,
-  );
-  if (!metadata) return null;
+): ProviderResolution {
+  const metadata = adapterConfig.adapters.find((adapter) => adapter.id === source.adapterId);
+  if (!metadata || !metadata.enabled || !metadata.implemented) {
+    return { provider: null, errorCode: "adapter_unavailable" };
+  }
 
   const provider = getProviderAdapter(source.adapterId);
-  if (!provider) return null;
-  if (
-    !provider.categories.includes(source.category) ||
-    !provider.searchModes.includes(mode) ||
-    !source.searchModes.includes(mode) ||
-    !source.capabilities.every((capability) => provider.capabilities.includes(capability)) ||
-    !source.capabilities.every((capability) => metadata.capabilities.includes(capability))
-  ) return null;
+  if (!provider) return { provider: null, errorCode: "adapter_unavailable" };
 
-  return provider;
+  const compatible =
+    provider.categories.includes(source.category) &&
+    metadata.categories.includes(source.category) &&
+    provider.searchModes.includes(mode) &&
+    source.searchModes.includes(mode) &&
+    source.capabilities.every((capability) => provider.capabilities.includes(capability)) &&
+    source.capabilities.every((capability) => metadata.capabilities.includes(capability));
+
+  return compatible
+    ? { provider }
+    : { provider: null, errorCode: "adapter_incompatible" };
 }
 
 async function searchOneSource(
@@ -137,20 +156,21 @@ async function searchOneSource(
   status: SourceSearchStatus;
   resources: NormalizedResource[];
 }> {
-  const provider = compatibleProvider(source, adapterConfig, request.mode);
-  if (!provider) {
+  const resolution = resolveProvider(source, adapterConfig, request.mode);
+  if (!resolution.provider) {
     return {
       status: {
         sourceId: source.id,
         sourceName: source.name,
         status: "unavailable",
         resultCount: 0,
-        errorCode: "adapter_unavailable",
+        errorCode: resolution.errorCode,
       },
       resources: [],
     };
   }
 
+  const provider = resolution.provider;
   const controller = new AbortController();
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
