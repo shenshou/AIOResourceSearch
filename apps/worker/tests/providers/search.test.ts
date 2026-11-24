@@ -608,7 +608,7 @@ test("searches Torlock's documented Torznab endpoint with the Adult category and
   assert.equal(parsedUrl.searchParams.get("limit"), "50");
   assert.equal(resources.length, 1);
   assert.equal(resources[0]?.url, "https://www.torlock.com/torrent/12345/example.html");
-  assert.match(resources[0]?.magnetUri ?? "", /^magnet:\\?xt=urn:btih:/);
+  assert.match(resources[0]?.magnetUri ?? "", /^magnet:\?xt=urn:btih:/);
   assert.match(resources[0]?.description ?? "", /Seeds: 42/);
   assert.equal(cacheTtl, "public, max-age=60");
   assert.ok(cachedResponse instanceof Response);
@@ -650,7 +650,7 @@ test("rejects malformed Torlock RSS and drops untrusted detail links", async () 
     /invalid Torznab RSS document/,
   );
 
-  const unsafe = torlockFixture.replace(
+  const unsafe = torlockFixture.replaceAll(
     "https://www.torlock.com/torrent/12345/example.html",
     "https://evil.example/torrent/12345/example.html",
   );
