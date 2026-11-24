@@ -108,4 +108,6 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
 
   { id: "torlock", name: "Torlock", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://www.torlock.com", note: "官方提供 Torznab API；Worker Provider 已实现，原站首页作为外部跳转备用入口。需要先审查内容与条款，并在 Cloudflare 测试环境验证访问。"},
   { id: "bitsearch", name: "Bitsearch", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://bitsearch.eu", note: "官方提供免费 REST API，但 API 数据再展示许可尚未确认；暂时只提供原站首页跳转，不自动抓取。"},
+
+  { id: "yourbittorrent", name: "YourBittorrent", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://yourbittorrent.com", note: "官方提供免费 JSON API，无需 API Key；Adult 分类 ID 为 7。Worker Provider 已实现，仍需 Cloudflare 实测后启用。"},
 ];
