@@ -1,8 +1,7 @@
 import { getProviderAdapter, isProviderImplemented } from "./providers/registry";
 import { executeSearch } from "./providers/search";
+import { CONTENT_CATEGORIES, FETCH_MECHANISMS } from "@aio-resource-search/shared";
 import type {
-  CONTENT_CATEGORIES,
-  FETCH_MECHANISMS,
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
@@ -99,7 +98,7 @@ async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
       return {
         ...adapter,
         mechanism: implementation?.mechanism ?? adapter.mechanism ?? "api",
-        contentCategories: implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"],
+        contentCategories: [...(implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"])],
         implemented,
         enabled: Boolean(adapter.enabled && implemented),
       };
@@ -592,7 +591,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     if (typeof value.query !== "string" || !value.query.trim() || value.query.trim().length > 120) {
       return json({ error: { code: "invalid_query", message: "Query must contain 1 to 120 characters." } }, 422);
     }
-    if (value.contentCategory !== undefined && value.contentCategory !== "all" && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory))) {
+    if (value.contentCategory !== undefined && value.contentCategory !== "all" && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory as (typeof CONTENT_CATEGORIES)[number]))) {
       return json({ error: { code: "invalid_content_category", message: "Content category is not supported." } }, 422);
     }
     if (value.mode !== "number" && value.mode !== "keyword") {
