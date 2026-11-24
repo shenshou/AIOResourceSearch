@@ -75,13 +75,13 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Frontend source-management interface (CRUD, enable/disable, in-memory admin token)
 - [x] Adapter metadata contract and KV-backed administration API
 - [x] Adapter-management UI (CRUD, implementation status, enable/disable)
-- [ ] Runtime Provider interface and concrete adapter implementations
+- [x] Runtime Provider interface and compile-time adapter registry\n- [ ] Concrete provider implementations
 - [ ] Provider audits
 - [ ] Search orchestration and result normalization
 - [ ] Result presentation and resource-link actions
 - [ ] Deployment and end-to-end verification
 
-Source and adapter metadata changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. Adapter records are metadata only; the Worker accepts an adapter as usable only when its ID is registered in compiled Worker code. New adapter code or protocol support still requires a Worker deployment.
+Source and adapter metadata changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. Adapter records are metadata only; the Worker accepts an adapter as usable only when its ID is registered in the compile-time Provider registry (`apps/worker/src/providers/registry.ts`). New adapter code or protocol support still requires a Worker deployment.
 
 A configured source is not automatically searchable: its adapter must exist in code and its access method must be permitted by the source operator.
 
