@@ -140,6 +140,8 @@ function parseScenes(payload: unknown) {
 export const perverzijaDbProvider: ProviderAdapter = {
   id: "perverzija-db",
   version: "1.0.0",
+  mechanism: "api",
+  contentCategories: ["jav"],
   categories: ["other-index"],
   capabilities: ["metadata"],
   searchModes: ["number", "keyword"],
