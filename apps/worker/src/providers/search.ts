@@ -1,5 +1,6 @@
 import type { AdaptersConfig, ContentCategory, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 import { getProviderAdapter } from "./registry";
+import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
 
 const MAX_RESULTS_PER_SOURCE = 50;
@@ -203,7 +204,7 @@ async function searchOneSource(
 
     const providerResult = provider.search(
       { query: request.query, mode: request.mode },
-      { source, fetch, signal: controller.signal, cache },
+      { source, fetch, signal: controller.signal, cache, parseHtml: parseHtmlResults },
     );
     const resources = await Promise.race([providerResult, timeout]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
