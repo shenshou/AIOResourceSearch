@@ -9,6 +9,7 @@ import type {
 import { executeSearch } from "../../src/providers/search.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
+import { torlockProvider } from "../../src/providers/torlock-torznab.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
 const adapterMetadata: AdapterDefinition = {
@@ -539,4 +540,141 @@ test("rejects malformed Perverzija JSON responses", async () => {
     ),
     /malformed JSON/,
   );
+});
+
+
+const torlockFixture = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <title>Torlock</title>
+    <item>
+      <title>ABP-123 Example torrent</title>
+      <guid>https://www.torlock.com/torrent/12345/example.html</guid>
+      <link>https://www.torlock.com/torrent/12345/example.html</link>
+      <pubDate>Tue, 25 Nov 2026 00:00:00 +0000</pubDate>
+      <size>123456789</size>
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:0123456789012345678901234567890123456789&amp;dn=ABP-123"/>
+      <torznab:attr name="seeders" value="42"/>
+      <torznab:attr name="peers" value="7"/>
+    </item>
+  </channel>
+</rss>`;
+
+function torlockContext(fetchImpl: typeof fetch, cache?: Cache) {
+  return {
+    source: source({
+      id: "torlock",
+      name: "Torlock",
+      category: "torrent",
+      adapterId: "torlock-torznab",
+      capabilities: ["magnet"],
+    }),
+    signal: new AbortController().signal,
+    fetch: fetchImpl,
+    ...(cache ? { cache } : {}),
+  };
+}
+
+test("searches Torlock's documented Torznab endpoint with the Adult category and caches the feed", async () => {
+  let requestedUrl = "";
+  let cachedResponse: Response | null = null;
+  let cacheTtl = "";
+  const cache = {
+    match: async () => null,
+    put: async (_request: RequestInfo | URL, response: Response) => {
+      cachedResponse = response;
+      cacheTtl = response.headers.get("Cache-Control") ?? "";
+    },
+  } as unknown as Cache;
+
+  const resources = await torlockProvider.search(
+    { query: "ABP-123", mode: "number" },
+    torlockContext(async (input, init) => {
+      requestedUrl = String(input);
+      assert.equal(init?.redirect, "manual");
+      return new Response(torlockFixture, {
+        status: 200,
+        headers: { "Content-Type": "application/rss+xml" },
+      });
+    }, cache),
+  );
+
+  const parsedUrl = new URL(requestedUrl);
+  assert.equal(parsedUrl.origin, "https://www.torlock.com");
+  assert.equal(parsedUrl.pathname, "/torznab/api");
+  assert.equal(parsedUrl.searchParams.get("t"), "search");
+  assert.equal(parsedUrl.searchParams.get("q"), "ABP-123");
+  assert.equal(parsedUrl.searchParams.get("cat"), "6000");
+  assert.equal(parsedUrl.searchParams.get("limit"), "50");
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.url, "https://www.torlock.com/torrent/12345/example.html");
+  assert.match(resources[0]?.magnetUri ?? "", /^magnet:\\?xt=urn:btih:/);
+  assert.match(resources[0]?.description ?? "", /Seeds: 42/);
+  assert.equal(cacheTtl, "public, max-age=60");
+  assert.ok(cachedResponse instanceof Response);
+});
+
+test("uses a cached Torlock response without making another upstream request", async () => {
+  let fetchCount = 0;
+  const cache = {
+    match: async () => new Response(torlockFixture, {
+      status: 200,
+      headers: { "Content-Type": "application/rss+xml" },
+    }),
+    put: async () => {
+      throw new Error("Cache hit must not write a new entry.");
+    },
+  } as unknown as Cache;
+
+  const resources = await torlockProvider.search(
+    { query: "ABP-123", mode: "number" },
+    torlockContext(async () => {
+      fetchCount += 1;
+      throw new Error("Unexpected upstream fetch.");
+    }, cache),
+  );
+
+  assert.equal(fetchCount, 0);
+  assert.equal(resources.length, 1);
+});
+
+test("rejects malformed Torlock RSS and drops untrusted detail links", async () => {
+  await assert.rejects(
+    torlockProvider.search(
+      { query: "test", mode: "keyword" },
+      torlockContext(async () => new Response("<rss><channel><item></item></channel>", {
+        status: 200,
+        headers: { "Content-Type": "application/rss+xml" },
+      })),
+    ),
+    /invalid Torznab RSS document/,
+  );
+
+  const unsafe = torlockFixture.replace(
+    "https://www.torlock.com/torrent/12345/example.html",
+    "https://evil.example/torrent/12345/example.html",
+  );
+  const resources = await torlockProvider.search(
+    { query: "test", mode: "keyword" },
+    torlockContext(async () => new Response(unsafe, {
+      status: 200,
+      headers: { "Content-Type": "application/rss+xml" },
+    })),
+  );
+  assert.deepEqual(resources, []);
+});
+
+test("does not retry Torlock rate limits", async () => {
+  let requestCount = 0;
+  await assert.rejects(
+    torlockProvider.search(
+      { query: "test", mode: "keyword" },
+      torlockContext(async () => {
+        requestCount += 1;
+        return new Response("Rate limited", { status: 429 });
+      }),
+    ),
+    /HTTP 429/,
+  );
+  assert.equal(requestCount, 1);
 });
