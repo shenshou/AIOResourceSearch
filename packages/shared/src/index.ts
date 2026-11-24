@@ -41,6 +41,30 @@ export interface SourcesConfig {
   sources: SourceDefinition[];
 }
 
+/**
+ * Administrative metadata for an adapter implementation.
+ * This record does not contain executable code. Runtime implementations
+ * remain part of the Worker bundle and require deployment when changed.
+ */
+export interface AdapterDefinition {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  enabled: boolean;
+  categories: SourceCategory[];
+  capabilities: SourceCapability[];
+  /** True only when a matching implementation is registered in Worker code. */
+  implemented: boolean;
+  notes?: string;
+}
+
+export interface AdaptersConfig {
+  version: number;
+  updatedAt: string | null;
+  adapters: AdapterDefinition[];
+}
+
 export interface ApiError {
   error: {
     code: string;
