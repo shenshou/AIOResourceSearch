@@ -39,6 +39,10 @@ async function request<T>(
 }
 
 export const adapterApi = {
+  async getPublicAdapters() {
+    const result = await request<{ version: number; adapters: AdapterDefinition[] }>("/api/adapters");
+    return result.data;
+  },
   async getAdminAdapters(token: string) {
     const result = await request<AdaptersConfig>("/api/admin/adapters", { token });
     if (!result.etag) throw new AdapterApiError("服务器没有返回配置版本号，无法安全保存。", 502);
