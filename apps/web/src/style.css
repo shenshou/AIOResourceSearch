@@ -119,6 +119,7 @@ h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 5vw, 42px); letter-spacin
 @media (max-width: 520px) {
   .main-content { padding-top: 62px; }
   .category-grid, .form-grid { grid-template-columns: 1fr; }
+  .search-controls { grid-template-columns: 1fr; }
   .search-panel, .source-types { padding: 18px; }
   .source-form .wide { grid-column: auto; }
   .editor-dialog { padding: 18px; }
@@ -134,7 +135,7 @@ h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 5vw, 42px); letter-spacin
 .image-toggle { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; cursor: pointer; }
 .image-toggle input { accent-color: var(--accent); }
 .search-form { margin-top: 18px; }
-.search-controls { display: grid; grid-template-columns: 125px minmax(0,1fr) auto; gap: 10px; }
+.search-controls { display: grid; grid-template-columns: 165px 115px minmax(0,1fr) auto; gap: 10px; }
 .search-mode, .query-field { display: grid; gap: 6px; }
 .search-mode > span { color: var(--muted); font-size: 11px; }
 .search-mode select, .query-field input { width: 100%; min-height: 44px; padding: 0 13px; border: 1px solid #35445f; border-radius: 9px; outline: 0; color: #e5e7eb; background: #0e1728; font-size: 13px; }
