@@ -193,6 +193,7 @@ h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 5vw, 42px); letter-spacin
 .external-search-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .external-search-list a { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; color: #c7d2fe; background: #1a263b; font-size: 11px; text-decoration: none; }
 .external-search-list a:hover { border-color: #64748b; color: #fff; }
+.external-search-list small { color: var(--muted); font-size: 10px; }
 @media (max-width: 700px) {
   .source-catalog-list { grid-template-columns: 1fr; }
   .source-catalog-item { align-items: flex-start; }
