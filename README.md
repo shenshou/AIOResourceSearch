@@ -75,7 +75,8 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Frontend source-management interface (CRUD, enable/disable, in-memory admin token)
 - [x] Adapter metadata contract and KV-backed administration API
 - [x] Adapter-management UI (CRUD, implementation status, enable/disable)
-- [x] Runtime Provider interface and compile-time adapter registry\n- [ ] Concrete provider implementations
+- [x] Runtime Provider interface and compile-time adapter registry
+- [ ] Concrete provider implementations
 - [ ] Provider audits
 - [ ] Search orchestration and result normalization
 - [ ] Result presentation and resource-link actions
