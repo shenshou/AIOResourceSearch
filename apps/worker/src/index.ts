@@ -269,7 +269,6 @@ async function handleAdminAdapters(
   }
 
   const current = await readAdaptersConfig(env);
-  const sources = await readConfig(env);
   const path = url.pathname.replace(/^\/api\/admin\/adapters/, "").replace(/\/$/, "");
 
   if (path === "" && request.method === "GET") {
@@ -313,6 +312,7 @@ async function handleAdminAdapters(
   if (version !== current.version) return json({ error: { code: "version_conflict", message: "The adapter configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
 
   if (request.method === "DELETE") {
+    const sources = await readConfig(env);
     if (sources.sources.some((source) => source.adapterId === adapterId)) {
       return json({ error: { code: "adapter_in_use", message: "This adapter is still referenced by one or more sources. Reassign or delete those sources first." } }, 409);
     }
@@ -332,6 +332,7 @@ async function handleAdminAdapters(
   }
   const updated = validateAdapter({ ...current.adapters[adapterIndex], ...(patch as Record<string, unknown>), id: adapterId });
   if (!updated) return json({ error: { code: "invalid_adapter", message: "The adapter definition is invalid or cannot be enabled without a Worker implementation." } }, 422);
+  const sources = await readConfig(env);
   if (!updated.enabled && sources.sources.some((source) => source.adapterId === adapterId && source.enabled)) {
     return json({ error: { code: "adapter_has_enabled_sources", message: "Disable or reassign enabled sources before disabling this adapter." } }, 409);
   }
