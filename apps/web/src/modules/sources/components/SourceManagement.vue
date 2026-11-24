@@ -147,7 +147,7 @@ async function submitForm() {
     ...form,
     id: form.id.trim(),
     name: form.name.trim(),
-    ...(form.type === "provider" ? { adapterId: form.adapterId.trim() } : { adapterId: undefined }),
+    ...(form.type === "provider" ? { adapterId: form.adapterId?.trim() ?? "" } : { adapterId: undefined }),
     ...(form.type === "external-search"
       ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined }
       : { searchUrlTemplate: undefined }),
