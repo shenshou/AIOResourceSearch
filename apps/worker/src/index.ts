@@ -391,6 +391,7 @@ async function handleAdminAdapters(
   }
   if (linkedSources.some((source) =>
     !updated.categories.includes(source.category) ||
+    !(updated.contentCategories ?? ["jav"]).includes(source.contentCategory ?? "jav") ||
     !source.capabilities.every((capability) => updated.capabilities.includes(capability))
   )) {
     return json({ error: { code: "adapter_incompatible_with_sources", message: "The updated adapter metadata would invalidate one or more linked source configurations." } }, 409);
@@ -468,6 +469,7 @@ async function handleAdmin(
         return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
       }
       if (!selectedAdapter.categories.includes(source.category) ||
+          !(selectedAdapter.contentCategories ?? ["jav"]).includes(source.contentCategory ?? "jav") ||
           !source.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
         return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
       }
@@ -519,6 +521,7 @@ async function handleAdmin(
       return json({ error: { code: "adapter_unavailable", message: "Select an enabled adapter with a Worker implementation." } }, 422);
     }
     if (!selectedAdapter.categories.includes(updated.category) ||
+        !(selectedAdapter.contentCategories ?? ["jav"]).includes(updated.contentCategory ?? "jav") ||
         !updated.capabilities.every((capability) => selectedAdapter.capabilities.includes(capability))) {
       return json({ error: { code: "adapter_incompatible", message: "The selected adapter does not declare this source category or all requested capabilities." } }, 422);
     }
