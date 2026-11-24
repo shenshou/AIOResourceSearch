@@ -140,7 +140,7 @@ async function submitSearch() {
 
       <section v-if="response.externalSearches?.length" class="external-search-section">
         <h3>外部搜索入口</h3>
-        <p class="panel-note">以下来源会在原站打开搜索结果，不会由我们的 Worker 抓取。</p>
+        <p class="panel-note">以下来源会在原站打开搜索结果或站点首页，不会由我们的 Worker 抓取。</p>
         <div class="external-search-list">
           <a
             v-for="source in response.externalSearches"
