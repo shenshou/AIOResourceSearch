@@ -22,6 +22,7 @@ const loginToken = ref("");
 const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 const showToken = ref(false);
+const catalogQuery = ref("");
 const categoryLabels: Record<SourceCategory, string> = {
   jav: "JAV 资源站",
   torrent: "BT / Torrent 搜索引擎",
@@ -65,7 +66,13 @@ const form = reactive<SourceDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
 const unregisteredCatalogEntries = computed(() => {
   const registeredIds = new Set(manager.sources.value.map((source) => source.id));
-  return SOURCE_CATALOG.filter((entry) => !registeredIds.has(entry.id));
+  const query = catalogQuery.value.trim().toLowerCase();
+  return SOURCE_CATALOG.filter((entry) =>
+    !registeredIds.has(entry.id) &&
+    (!query || entry.name.toLowerCase().includes(query) ||
+      entry.projects.some((project) => project.toLowerCase().includes(query)) ||
+      entry.category.includes(query)),
+  );
 });
 
 onMounted(async () => {
@@ -179,7 +186,7 @@ async function submitLogin() {
       <div>
         <p class="eyebrow">SOURCE CONTROL</p>
         <h1>数据源管理</h1>
-        <p class="manager-description">管理已接入适配器的数据源配置。配置保存到 Cloudflare KV，不需要重新部署。</p>
+        <p class="manager-description">管理 Worker 抓取源和外部搜索入口。配置保存到 Cloudflare KV，不需要重新部署。</p>
       </div>
       <span v-if="manager.authenticated.value" class="auth-state">管理员已验证</span>
     </div>
@@ -210,7 +217,8 @@ async function submitLogin() {
     <template v-else>
       <details class="source-catalog-panel">
         <summary>预置来源目录 · {{ unregisteredCatalogEntries.length }} 个尚未登记</summary>
-        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的候选来源。登记时会先创建禁用的外部搜索入口；你需要核对并填写搜索 URL 模板后才能保存。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的 88 个候选来源。登记时默认创建禁用的外部入口；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <input v-model="catalogQuery" class="catalog-search" type="search" placeholder="搜索来源名称、项目或分类…" aria-label="搜索预置来源目录">
         <div class="source-catalog-list">
           <article v-for="entry in unregisteredCatalogEntries" :key="entry.id" class="source-catalog-item">
             <div>
@@ -257,6 +265,7 @@ async function submitLogin() {
               <span v-for="capability in source.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
             </div>
             <p v-if="source.baseUrl" class="source-url">{{ source.baseUrl }}</p>
+            <p v-if="source.searchUrlTemplate" class="source-url">{{ source.searchUrlTemplate }}</p>
           </div>
           <div class="source-actions">
             <button class="secondary-button small" type="button" :disabled="manager.saving.value" @click="manager.toggle(source)">
@@ -299,7 +308,7 @@ async function submitLogin() {
                 <option v-for="adapter in availableAdapters" :key="adapter.id" :value="adapter.id">{{ adapter.name }} · {{ adapter.id }}</option>
               </select>
             </label>
-            <label v-else class="wide">搜索 URL 模板（必须包含 {query}）
+            <label v-else class="wide">搜索 URL 模板（可选；必须包含 {query}，留空则使用基础 URL）
               <input v-model="form.searchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
             <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="form.type === 'external-search' && !form.searchUrlTemplate?.trim()" placeholder="https://example.com" /></label>
