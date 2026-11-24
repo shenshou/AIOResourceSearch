@@ -173,6 +173,33 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof type !== "string" || !sourceTypes.includes(type as (typeof sourceTypes)[number])) return null;
   if (type === "provider" &&
       (typeof value.adapterId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.adapterId))) return null;
+  if (type === "provider" && value.providerSearchUrlTemplate !== undefined) {
+    if (typeof value.providerSearchUrlTemplate !== "string" ||
+        value.providerSearchUrlTemplate.length > 2048 ||
+        (value.providerSearchUrlTemplate.match(/\\{query\\}/g) ?? []).length !== 1 ||
+        typeof value.baseUrl !== "string") return null;
+    try {
+      const base = new URL(value.baseUrl);
+      const target = new URL(value.providerSearchUrlTemplate.replace("{query}", "AIO_QUERY_TOKEN"));
+      if (target.protocol !== "https:" || target.origin !== base.origin ||
+          target.username || target.password || target.hostname.toLowerCase().includes("aio_query_token")) return null;
+    } catch {
+      return null;
+    }
+  }
+  if (value.htmlSelectors !== undefined) {
+    if (typeof value.htmlSelectors !== "object" || value.htmlSelectors === null || Array.isArray(value.htmlSelectors)) return null;
+    const selectors = value.htmlSelectors as Record<string, unknown>;
+    for (const key of ["result", "title", "link"]) {
+      if (typeof selectors[key] !== "string" || !selectors[key].trim() || selectors[key].length > 200) return null;
+    }
+    for (const key of ["image", "description", "magnet"]) {
+      if (selectors[key] !== undefined && (typeof selectors[key] !== "string" || !selectors[key].trim() || selectors[key].length > 200)) return null;
+    }
+  }
+  if (type === "provider" && value.adapterId === "generic-html" &&
+      (typeof value.baseUrl !== "string" || typeof value.providerSearchUrlTemplate !== "string" || !value.htmlSelectors)) return null;
+  if (type === "external-search" && (value.providerSearchUrlTemplate !== undefined || value.htmlSelectors !== undefined)) return null;
   if (type === "external-search" && value.searchUrlTemplate !== undefined) {
     if (typeof value.searchUrlTemplate !== "string" ||
         value.searchUrlTemplate.length > 2048 ||
@@ -203,6 +230,10 @@ function validateSource(input: unknown): SourceDefinition | null {
     try {
       const url = new URL(value.baseUrl);
       if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return null;
+      if (value.adapterId === "generic-html" &&
+          (url.hostname === "localhost" || url.hostname.endsWith(".local") ||
+           url.hostname.endsWith(".internal") || url.hostname.startsWith("[") ||
+           /^\\d{1,3}(?:\\.\\d{1,3}){3}$/.test(url.hostname) || !url.hostname.includes("."))) return null;
     } catch {
       return null;
     }
@@ -222,6 +253,8 @@ function validateSource(input: unknown): SourceDefinition | null {
     type: type as SourceDefinition["type"],
     ...(typeof value.adapterId === "string" ? { adapterId: value.adapterId } : {}),
     ...(typeof value.searchUrlTemplate === "string" ? { searchUrlTemplate: value.searchUrlTemplate } : {}),
+    ...(typeof value.providerSearchUrlTemplate === "string" ? { providerSearchUrlTemplate: value.providerSearchUrlTemplate } : {}),
+    ...(value.htmlSelectors && typeof value.htmlSelectors === "object" ? { htmlSelectors: value.htmlSelectors as SourceDefinition["htmlSelectors"] } : {}),
     enabled: value.enabled,
     ...(typeof value.baseUrl === "string" ? { baseUrl: value.baseUrl } : {}),
     searchModes: value.searchModes as SourceDefinition["searchModes"],
