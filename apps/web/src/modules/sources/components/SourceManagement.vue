@@ -31,7 +31,7 @@ const categoryLabels: Record<SourceCategory, string> = {
 };
 const sourceTypeLabels: Record<SourceType, string> = {
   provider: "Worker 抓取源",
-  "external-search": "外部搜索入口",
+  "external-search": "外部搜索 / 站点入口",
 };
 const capabilityLabels: Record<SourceCapability, string> = {
   metadata: "元数据",
