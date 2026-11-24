@@ -417,6 +417,34 @@ async function handleAdmin(
     } catch {
       return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
     }
+    const rawSources = (body as { sources?: unknown } | null)?.sources;
+    if (Array.isArray(rawSources)) {
+      if (rawSources.length < 1 || rawSources.length > 100) {
+        return json({ error: { code: "invalid_source_batch", message: "Import between 1 and 100 source candidates at a time." } }, 422);
+      }
+      const imported = rawSources.map(validateSource);
+      if (imported.some((source) =>
+        !source ||
+        source.type !== "external-search" ||
+        source.enabled !== false
+      )) {
+        return json({ error: { code: "invalid_source_batch", message: "Bulk import accepts only valid, disabled external-search candidates." } }, 422);
+      }
+      const sources = imported as SourceDefinition[];
+      const ids = new Set<string>();
+      for (const source of sources) {
+        if (ids.has(source.id) || current.sources.some((item) => item.id === source.id)) {
+          return json({ error: { code: "source_exists", message: `A source with ID "${source.id}" is already registered or duplicated in this import.` } }, 409);
+        }
+        ids.add(source.id);
+      }
+      if (current.sources.length + sources.length > 100) {
+        return json({ error: { code: "source_limit", message: "The source limit would be exceeded by this import." } }, 422);
+      }
+      const next = await saveConfig(env, current, [...current.sources, ...sources]);
+      return withEtag(json(next, 201), next.version);
+    }
+
     const source = validateSource((body as { source?: unknown } | null)?.source);
     if (!source) return json({ error: { code: "invalid_source", message: "The source definition is invalid." } }, 422);
     if ((source.type ?? "provider") === "provider") {
