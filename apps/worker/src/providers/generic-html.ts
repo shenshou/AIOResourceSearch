@@ -138,6 +138,7 @@ export const genericHtmlProvider: ProviderAdapter = {
         url,
         ...(imageUrl ? { imageUrl } : {}),
         ...(item.description ? { description: item.description.slice(0, 4000) } : {}),
+        ...(item.metadata ? { metadata: item.metadata } : {}),
         ...(validMagnet(item.magnetUri) ? { magnetUri: validMagnet(item.magnetUri) } : {}),
       });
     }
