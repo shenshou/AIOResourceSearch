@@ -882,6 +882,7 @@ test("generic HTML adapter requests only the configured HTTPS origin and normali
         url: "/item/1",
         imageUrl: "/cover.jpg",
         description: "Example description",
+        metadata: { releaseDate: "2026-11-25", author: "Example author" },
       }],
     },
   );
@@ -891,6 +892,7 @@ test("generic HTML adapter requests only the configured HTTPS origin and normali
   assert.equal(results.length, 1);
   assert.equal(results[0]?.url, "https://example.com/item/1");
   assert.equal(results[0]?.imageUrl, "https://example.com/cover.jpg");
+  assert.deepEqual(results[0]?.metadata, { releaseDate: "2026-11-25", author: "Example author" });
 });
 
 test("generic HTML adapter rejects cross-origin search templates and redirects", async () => {
