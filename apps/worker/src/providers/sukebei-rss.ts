@@ -124,6 +124,8 @@ function parseItems(xml: string, query: string) {
 export const sukebeiRssProvider: ProviderAdapter = {
   id: "sukebei-rss",
   version: "1.0.1",
+  mechanism: "rss",
+  contentCategories: ["jav"],
   categories: ["torrent"],
   capabilities: ["magnet"],
   searchModes: ["number", "keyword"],
