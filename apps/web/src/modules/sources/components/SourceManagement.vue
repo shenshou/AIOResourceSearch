@@ -86,7 +86,8 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     category: entry.category,
     type: "external-search" as const,
     adapterId: "",
-    searchUrlTemplate: "",
+    searchUrlTemplate: entry.searchUrlTemplate ?? "",
+    baseUrl: entry.baseUrl ?? "",
     enabled: false,
     searchModes: [...entry.searchModes],
     capabilities: [],
@@ -149,6 +150,10 @@ async function submitForm() {
     searchModes: [...form.searchModes],
     capabilities: [...form.capabilities],
   };
+  if (source.type === "external-search" && !source.searchUrlTemplate && !source.baseUrl) {
+    manager.error.value = "外部搜索入口必须配置搜索 URL 模板或 HTTPS 基础 URL。";
+    return;
+  }
   if (!source.searchModes.length || (source.type === "provider" && !source.capabilities.length)) {
     manager.error.value = "至少选择一种搜索方式；Worker 抓取源还必须选择一种结果能力。";
     return;
@@ -295,9 +300,9 @@ async function submitLogin() {
               </select>
             </label>
             <label v-else class="wide">搜索 URL 模板（必须包含 {query}）
-              <input v-model="form.searchUrlTemplate" type="text" required maxlength="2048" placeholder="https://example.com/search?q={query}" />
+              <input v-model="form.searchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
-            <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" placeholder="https://example.com" /></label>
+            <label class="wide">基础 URL（HTTPS）<input v-model="form.baseUrl" type="url" :required="form.type === 'external-search' && !form.searchUrlTemplate?.trim()" placeholder="https://example.com" /></label>
             <label v-if="form.type === 'provider'">请求超时（毫秒）<input v-model.number="form.timeoutMs" type="number" min="1000" max="30000" step="500" required /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" /> 保存后启用</label>
             <fieldset class="wide choice-field">
