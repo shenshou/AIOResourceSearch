@@ -369,3 +369,54 @@ test("fails closed when Sukebei returns a non-success HTTP status", async () => 
     /HTTP 503/,
   );
 });
+
+
+test("rejects RSS-shaped responses without a complete channel document", async () => {
+  await assert.rejects(
+    sukebeiRssProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({ id: "sukebei", category: "torrent", adapterId: "sukebei-rss" }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response("<rss><channel><item></item></channel>", { status: 200 }),
+      },
+    ),
+    /invalid RSS document/,
+  );
+});
+
+test("enforces the RSS response byte limit while streaming", async () => {
+  await assert.rejects(
+    sukebeiRssProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({ id: "sukebei", category: "torrent", adapterId: "sukebei-rss" }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response(
+          `<rss><channel>${"x".repeat(2 * 1024 * 1024)}</channel></rss>`,
+          { status: 200 },
+        ),
+      },
+    ),
+    /exceeded the size limit/,
+  );
+});
+
+test("does not follow redirects to a different host", async () => {
+  let redirectMode: RequestRedirect | undefined;
+  await assert.rejects(
+    sukebeiRssProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({ id: "sukebei", category: "torrent", adapterId: "sukebei-rss" }),
+        signal: new AbortController().signal,
+        fetch: async (_input, init) => {
+          redirectMode = init?.redirect;
+          return new Response(null, { status: 302, headers: { Location: "https://example.com/feed" } });
+        },
+      },
+    ),
+    /HTTP 302/,
+  );
+  assert.equal(redirectMode, "manual");
+});
