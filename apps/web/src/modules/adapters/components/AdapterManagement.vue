@@ -212,7 +212,7 @@ async function submitLogin() {
             <label>适配器名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example JSON API" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-json-api" /></label>
             <label>获取机制
-              <select v-model="form.mechanism">
+              <select v-model="form.mechanism" :disabled="form.implemented">
                 <option v-for="mechanism in FETCH_MECHANISMS" :key="mechanism" :value="mechanism">{{ mechanismLabels[mechanism] }}</option>
               </select>
             </label>
@@ -228,7 +228,7 @@ async function submitLogin() {
             <fieldset class="wide choice-field">
               <legend>支持的内容分类</legend>
               <label v-for="category in CONTENT_CATEGORIES" :key="category" class="choice">
-                <input type="checkbox" :checked="(form.contentCategories ?? []).includes(category)" @change="toggleContentCategory(category)" />{{ CONTENT_CATEGORY_LABELS[category] }}
+                <input type="checkbox" :checked="(form.contentCategories ?? []).includes(category)" :disabled="form.implemented" @change="toggleContentCategory(category)" />{{ CONTENT_CATEGORY_LABELS[category] }}
               </label>
             </fieldset>
             <fieldset class="wide choice-field">
