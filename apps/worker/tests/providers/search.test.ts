@@ -91,6 +91,30 @@ test("ignores disabled sources and returns an empty successful response", async 
   });
 });
 
+test("builds external search destinations without invoking a provider", async () => {
+  const external = source({
+    id: "external-index",
+    name: "External index",
+    type: "external-search",
+    adapterId: undefined,
+    searchUrlTemplate: "https://example.com/search?q={query}",
+  });
+  const result = await executeSearch(
+    { query: "ABP 123", mode: "number" },
+    sourceConfig(external),
+    { version: 0, updatedAt: null, adapters: [] },
+  );
+
+  assert.deepEqual(result.sources, []);
+  assert.deepEqual(result.results, []);
+  assert.deepEqual(result.externalSearches, [{
+    sourceId: "external-index",
+    sourceName: "External index",
+    category: "jav",
+    url: "https://example.com/search?q=ABP%20123",
+  }]);
+});
+
 test("reports an unavailable adapter when no implementation is registered", async () => {
   const result = await executeSearch(
     request,
