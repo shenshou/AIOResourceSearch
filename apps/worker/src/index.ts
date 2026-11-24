@@ -199,6 +199,8 @@ function validateSource(input: unknown): SourceDefinition | null {
   }
   if (type === "provider" && value.adapterId === "generic-html" &&
       (typeof value.baseUrl !== "string" || typeof value.providerSearchUrlTemplate !== "string" || !value.htmlSelectors)) return null;
+  if (type === "provider" && value.adapterId !== "generic-html" &&
+      (value.providerSearchUrlTemplate !== undefined || value.htmlSelectors !== undefined)) return null;
   if (type === "external-search" && (value.providerSearchUrlTemplate !== undefined || value.htmlSelectors !== undefined)) return null;
   if (type === "external-search" && value.searchUrlTemplate !== undefined) {
     if (typeof value.searchUrlTemplate !== "string" ||
