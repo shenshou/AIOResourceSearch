@@ -1,4 +1,5 @@
 import { isProviderImplemented } from "./providers/registry";
+import { executeSearch } from "./providers/search";
 import type {
   SEARCH_MODES,
   SOURCE_CAPABILITIES,
@@ -458,6 +459,33 @@ async function handleAdmin(
 
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+
+  if (url.pathname === "/api/search" && request.method === "POST") {
+    let body: unknown;
+    try {
+      body = await readJsonBody(request);
+    } catch {
+      return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
+    }
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return json({ error: { code: "invalid_search_request", message: "The request must contain a search object." } }, 400);
+    }
+    const value = body as Record<string, unknown>;
+    if (typeof value.query !== "string" || !value.query.trim() || value.query.trim().length > 120) {
+      return json({ error: { code: "invalid_query", message: "Query must contain 1 to 120 characters." } }, 422);
+    }
+    if (value.mode !== "number" && value.mode !== "keyword") {
+      return json({ error: { code: "invalid_search_mode", message: "Mode must be number or keyword." } }, 422);
+    }
+
+    const [sources, adapters] = await Promise.all([readConfig(env), readAdaptersConfig(env)]);
+    const result = await executeSearch(
+      { query: value.query.trim(), mode: value.mode },
+      sources,
+      adapters,
+    );
+    return json(result);
+  }
 
   if (url.pathname === "/api/health" && request.method === "GET") {
     return json({ status: "ok", service: "aio-resource-search-api" });
