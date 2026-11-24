@@ -77,9 +77,10 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Adapter-management UI (CRUD, implementation status, enable/disable)
 - [x] Runtime Provider interface and compile-time adapter registry
 - [ ] Concrete provider implementations
-- [ ] Provider audits
+- [ ] Provider audits and first reviewed source integration
 - [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
-- [ ] Result presentation and resource-link actions
+- [x] Frontend aggregated-search page, result presentation, and resource-link actions
+- [x] Worker scheduler unit tests (availability, compatibility, normalization, deduplication, failure isolation, timeout, result cap, and concurrency)
 - [ ] Deployment and end-to-end verification
 
 Source and adapter metadata changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. Adapter records are metadata only; the Worker accepts an adapter as usable only when its ID is registered in the compile-time Provider registry (`apps/worker/src/providers/registry.ts`). New adapter code or protocol support still requires a Worker deployment.
