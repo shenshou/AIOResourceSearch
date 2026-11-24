@@ -168,7 +168,7 @@ function validateSource(input: unknown): SourceDefinition | null {
   if (typeof value.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.id)) return null;
   if (typeof value.name !== "string" || value.name.trim().length < 1 || value.name.length > 80) return null;
   if (typeof value.category !== "string" || !categories.includes(value.category as SourceDefinition["category"])) return null;
-  if (value.contentCategory !== undefined && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory))) return null;
+  if (value.contentCategory !== undefined && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory as (typeof CONTENT_CATEGORIES)[number]))) return null;
   const type = value.type === undefined ? "provider" : value.type;
   if (typeof type !== "string" || !sourceTypes.includes(type as (typeof sourceTypes)[number])) return null;
   if (type === "provider" &&
