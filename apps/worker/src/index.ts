@@ -174,7 +174,7 @@ function validateSource(input: unknown): SourceDefinition | null {
       if (templateUrl.protocol !== "https:" ||
           templateUrl.username ||
           templateUrl.password ||
-          templateUrl.hostname.includes("AIO_QUERY_TOKEN")) return null;
+          templateUrl.hostname.toLowerCase().includes("aio_query_token")) return null;
     } catch {
       return null;
     }
