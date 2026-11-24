@@ -126,13 +126,14 @@ function resolveProvider(
   source: SourceDefinition,
   adapterConfig: AdaptersConfig,
   mode: SearchRequest["mode"],
+  getAdapter: (adapterId: string) => ProviderAdapter | null,
 ): ProviderResolution {
   const metadata = adapterConfig.adapters.find((adapter) => adapter.id === source.adapterId);
   if (!metadata || !metadata.enabled || !metadata.implemented) {
     return { provider: null, errorCode: "adapter_unavailable" };
   }
 
-  const provider = getProviderAdapter(source.adapterId);
+  const provider = getAdapter(source.adapterId);
   if (!provider) return { provider: null, errorCode: "adapter_unavailable" };
 
   const compatible =
@@ -152,11 +153,12 @@ async function searchOneSource(
   source: SourceDefinition,
   request: SearchRequest,
   adapterConfig: AdaptersConfig,
+  getAdapter: (adapterId: string) => ProviderAdapter | null,
 ): Promise<{
   status: SourceSearchStatus;
   resources: NormalizedResource[];
 }> {
-  const resolution = resolveProvider(source, adapterConfig, request.mode);
+  const resolution = resolveProvider(source, adapterConfig, request.mode, getAdapter);
   if (!resolution.provider) {
     return {
       status: {
@@ -226,6 +228,7 @@ export async function executeSearch(
   request: SearchRequest,
   sourceConfig: SourcesConfig,
   adapterConfig: AdaptersConfig,
+  getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
 ): Promise<SearchResponse> {
   const enabledSources = sourceConfig.sources.filter((source) => source.enabled);
   const settled: Array<Awaited<ReturnType<typeof searchOneSource>>> = new Array(enabledSources.length);
@@ -236,7 +239,7 @@ export async function executeSearch(
   await Promise.all(Array.from({ length: workerCount }, async () => {
     while (nextIndex < enabledSources.length) {
       const index = nextIndex++;
-      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig);
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter);
     }
   }));
 
