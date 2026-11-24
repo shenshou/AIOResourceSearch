@@ -138,6 +138,20 @@ async function submitSearch() {
         <span>异常/不可用：{{ response.meta.failedSources }}</span>
       </div>
 
+      <section v-if="response.externalSearches?.length" class="external-search-section">
+        <h3>外部搜索入口</h3>
+        <p class="panel-note">以下来源会在原站打开搜索结果，不会由我们的 Worker 抓取。</p>
+        <div class="external-search-list">
+          <a
+            v-for="source in response.externalSearches"
+            :key="source.sourceId"
+            :href="source.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ source.sourceName }} <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+
       <div v-if="!hasResults" class="empty-state">
         <strong>暂无搜索结果</strong>
         <span>当前可能尚无可用适配器，或已启用数据源没有返回匹配内容。</span>
