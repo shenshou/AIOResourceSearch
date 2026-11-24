@@ -38,7 +38,7 @@ The adapter is registered in Worker code, but source and adapter configuration r
 
 ## Verification boundary
 
-Automated tests use a fixed RSS fixture and mocked Fetch. They verify query encoding, magnet extraction, permalink normalization from the legacy `.si` host to the current `.net` host, and rejection of non-feed / non-success responses.
+Automated tests use a fixed RSS fixture and mocked Fetch. They verify query encoding, magnet extraction, permalink normalization from the legacy `.si` host to the current `.net` host, rejection of malformed feeds and non-success responses, streaming byte limits, and redirect refusal.
 
 Those tests do **not** prove that Cloudflare Workers can reach the live endpoint. That must be checked in the isolated Cloudflare test environment before enabling the source.
 
