@@ -22,11 +22,19 @@ export interface SourceSearchStatus {
     | "provider_timeout";
 }
 
+export interface ExternalSearchLink {
+  sourceId: string;
+  sourceName: string;
+  category: SourceDefinition["category"];
+  url: string;
+}
+
 export interface SearchResponse {
   query: string;
   mode: SearchRequest["mode"];
   results: NormalizedResource[];
   sources: SourceSearchStatus[];
+  externalSearches: ExternalSearchLink[];
   meta: {
     totalResults: number;
     successfulSources: number;
@@ -230,7 +238,31 @@ export async function executeSearch(
   adapterConfig: AdaptersConfig,
   getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
 ): Promise<SearchResponse> {
-  const enabledSources = sourceConfig.sources.filter((source) => source.enabled);
+  const enabledSources = sourceConfig.sources.filter(
+    (source) => source.enabled && (source.type ?? "provider") === "provider",
+  );
+  const externalSearches: ExternalSearchLink[] = sourceConfig.sources
+    .filter((source) =>
+      source.enabled &&
+      source.type === "external-search" &&
+      source.searchModes.includes(request.mode) &&
+      typeof source.searchUrlTemplate === "string",
+    )
+    .flatMap((source) => {
+      try {
+        const url = source.searchUrlTemplate!.replace("{query}", encodeURIComponent(request.query));
+        const parsed = new URL(url);
+        if (parsed.protocol !== "https:" || parsed.username || parsed.password) return [];
+        return [{
+          sourceId: source.id,
+          sourceName: source.name,
+          category: source.category,
+          url: parsed.toString(),
+        }];
+      } catch {
+        return [];
+      }
+    });
   const settled: Array<Awaited<ReturnType<typeof searchOneSource>>> = new Array(enabledSources.length);
   let nextIndex = 0;
 
@@ -262,6 +294,7 @@ export async function executeSearch(
     mode: request.mode,
     results,
     sources,
+    externalSearches,
     meta: {
       totalResults: results.length,
       successfulSources: sources.filter((source) => source.status === "ok").length,
