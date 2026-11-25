@@ -78,8 +78,9 @@ export function useSourceManager() {
       return true;
     } catch (cause) {
       if (cause instanceof SourceApiError && cause.status === 409) {
-        error.value = "配置已被其他操作更新。已尝试重新载入，请确认最新数据后再操作。";
+        const conflictMessage = "配置已被其他操作更新。已重新载入最新数据，请确认后再操作。";
         await reload();
+        error.value = conflictMessage;
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
       }
