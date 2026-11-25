@@ -234,3 +234,40 @@ The next catalog reconciliation must compare normalized hostnames and aliases, n
 - The current Atlas README reviewed here describes five principal categories, not a verified seven-category catalog. AIOResourceSearch retains its independently chosen eight-category model; game and music support must be sourced separately.
 - FetchJAV's current public README advertises 30+ site adapters, but the displayed supported-sites table is not a complete machine-readable inventory of every implementation. The metadata enrichment file is a separate HTML-based pipeline, not an official API directory.
 - Lustpress's discontinued hosted API/Playground is not an upstream dependency. Self-hosting its source code does not establish permission to access or republish the third-party sites it parses.
+
+
+## Atlas seed reconciliation by URL host (2026-11-25)
+
+A second comparison was performed against the 119 rows in Atlas `main:database/seeds/003_search_sources.sql`, this time extracting URL hosts from both the seed rows and AIOResourceSearch's `sourceCatalog.ts`, lowercasing them, and removing a leading `www.`. This is more useful than comparing source IDs, but it is still a conservative exact-host comparison rather than a full registrable-domain/alias resolver.
+
+- Atlas seed rows parsed: **119**.
+- Distinct URL hosts present in the Atlas seed rows: **115**.
+- Distinct URL hosts present in the current AIOResourceSearch catalog: **61**.
+- Exact normalized host overlap: **56**.
+- Atlas hosts not present as exact URL hosts in the current catalog: **59**.
+- One important known alias is already represented: Atlas uses `sukebei.nyaa.si`, while the current catalog entry `sukebei` points to the currently documented `sukebei.nyaa.net` endpoint. It is not a new source to add.
+- Therefore, the raw host difference is **not** a count of new websites. A rough grouping by registrable-domain suffix reduces the 59 unmatched hosts to 55 domain groups; this heuristic is not a substitute for Public Suffix List-aware canonicalization.
+
+The remaining host differences are useful candidates for manual review, grouped by Atlas seed category below. Repeated domains across categories (for example AniList, Kitsu, MyAnimeList, and Bilibili) should normally be represented by one source with multiple content-category associations, not duplicate source records.
+
+| Atlas seed category | Unmatched host candidates |
+|---|---|
+| Anime metadata | `anidb.net`, `anilist.co`, `bangumi.tv`, `douban.com`, `kitsu.io`, `livechart.me`, `myanimelist.net`, `notify.moe` |
+| Anime torrent | `animebytes.tv`, `mikanani.me`, `nyaa.si`, `shanaproject.com`, `share.dmhy.org` (DMHY), `sukebei.nyaa.si` (known Sukebei alias; already represented) |
+| Anime streaming | `9anime.gs`, `aniwatch.to`, `bilibili.com`, `crunchyroll.com`, `dilidili.wang`, `funimation.com`, `gogoanime3.net`, `hidive.com`, `search.bilibili.com` |
+| Anime/manga cross-listing | `manga.bilibili.com` |
+| Movie metadata | `imdb.com`, `letterboxd.com`, `metacritic.com`, `movie.douban.com`, `rottentomatoes.com`, `themoviedb.org`, `trakt.tv` |
+| Movie torrent | `eztv.re`, `mejortorrent.com`, `thepiratebay.org` |
+| Movie streaming/discovery | `fmovies.to`, `justwatch.com`, `netflix.com`, `playpilot.com`, `putlockers.name`, `reelgood.com`, `solarmovie.pe`, `youtube.com` |
+| Manga metadata | `anilist.co`, `kitsu.io`, `mangadex.org`, `mangaupdates.com`, `myanimelist.net` |
+| Manga resources | `comic-walker.com`, `dmzj.com`, `manga.bilibili.com`, `mangafire.to`, `mangakakalot.com`, `manganelo.com`, `mangasee123.com`, `manhuagui.com` |
+| Novel sources | `dushupai.com`, `lunarora.com`, `pdfs.top`, `qishuxia.com`, `sobooks.cc`, `zh.annas-archive.gl`, `zh.z-library.sk`, `zxcs.zip` |
+
+### Reconciliation decisions
+
+1. **Do not bulk-add these hosts to the runtime source catalog.** The Atlas SQL is a historical/default seed inventory, not evidence that a source is live, reachable from Workers, permitted for automated access, or suitable for public aggregation.
+2. **Prioritize documented metadata APIs separately:** Bangumi, AniList, MangaDex, TMDB, MusicBrainz, and IGDB remain candidates for endpoint-by-endpoint terms, authentication, rate-limit, attribution, and intended-use checks. Their presence in the seed list does not waive those checks.
+3. **Keep commercial streaming services as external discovery links only** unless a documented public API and intended-use permission are confirmed. Do not scrape subscription playback pages or protected media.
+4. **Treat torrent/index and manga/novel resource sites as individual legal/terms reviews**, not as a single generic adapter batch. Do not bypass login, paywalls, challenges, CAPTCHA, geoblocking, or rate limits.
+5. **Avoid duplicate source records for one service.** The future catalog model should support multiple content categories on one source, and alias metadata for hostname migrations/subdomains, rather than duplicating a provider for each Atlas category.
+6. This inventory reconciliation changes documentation only. It does not add or enable sources, change adapter implementations, or modify Cloudflare KV.
