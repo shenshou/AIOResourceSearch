@@ -2619,3 +2619,36 @@ This section records official API candidates reviewed while expanding beyond the
   - First-party 85po.com Terms (separate domain scope): https://www.85po.com/vi/terms/
   - Third-party redirect observation only: https://scanner.pcrisk.com/scan-results/85tube.com
   - Third-party redirect observation only: https://gridinsoft.com/online-virus-scanner/url/85tube-com
+
+
+## Additional name-only candidate recheck — 2026-11-26
+
+### Jable.org
+- The exact `jable.org` domain did not resolve to a verifiable first-party JableTV property in this review. A third-party domain monitor reports HTTP 401 and a redirect to a generated `ww547.jable.org` hostname; that is not evidence of an official mirror or a supported public service.
+- FetchJAV lists Jable.org as an inherited/mirror adapter, but third-party scraper configuration is not first-party domain ownership or permission.
+- **Decision: retain name-only.** Do not substitute `jable.tv`, follow generated redirect hosts, or bypass the 401. Reconsider only with first-party confirmation of the canonical domain and permitted public interface.
+- References:
+  - Third-party domain observation: https://siteinfo.verkosta.info/jable.org
+  - FetchJAV supported-sites list (implementation evidence only): https://github.com/FetchJAV/FetchJAV_Public
+
+### Porn5F
+- The latest indexed domain record located for `porn5f.com` reports a 2026-07-03 expiry date. This is third-party WHOIS data, not confirmation of the current registrant or service status.
+- No first-party operator announcement, current canonical replacement, Terms, public API, or RSS contract was verified. Do not infer a mirror from similarly named domains.
+- **Decision: retain historical name-only record.** No external destination, Worker scraping, or mirror substitution.
+- Reference: https://hypestat.com/info/porn5f.com
+
+### PornBest
+- Third-party records for `pornbest.org` are inconsistent: a recent WHOIS lookup still lists the 2026-11-23 expiry date, while other third-party scans report active DNS/HTTP responses and one reports HTTP 403. These observations do not establish renewal, current operator control, or permission to automate access.
+- No first-party Terms/API/RSS contract or canonical replacement was verified. The separate `pornbest.com` and `pornbest.co` domains are not assumed to be official mirrors.
+- **Decision: retain name-only.** Do not use third-party status reports to bypass a 403 or substitute another domain. Reconsider after first-party confirmation of the canonical service and a permitted public interface.
+- References:
+  - WHOIS snapshot: https://www.whois.com/whois/pornbest.org
+  - Third-party HTTP/status observation: https://gridinsoft.com/online-virus-scanner/url/pornbest-org
+
+### Seselah
+- Third-party domain intelligence reports that `seselah.com` redirects to `papalah.com`, but no first-party operator announcement or Terms were found confirming that Papalah is the official successor/canonical destination for the FetchJAV-named Seselah source.
+- A redirect observation alone is insufficient to merge identities or replace the catalog URL. No public API/RSS contract or automation permission was verified for the intended source.
+- **Decision: retain name-only.** Do not silently substitute Papalah or scrape either domain. Reconsider only after first-party confirmation of the relationship and permitted automation terms.
+- References:
+  - Third-party domain observation: https://www.ipaddress.com/website/seselah.com/
+  - Third-party Papalah profile: https://tools.malwaretips.com/url-scan/papalah.com
