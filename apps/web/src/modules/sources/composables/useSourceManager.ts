@@ -14,6 +14,8 @@ export function useSourceManager() {
   const saving = ref(false);
   const error = ref("");
   const notice = ref("");
+  let operationGeneration = 0;
+  let reloadSequence = 0;
 
   const enabledCount = computed(() => sources.value.filter((source) => source.enabled).length);
 
@@ -23,30 +25,42 @@ export function useSourceManager() {
   }
 
   async function reload() {
-    if (!token.value) return false;
+    const requestToken = token.value;
+    if (!requestToken) return false;
+    const generation = operationGeneration;
+    const sequence = ++reloadSequence;
     loading.value = true;
     clearMessages();
     try {
-      const result = await sourceApi.getAdminSources(token.value);
+      const result = await sourceApi.getAdminSources(requestToken);
+      if (generation !== operationGeneration || sequence !== reloadSequence || token.value !== requestToken) return false;
       sources.value = result.config.sources;
       revision.value = result.config.version;
       etag.value = result.etag;
       authenticated.value = true;
       return true;
     } catch (cause) {
+      if (generation !== operationGeneration || sequence !== reloadSequence || token.value !== requestToken) return false;
       if (cause instanceof SourceApiError && cause.status === 401) {
+        operationGeneration += 1;
+        reloadSequence += 1;
         session.clear();
+        sources.value = [];
+        etag.value = "";
+        revision.value = 0;
         error.value = "管理员令牌无效，请重新输入。";
       } else {
         error.value = cause instanceof Error ? cause.message : "读取数据源失败。";
       }
       return false;
     } finally {
-      loading.value = false;
+      if (generation === operationGeneration && sequence === reloadSequence) loading.value = false;
     }
   }
 
   async function login(value: string) {
+    operationGeneration += 1;
+    reloadSequence += 1;
     token.value = value.trim();
     if (!token.value) {
       error.value = "请输入管理员令牌。";
@@ -59,7 +73,11 @@ export function useSourceManager() {
   }
 
   function logout() {
+    operationGeneration += 1;
+    reloadSequence += 1;
     session.clear();
+    loading.value = false;
+    saving.value = false;
     sources.value = [];
     etag.value = "";
     revision.value = 0;
@@ -67,16 +85,21 @@ export function useSourceManager() {
   }
 
   async function persist(action: () => Promise<{ data: { version: number; sources: SourceDefinition[] }; etag: string | null }>, successMessage: string) {
+    if (saving.value || !token.value) return false;
+    const generation = operationGeneration;
+    const requestToken = token.value;
     saving.value = true;
     clearMessages();
     try {
       const result = await action();
+      if (generation !== operationGeneration || token.value !== requestToken) return false;
       sources.value = result.data.sources;
       revision.value = result.data.version;
       if (result.etag) etag.value = result.etag;
       notice.value = successMessage;
       return true;
     } catch (cause) {
+      if (generation !== operationGeneration || token.value !== requestToken) return false;
       if (cause instanceof SourceApiError && cause.status === 409) {
         const conflictMessage = "配置已被其他操作更新。已重新载入最新数据，请确认后再操作。";
         await reload();
@@ -86,7 +109,7 @@ export function useSourceManager() {
       }
       return false;
     } finally {
-      saving.value = false;
+      if (generation === operationGeneration) saving.value = false;
     }
   }
 
