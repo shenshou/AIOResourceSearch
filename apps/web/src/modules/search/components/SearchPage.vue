@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { CONTENT_CATEGORIES, CONTENT_CATEGORY_LABELS, type ContentCategory, type SearchMode } from "@aio-resource-search/shared";
-import { searchResources, type SearchResponse } from "../../../services/searchApi";
+import { ref } from "vue";
+import { CONTENT_CATEGORIES, CONTENT_CATEGORY_LABELS } from "@aio-resource-search/shared";
+import { useSearch } from "../composables/useSearch";
 
-const query = ref("");
-const mode = ref<SearchMode>("number");
-const contentCategory = ref<ContentCategory | "all">("all");
-const loading = ref(false);
-const errorMessage = ref("");
+const {
+  query,
+  mode,
+  contentCategory,
+  loading,
+  errorMessage,
+  response,
+  hasResults,
+  submitSearch,
+} = useSearch();
+
 const copyMessage = ref("");
-const response = ref<SearchResponse | null>(null);
 const showImages = ref(readImagePreference());
 
 function readImagePreference(): boolean {
@@ -38,8 +43,6 @@ async function copyResourceLink(value: string, label: string) {
   }
 }
 
-const hasResults = computed(() => (response.value?.results.length ?? 0) > 0);
-
 const statusLabels: Record<string, string> = {
   ok: "已完成",
   error: "请求失败",
@@ -53,27 +56,6 @@ const errorLabels: Record<string, string> = {
   provider_failed: "数据源请求或解析失败",
   provider_timeout: "超过该数据源的请求时限",
 };
-
-async function submitSearch() {
-  const normalizedQuery = query.value.trim();
-  if (!normalizedQuery || loading.value) return;
-  if (normalizedQuery.length > 120) {
-    errorMessage.value = "搜索内容不能超过 120 个字符。";
-    return;
-  }
-
-  loading.value = true;
-  errorMessage.value = "";
-  copyMessage.value = "";
-  response.value = null;
-  try {
-    response.value = await searchResources(normalizedQuery, mode.value, contentCategory.value);
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : "搜索失败，请稍后重试。";
-  } finally {
-    loading.value = false;
-  }
-}
 </script>
 
 <template>
