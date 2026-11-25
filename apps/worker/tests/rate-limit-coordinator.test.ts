@@ -189,6 +189,38 @@ test("revalidates a queued slot when a cooldown was extended after reservation",
   assert.equal(upstreamCalls, 1);
 });
 
+test("keeps the reserved slot when validation UPDATE affects zero rows", async () => {
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          if (/^\\s*UPDATE/i.test(query)) {
+            return {
+              one: () => { throw new Error("one() requires exactly one row"); },
+              [Symbol.iterator]: function* () {},
+            };
+          }
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () {},
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const scheduledAt = Date.now() + 500;
+  const response = await coordinator.fetch(new Request("https://coordinator/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "mangadex", scheduledAt }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { scheduledAt });
+});
+
 test("uses one atomic SQLite UPSERT for reservation and rejects unknown lanes", async () => {
   const statements: string[] = [];
   const ctx = {
