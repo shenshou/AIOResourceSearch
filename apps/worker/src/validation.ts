@@ -115,7 +115,7 @@ export function validateSource(input: unknown): SourceDefinition | null {
   }
 
   if (value.credentialBinding !== undefined) {
-    if (typeof value.credentialBinding !== "string" || !/^[A-Z][A-Z0-9_]{0,63}$/.test(value.credentialBinding)) return null;
+    if (typeof value.credentialBinding !== "string" || !/^SOURCE_CREDENTIAL_[A-Z0-9_]{1,48}$/.test(value.credentialBinding)) return null;
   }
 
   if (value.notes !== undefined && (typeof value.notes !== "string" || value.notes.length > 500)) return null;
