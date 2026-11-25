@@ -121,7 +121,14 @@ export const torlockProvider: ProviderAdapter = {
     url.searchParams.set("limit", "50");
     throwIfAborted(context.signal);
     const cacheKey = new Request(url.toString(), { method: "GET" });
-    const cached = await context.cache?.match(cacheKey);
+    let cached: Response | undefined;
+    if (context.cache) {
+      try {
+        cached = await context.cache.match(cacheKey);
+      } catch {
+        // Cache is an optimization; an unavailable cache must not fail a live search.
+      }
+    }
     throwIfAborted(context.signal);
     if (cached) {
       const cachedXml = await readLimitedText(cached);
@@ -149,13 +156,17 @@ export const torlockProvider: ProviderAdapter = {
     const results = parseItems(xml);
     throwIfAborted(context.signal);
     if (context.cache) {
-      await context.cache.put(cacheKey, new Response(xml, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/rss+xml; charset=utf-8",
-          "Cache-Control": "public, max-age=" + CACHE_TTL_SECONDS,
-        },
-      }));
+      try {
+        await context.cache.put(cacheKey, new Response(xml, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/rss+xml; charset=utf-8",
+            "Cache-Control": "public, max-age=" + CACHE_TTL_SECONDS,
+          },
+        }));
+      } catch {
+        // A cache write failure must not discard valid upstream results.
+      }
     }
     return results;
   },
