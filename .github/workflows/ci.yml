@@ -33,7 +33,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const isDocumentation = (path) =>
-              path.startsWith("docs/") || /\\.mdx?$/i.test(path);
+              path.startsWith("docs/") || /\.mdx?$/i.test(path);
 
             async function changedPaths(base, head) {
               try {
