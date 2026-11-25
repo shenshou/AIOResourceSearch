@@ -12,6 +12,7 @@ import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import { torlockProvider } from "../../src/providers/torlock-torznab.ts";
+import { anibtTorznabProvider } from "../../src/providers/anibt-torznab.ts";
 import { yourBittorrentProvider } from "../../src/providers/yourbittorrent-json.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
@@ -1328,4 +1329,130 @@ test("fails closed when a source secret binding is configured but missing", asyn
   assert.equal(providerCalled, false);
   assert.equal(result.sources[0]?.status, "unavailable");
   assert.equal(result.sources[0]?.errorCode, "credential_unavailable");
+});
+
+
+const anibtFixture = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <title>AniBT</title>
+    <item>
+      <title>Example Anime 05 [1080p]</title>
+      <guid>https://anibt.net/release/rel_Example_123</guid>
+      <link>https://anibt.net/api/torrent/rel_Example_123.torrent</link>
+      <pubDate>Tue, 25 Nov 2026 00:00:00 +0000</pubDate>
+      <size>123456789</size>
+      <torznab:attr name="seeders" value="42"/>
+      <torznab:attr name="peers" value="7"/>
+    </item>
+  </channel>
+</rss>`;
+
+function anibtContext(fetchImpl: typeof fetch, cache?: Cache) {
+  return {
+    source: source({
+      id: "anibt",
+      name: "AniBT",
+      category: "torrent",
+      contentCategory: "anime",
+      adapterId: "anibt-torznab",
+      capabilities: ["metadata", "torrent"],
+      searchModes: ["keyword"],
+    }),
+    signal: new AbortController().signal,
+    fetch: fetchImpl,
+    ...(cache ? { cache } : {}),
+  };
+}
+
+test("AniBT Provider uses the documented anonymous Torznab keyword endpoint and maps public torrent results", async () => {
+  let requestedUrl = "";
+  let cacheCalls = 0;
+  const cache = {
+    match: async () => { cacheCalls += 1; return null; },
+    put: async () => { cacheCalls += 1; },
+  } as unknown as Cache;
+
+  const results = await anibtTorznabProvider.search(
+    { query: "Frieren", mode: "keyword" },
+    anibtContext(async (input, init) => {
+      requestedUrl = String(input);
+      assert.equal(init?.method, "GET");
+      assert.equal(init?.redirect, "manual");
+      return new Response(anibtFixture, {
+        status: 200,
+        headers: { "Content-Type": "application/rss+xml" },
+      });
+    }, cache),
+  );
+
+  const url = new URL(requestedUrl);
+  assert.equal(url.origin, "https://anibt.net");
+  assert.equal(url.pathname, "/torznab/api");
+  assert.equal(url.searchParams.get("t"), "search");
+  assert.equal(url.searchParams.get("q"), "Frieren");
+  assert.equal(url.searchParams.get("cat"), "5070");
+  assert.equal(url.searchParams.get("limit"), "50");
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.id, "rel_Example_123");
+  assert.equal(results[0]?.url, "https://anibt.net/release/rel_Example_123");
+  assert.equal(results[0]?.torrentUrl, "https://anibt.net/api/torrent/rel_Example_123.torrent");
+  assert.equal(results[0]?.releaseDate, "2026-11-25T00:00:00.000Z");
+  assert.deepEqual(results[0]?.metadata, { seeders: "42", peers: "7", sizeBytes: "123456789" });
+  assert.equal(cacheCalls, 0);
+});
+
+test("AniBT rejects unsafe torrent hosts and malformed Torznab responses", async () => {
+  const unsafe = anibtFixture.replace(
+    "https://anibt.net/api/torrent/rel_Example_123.torrent",
+    "https://evil.example/api/torrent/rel_Example_123.torrent",
+  );
+  const dropped = await anibtTorznabProvider.search(
+    { query: "Frieren", mode: "keyword" },
+    anibtContext(async () => new Response(unsafe, {
+      status: 200,
+      headers: { "Content-Type": "application/rss+xml" },
+    })),
+  );
+  assert.deepEqual(dropped, []);
+
+  await assert.rejects(
+    anibtTorznabProvider.search(
+      { query: "Frieren", mode: "keyword" },
+      anibtContext(async () => new Response('<error code="201" description="Bad query"/>', {
+        status: 200,
+        headers: { "Content-Type": "application/xml" },
+      })),
+    ),
+    /protocol error 201/,
+  );
+});
+
+test("AniBT enforces its documented UTF-8 query bound and does not retry upstream failures", async () => {
+  let requests = 0;
+  await assert.rejects(
+    anibtTorznabProvider.search(
+      { query: "界".repeat(54), mode: "keyword" },
+      anibtContext(async () => { requests += 1; return new Response(anibtFixture); }),
+    ),
+    /160-byte UTF-8 limit/,
+  );
+  await assert.rejects(
+    anibtTorznabProvider.search(
+      { query: "Frieren", mode: "keyword" },
+      anibtContext(async () => {
+        requests += 1;
+        return new Response("Unavailable", { status: 503 });
+      }),
+    ),
+    /HTTP 503/,
+  );
+  assert.equal(requests, 1);
+});
+
+test("AniBT Provider is registered with anime torrent and .torrent capabilities", async () => {
+  assert.equal(anibtTorznabProvider.id, "anibt-torznab");
+  assert.equal(anibtTorznabProvider.rateLimitLane, "anibt");
+  assert.deepEqual(anibtTorznabProvider.contentCategories, ["anime"]);
+  assert.deepEqual(anibtTorznabProvider.capabilities, ["metadata", "torrent"]);
 });
