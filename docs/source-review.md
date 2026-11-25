@@ -812,3 +812,52 @@ Decision: retain homepage-only. Do not route around the 451 or regional access r
 - HTTP 403, 451, and transient busy responses were not misrepresented as global site outages.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue with OurSogo, Sex8.cc, SexInSex, and SIS001, then finish the remaining forum candidates.
+
+
+## Individual source audit — eleventh batch (2026-11-25)
+
+This batch reviewed OurSogo, Sex8.cc, SexInSex, and SIS001. The review distinguishes forum features visible to ordinary visitors from a documented, authorized third-party data interface.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| OurSogo | Research fetch returned HTTP 403; no canonical current terms or supported public search/API contract was found | **Unverified** | Keep homepage-only; no alternate-route probing, cookies, or challenge bypass |
+| Sex8.cc | Operator-linked Linktree lists sex8.cc among current destinations; canonical terms and documented public search/API contract were not verified | **External destination only** | Keep homepage-only; no Worker crawling or post extraction |
+| SexInSex | Site entry page displays a 21+ warning, user-submitted-link disclaimer, and legal-rights notice; full access requires account activation | **Access-controlled; automation policy unresolved** | User-initiated external access only; no Worker scraping or account/session handling |
+| SIS001 | Current FAQ pages on web.sis001.com and bbs.sis001.com document search and RSS features; catalog root returned HTTP 403 and no public feed URL/third-party collection permission was verified | **Forum features documented; public integration not authorized/verified** | Keep external access only; no Worker scraping or account/session handling |
+
+### Source-specific findings
+
+#### OurSogo
+
+The canonical oursogo.com homepage returned HTTP 403 to the research fetcher. Search results did not establish a canonical current terms page, public API, RSS endpoint, or stable search contract for the exact domain. The 403 is a research observation, not proof that ordinary visitors are globally blocked.
+
+Decision: retain homepage-only and mark unverified. Do not probe alternate paths, reuse cookies, proxy around the response, or attempt challenge bypass.
+
+#### Sex8.cc
+
+The canonical sex8.cc homepage could not be retrieved by the research fetcher. An operator-linked Linktree account for 杏吧论坛 lists sex8.cc alongside other current destinations (including sin8.cc and 8sex.online), which supports the association of the domain with the forum operator. However, that Linktree page does not establish the site's current terms, an authorized API/RSS feed, or a stable public search contract. Third-party privacy/technology scans describe page resources and trackers but are not automation policy evidence.
+
+Decision: retain the exact catalog domain as a user-initiated external destination only. Do not implement Worker crawling or post extraction pending canonical terms and a supported public interface.
+
+#### SexInSex
+
+The canonical site's entry page displays a sexual-material warning, requires visitors to represent that they are at least 21 and that access is lawful in their community, and states that the site provides discussion and user-submitted links rather than hosting media files. It also states that full access requires account activation. These notices are access and content disclaimers, not permission for a third-party service to scrape or redistribute forum posts. A third-party registration page on a different domain was not treated as canonical terms for sexinsex.net.
+
+Decision: keep user-initiated external access only. Do not implement Worker scraping, user/profile collection, account activation, cookie reuse, or authenticated requests. No explicit automation permission or documented public API/RSS contract was verified.
+
+#### SIS001
+
+The catalog points to sis001.com, whose root returned HTTP 403 to the research fetcher. Search results surfaced current FAQ pages on web.sis001.com and bbs.sis001.com. Those FAQs document built-in forum search and RSS subscription features, but they do not by themselves expose a verified public feed URL, establish anonymous access to all relevant boards, or grant permission for a third-party aggregator to collect and republish posts. The official FAQ also indicates registration/access restrictions, including closed registration notices.
+
+Decision: keep the catalog entry as an external reference only. Do not infer a public RSS endpoint from the existence of an RSS feature, and do not use authenticated sessions or collect account-restricted content. Reconsider only after the operator documents a public feed/API and its terms permit this use.
+
+### Batch outcome
+
+- 4 forum candidates received source-specific decisions.
+- No candidate met the evidence threshold for a Worker Provider.
+- SIS001's built-in RSS feature was recorded as a lead for future verification, not treated as a public API or permission.
+- SexInSex's 21+ warning and user-submitted-link disclaimer were not misrepresented as automation authorization.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review South-Plus, T66Y, 夯鸭论坛, and 色花堂98堂, then finish the remaining forum entries.
