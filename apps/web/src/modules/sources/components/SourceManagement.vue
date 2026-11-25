@@ -18,9 +18,20 @@ import { SOURCE_CATALOG, type SourceCatalogEntry } from "../sourceCatalog";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
 import { useSourceManager } from "../composables/useSourceManager";
 import { adapterApi } from "../../../services/adapterApi";
+import { SourceApiError, sourceApi, type SourceTestResponse } from "../../../services/sourceApi";
 
 const manager = useSourceManager();
 const availableAdapters = ref<AdapterDefinition[]>([]);
+const testQueries = reactive<Record<string, string>>({});
+const testModes = reactive<Record<string, SearchMode>>({});
+const testFeedback = reactive<Record<string, {
+  status: "success" | "error" | "timeout";
+  elapsedMs?: number;
+  resultCount?: number;
+  sampleResults?: SourceTestResponse["sampleResults"];
+  message?: string;
+} | undefined>>({});
+const testingSourceId = ref<string | null>(null);
 const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 const catalogQuery = ref("");
@@ -224,6 +235,48 @@ async function submitForm() {
   if (saved) closeEditor();
 }
 
+async function runSourceTest(source: SourceDefinition, kind: "connection" | "search") {
+  if (testingSourceId.value || !manager.token.value) return;
+  if ((source.type ?? "provider") !== "provider") return;
+  if (!source.enabled) {
+    testFeedback[source.id] = { status: "error", message: "请先启用数据源，再执行测试。" };
+    return;
+  }
+  if (!availableAdapters.value.some((adapter) => adapter.id === source.adapterId)) {
+    testFeedback[source.id] = { status: "error", message: "适配器当前未启用或没有 Worker 实现。" };
+    return;
+  }
+  const query = testQueries[source.id]?.trim() ?? "";
+  if (kind === "search" && (!query || query.length > 120)) {
+    testFeedback[source.id] = { status: "error", message: "请输入 1 到 120 个字符的测试关键词。" };
+    return;
+  }
+  const mode = testModes[source.id] ?? (source.searchModes.includes("keyword") ? "keyword" : source.searchModes[0]);
+  testingSourceId.value = source.id;
+  testFeedback[source.id] = undefined;
+  try {
+    const result = kind === "connection"
+      ? await sourceApi.testConnection(manager.token.value, source.id)
+      : await sourceApi.testSearch(manager.token.value, source.id, query, mode);
+    if (!manager.authenticated.value) return;
+    testFeedback[source.id] = {
+      status: result.status,
+      elapsedMs: result.elapsedMs,
+      resultCount: result.resultCount,
+      sampleResults: result.sampleResults,
+      message: result.message,
+    };
+  } catch (error) {
+    if (!manager.authenticated.value) return;
+    testFeedback[source.id] = {
+      status: error instanceof SourceApiError && error.code === "provider_timeout" ? "timeout" : "error",
+      message: error instanceof Error ? error.message : "数据源测试失败。",
+    };
+  } finally {
+    if (testingSourceId.value === source.id) testingSourceId.value = null;
+  }
+}
+
 async function deleteSource(source: SourceDefinition) {
   if (!window.confirm(`确定删除数据源“${source.name}”吗？此操作会立即更新配置。`)) return;
   await manager.remove(source.id);
@@ -308,6 +361,29 @@ async function deleteSource(source: SourceDefinition) {
             </div>
             <p v-if="source.baseUrl" class="source-url">{{ source.baseUrl }}</p>
             <p v-if="source.searchUrlTemplate" class="source-url">{{ source.searchUrlTemplate }}</p>
+            <div v-if="(source.type ?? 'provider') === 'provider'" class="source-test-tools">
+              <div class="source-test-actions">
+                <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'connection')">
+                  {{ testingSourceId === source.id ? "测试中…" : "测试连接" }}
+                </button>
+                <input v-model="testQueries[source.id]" type="search" maxlength="120" placeholder="输入测试关键词" :disabled="!source.enabled || testingSourceId !== null" :aria-label="source.name + ' 测试关键词'">
+                <select v-model="testModes[source.id]" :disabled="!source.enabled || testingSourceId !== null" :aria-label="source.name + ' 测试搜索方式'">
+                  <option v-for="mode in source.searchModes" :key="mode" :value="mode">{{ modeLabels[mode] }}</option>
+                </select>
+                <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !testQueries[source.id]?.trim() || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'search')">测试搜索</button>
+              </div>
+              <p class="form-hint">连接测试会使用默认探测词执行一次 Provider 搜索，不是独立的 TCP Ping；上游正常响应但结果为 0 条也算连接成功。</p>
+              <div v-if="testFeedback[source.id]" class="source-test-feedback" :class="testFeedback[source.id]?.status" role="status">
+                <strong>{{ testFeedback[source.id]?.status === "success" ? "测试成功" : testFeedback[source.id]?.status === "timeout" ? "请求超时" : "测试失败" }}</strong>
+                <span v-if="testFeedback[source.id]?.elapsedMs !== undefined">耗时 {{ testFeedback[source.id]?.elapsedMs }} ms</span>
+                <span v-if="testFeedback[source.id]?.resultCount !== undefined">结果 {{ testFeedback[source.id]?.resultCount }} 条</span>
+                <span v-if="testFeedback[source.id]?.message">{{ testFeedback[source.id]?.message }}</span>
+                <ul v-if="testFeedback[source.id]?.sampleResults?.length">
+                  <li v-for="sample in testFeedback[source.id]?.sampleResults" :key="sample.url">{{ sample.title }} · {{ sample.url }}</li>
+                </ul>
+              </div>
+            </div>
+            <p v-else class="form-hint">外部搜索入口只负责生成原站链接，不会由 Worker 请求目标网站，因此不提供连接或搜索测试。</p>
           </div>
           <div class="source-actions">
             <button class="secondary-button small" type="button" :disabled="manager.saving.value" @click="manager.toggle(source)">
@@ -396,3 +472,15 @@ async function deleteSource(source: SourceDefinition) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.source-test-tools { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+.source-test-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.source-test-actions input, .source-test-actions select { min-width: 9rem; max-width: 14rem; }
+.source-test-feedback { display: grid; gap: 0.25rem; padding: 0.65rem 0.8rem; border: 1px solid var(--border-color, #d1d5db); border-radius: 0.5rem; font-size: 0.875rem; overflow-wrap: anywhere; }
+.source-test-feedback.success { border-color: var(--success-color, #16a34a); }
+.source-test-feedback.error, .source-test-feedback.timeout { border-color: var(--danger-color, #dc2626); }
+.source-test-feedback ul { margin: 0.25rem 0 0; padding-left: 1.25rem; }
+.source-test-feedback li { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .source-test-actions input, .source-test-actions select { flex: 1 1 100%; max-width: none; } }
+</style>
