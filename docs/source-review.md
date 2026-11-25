@@ -714,3 +714,52 @@ Decision: retain only a user-initiated external-search entry. Do not implement W
 - iJavTorrent remains external-search only; public page visibility is not treated as automation permission.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review forum candidates in small groups, prioritizing domains with a clearly identifiable canonical operator and public RSS/API documentation.
+
+
+## Individual source audit — ninth batch (2026-11-25)
+
+This batch reviewed four forum candidates: 141HongKong, 5278.cc, 52AV, and the 91Porny forum. It distinguishes research-fetch failures from site-wide access restrictions and does not infer automation permission from forum software or domain records.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| 141HongKong | Canonical homepage could not be retrieved; third-party domain metadata does not establish current terms or automation policy | **Unverified** | Keep homepage-only; no Worker crawling or post extraction |
+| 5278.cc | Research fetch returned HTTP 403; Cloudflare Radar shows active domain certificates/DNS, but no canonical terms or search contract was found | **Unverified** | Keep homepage-only; no alternate-route probing, cookies, or challenge bypass |
+| 52AV | Canonical homepage could not be retrieved; third-party technical records identify a Discuz-based forum but no current policy or search contract | **Unverified** | Keep homepage-only; no automated access pending canonical verification |
+| 91论坛 (91porny.com/forum) | Public forum page exposes login/register, post listings, a footer Terms link, and numerous off-domain promotional redirects; linked Terms could not be reliably retrieved | **Public page visible; policy/API unresolved** | User-initiated external access only; no Worker scraping or post extraction |
+
+### Source-specific findings
+
+#### 141HongKong
+
+The catalog points to 141hongkong.com. The research fetcher could not retrieve the canonical homepage. Search results primarily surfaced third-party domain/WHOIS records, which do not establish the operator's current terms, whether anonymous search is supported, or whether automated post retrieval is permitted.
+
+Decision: retain the homepage-only entry as unverified. Do not infer that the site is offline or blocked for ordinary users from the research fetch failure, and do not implement Worker requests until canonical terms and a public search contract are verified.
+
+#### 5278.cc
+
+The research fetcher received HTTP 403 from https://5278.cc/. Cloudflare Radar shows current TLS certificates and DNS activity for the domain, but those infrastructure signals do not prove that the forum's public content is accessible to automated clients or establish any permission to collect it. No canonical current terms or public API/search documentation was identified.
+
+Decision: retain homepage-only. Do not probe undocumented alternate paths, reuse browser cookies, proxy around the 403, or attempt challenge bypass. Reconsider only after the operator publishes a supported public interface and applicable terms.
+
+#### 52AV
+
+The catalog points to 52av.one. The research fetcher could not retrieve the canonical homepage. Third-party technical records describe a Discuz-based forum and show domain/DNS information, but they are not the site's own policy and do not establish a supported search URL or automation permission.
+
+Decision: retain homepage-only and mark the source unverified. Do not infer the forum's search route from Discuz conventions or build an undocumented scraper.
+
+#### 91论坛 (91porny.com/forum)
+
+The canonical forum page is publicly visible and exposes login/register controls, a post listing, pagination, and a footer link labeled Terms. The same page contains numerous promotional links that redirect to unrelated external domains. The research browser did not reliably retrieve the actual Terms document from the footer link, and no documented public API or stable search endpoint was verified. Public visibility of forum posts is not permission to bulk collect or republish them.
+
+Decision: keep user-initiated external access only. Do not implement Worker scraping, post extraction, user/profile collection, or automated following of promotional redirects. Revisit only after the canonical Terms and an authorized public interface are verified.
+
+### Batch outcome
+
+- 4 forum candidates received source-specific decisions.
+- No candidate met the evidence threshold for a Worker Provider.
+- HTTP 403 and fetch failures were recorded as research observations, not claims that ordinary users are blocked.
+- No undocumented Discuz endpoints, session cookies, proxies, or challenge workarounds were attempted.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue with Cool18, EYNY, HJD2048, and JKForum, then assess the remaining forum directory entries.
