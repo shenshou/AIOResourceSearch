@@ -30,7 +30,8 @@ function isLane(value: unknown): value is RateLimitLane {
 }
 
 function parseCooldownUntil(response: Response, now: number): number | null {
-  if (response.status !== 429 && response.status !== 503) return null;
+  const quotaExhausted = response.headers.get("X-RateLimit-Remaining") === "0";
+  if (response.status !== 429 && response.status !== 503 && !quotaExhausted) return null;
 
   const mangaDexRetry = response.headers.get("X-RateLimit-Retry-After");
   if (mangaDexRetry && /^\d+(?:\.\d+)?$/.test(mangaDexRetry)) {
