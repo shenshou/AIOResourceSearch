@@ -1109,3 +1109,52 @@ Decision: keep user-initiated external access only. Do not query PeerTube API en
 - PigAV's current PeerTube-style response was recorded; stale third-party WordPress records were not treated as current truth.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review ThisAV, Porn5F, PornBest, and PornTW.
+
+
+## Individual source audit — seventeenth batch (2026-11-25)
+
+This batch reviewed four FetchJAV-listed other-index candidates: ThisAV, Porn5F, PornBest, and PornTW. It distinguishes an officially confiscated domain from stale or unverifiable directory names and does not substitute unrelated mirrors.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| ThisAV | Current thisav.com homepage displays an anti-piracy notice stating the domain was confiscated through legal proceedings; a U.S. federal judgment ordered transfer of thisav.com | **Retired / domain legally seized** | Remove destination; no external redirect, scraping, or mirror substitution |
+| Porn5F | Canonical homepage could not be retrieved; third-party records are stale/inconsistent and one snapshot lists a July 2026 expiry | **Unverified / possibly stale domain** | Keep name-only; no mirror guessing or automated access |
+| PornBest | pornbest.org homepage could not be retrieved; third-party WHOIS snapshots list 2026-11-23 expiry and redirects involving unrelated domains | **Current ownership/service unresolved** | Keep name-only; no redirect following or mirror substitution |
+| PornTW | No exact canonical domain, current Terms, public API/RSS, or stable search contract was verified | **Name-only unverified candidate** | No domain guessing or automated access |
+
+### Source-specific findings
+
+#### ThisAV
+
+The canonical thisav.com homepage currently displays a multilingual anti-piracy notice stating that the site previously published on the domain handled illegally uploaded videos and that the domain was confiscated through legal proceedings. A U.S. federal judgment in WILL CO., LTD. v. LEE ordered the transfer of thisav.com and several related domains to the plaintiff. This is materially different from a transient fetch failure or ordinary domain redirect: the current destination itself states that the domain was confiscated.
+
+Decision: treat ThisAV as retired and legally seized. Do not retain a clickable destination, attempt to scrape it, follow replacement domains, or substitute unofficial mirrors. The catalog entry remains only as a historical source record.
+
+#### Porn5F
+
+The catalog contains the FetchJAV name Porn5F but no verified canonical URL. The research fetcher could not retrieve porn5f.com. Third-party domain snapshots are stale/inconsistent; one lists a July 3, 2026 expiry date, while other snapshots show later infrastructure observations without proving the current operator or renewal status. No first-party Terms, API/RSS documentation, or stable search contract was identified.
+
+Decision: keep Porn5F as a name-only unverified candidate. Do not assume the domain is expired, do not guess a replacement domain, and do not copy FetchJAV's site-specific scraping code.
+
+#### PornBest
+
+The FetchJAV candidate name maps to pornbest.org in the existing directory references. The canonical homepage could not be retrieved. Third-party WHOIS snapshots list an expiry date of 2026-11-23, two days before this review, but do not confirm whether the domain renewed, changed owners, or was transferred. Other third-party records show redirects involving unrelated domains such as whichav.com and singlove.com; those are not proof of an operator-approved replacement. No canonical Terms or public search contract was verified.
+
+Decision: keep PornBest as a name-only unverified candidate. Do not follow third-party redirect chains or substitute similarly named/redirected domains. Reconsider only after the operator's canonical current domain and policy are confirmed.
+
+#### PornTW
+
+FetchJAV's supported-site list names PornTW, but the exact canonical domain could not be established. The likely-looking porntw.com address was not retrievable, and searches did not surface a first-party Terms page, official API/RSS documentation, or a stable public search interface. Similar names and search snippets are insufficient evidence to identify the operator's site.
+
+Decision: keep as a name-only unverified candidate. Do not guess a domain, infer a search path, or implement automated access.
+
+### Batch outcome
+
+- 4 FetchJAV-listed candidates received source-specific decisions.
+- ThisAV was classified as retired/legally seized based on its current anti-piracy notice and the federal domain-transfer judgment.
+- Porn5F and PornBest remain unverified rather than being labeled definitely offline or expired.
+- PornTW remains name-only; no URL was guessed.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review PornHK, PornJP, PornHoHo, and PornLuLu.
