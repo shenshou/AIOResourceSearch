@@ -113,3 +113,63 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 5. If terms or access permission are unclear, keep the source as an external-search link or leave it pending.
 6. Re-check the upstream documentation and terms before implementing or enabling a Provider.
 7. Respect attribution, cache directives, quotas, takedown procedures, and source-specific restrictions.
+
+
+## Upstream project audits — 2026-11-25
+
+### FetchJAV
+
+The current upstream README advertises 30+ supported site adapters. Its explicit supported-site table currently names:
+
+- JableTV, MissAV, SupJav, Hanime1, HanimeTV, TnaFlix, 91Porn, JavDB.
+- Jable.org, ThisAV, PigAV, Porn5F, 85Tube, PornBest, HAnime XYZ, PornTW.
+- PornJP, PornHK, PornHoHo, PornNVR, Video01, PornLuLu, MIEN321, AApp11, Seselah, and XJISHI.
+
+The README also describes video downloading, streaming, local playback, subtitle generation, proxy support, Cloudflare clearance-cookie import, and anti-bot-oriented networking dependencies. Those capabilities are not part of AIOResourceSearch and must not be ported.
+
+The current `metadata_fetcher.py` is a separate, narrower metadata-enrichment pipeline. It contains site-specific HTML parsers for Jable, MissAV, SupJAV, JAV.guru, and JAVDatabase; it can also retrieve actress-page photos and tags. For an incoming video URL, Jable/MissAV/SupJAV are parsed according to the originating site, while JAV.guru and JAVDatabase are queried by normalized video code and their missing fields are merged into the result.
+
+Disposition:
+
+- The five metadata sites are already represented in the candidate inventory (JableTV, MissAV, SupJAV, JAV.guru, JAVDatabase); they are not five documented public APIs.
+- The three origin-site metadata parsers and the two cross-site enrichers are HTML scraping implementations, not reusable API contracts.
+- Do not port FetchJAV's proxy, TLS-fingerprint, Cloudflare-cookie, cloudscraper, or challenge-handling behavior into Workers.
+- Keep these sites as external-search candidates unless a stable public feed/API or explicit permission for automated access is established.
+- Do not add actress photos, video streams, download URLs, subtitles, or player/embed data to the normalized search result contract.
+
+### Lustpress
+
+The current README documents eight site modules: PornHub, XNXX, RedTube, XVideos, XHamster, YouPorn, Eporner, and TXXX. The project exposes a unified REST/GraphQL shape for search, get, related, and random operations, but describes its source acquisition as primarily HTML scraping.
+
+The README explicitly documents a PornHub JavaScript challenge solver that computes and reuses a challenge cookie. This is an access-control/anti-bot bypass technique and is excluded from AIOResourceSearch. No Lustpress public API or Playground service should be used as a dependency: upstream states that the public services were discontinued on 2026-03-11 and users must self-host.
+
+Disposition:
+
+- Retain only the architectural lessons: per-site modules, normalized response objects, isolated source failures, and a consistent endpoint contract.
+- Do not deploy Lustpress as an upstream data service for this project.
+- Do not port its challenge solver, cookie acquisition/reuse, or other anti-bot bypass logic.
+- Its eight sites remain external-search candidates unless a source publishes an independently documented interface and the applicable terms permit our intended use.
+
+## Cross-category official API candidates
+
+These candidates are separate from the three adult-focused upstream projects. They are being reviewed to give the project's eight content categories genuine source coverage rather than merely adding category labels.
+
+| Source | Categories | Interface / requirements | Current disposition |
+|---|---|---|---|
+| AniList | Anime, manga | Public GraphQL API; public catalogue queries do not require OAuth. Terms prohibit hoarding/mass collection and prohibit use in competing, non-complementary anime/manga list or tracker services. | Conditional only. Do not implement until the intended search-aggregator use is confirmed as permitted; use on-demand queries only, never bulk ingestion. |
+| Bangumi | Anime, film/TV, games, books | Official v0 API and OpenAPI schema. The v0 API replaces the legacy unversioned API; some search endpoints in the current schema are marked experimental. User authentication/access-token behavior and the exact public search contract must be verified per endpoint. | Candidate; review exact endpoint/auth requirements before implementation. Prefer v0, not legacy API. |
+| MangaDex | Manga | Official REST API. Its policies include source attribution and content-removal requirements; chapter/scanlation use has additional attribution obligations. | Conditional candidate; initially restrict to catalogue metadata and official MangaDex detail links, subject to full policy review. |
+| MusicBrainz | Music | Official Web Service; free for non-commercial use, no API key, JSON supported. Each client must not exceed one request per second and must send a meaningful User-Agent. | Strong candidate, subject to non-commercial use and strict shared rate limiting. |
+| Open Library | Novels/books | Official JSON APIs including search.json. Usage guidance says it is for human-facing book discovery, not a third-party data backend or high-traffic commercial infrastructure; identify the app and cache responses. | Conditional candidate for low-volume, user-triggered lookup only; not a bulk catalogue backend. |
+| TMDB | Film/TV | Official API; developer key is free for non-commercial use with source attribution and TMDB logo requirements. Commercial projects require a separate licence. | Conditional candidate; requires operator-managed API key and explicit attribution UI. |
+| IGDB | Games | Official API is free; requires a Twitch account, registered application, Client ID/Secret, OAuth client-credentials token, and a maximum of four requests per second. Commercial integration requires a partnership and user-facing attribution. | Strong technical candidate, but requires operator-created Twitch developer credentials and review of the Twitch Developer Service Agreement. Store secrets only in Worker Secrets. |
+| RAWG | Games | API key required. Free plan is for personal/non-commercial use; terms prohibit redistribution or making its data available to other businesses. | Not eligible for this public multi-user aggregation service unless RAWG grants explicit permission. |
+| Wikidata Query Service | General | Public SPARQL endpoint with processing-time, concurrency, error, and User-Agent limits. Official guidance says it is not suitable for fuzzy text search. | Supplementary structured-entity lookup only; not a primary keyword-search Provider. |
+
+Implementation rules for this group:
+
+- Do not bulk mirror, harvest, or persist entire catalogues. Use user-triggered queries and bounded response caching only where the source's terms permit it.
+- Keep API keys and OAuth client secrets in Cloudflare Worker Secrets, never in the public source catalog or frontend.
+- Add source-specific attribution in result cards when required; the generic source badge alone may not satisfy a provider's logo or placement requirements.
+- Treat an API's free tier as conditional on its own terms, quotas, and use case; do not infer unrestricted redistribution rights.
+- For each candidate, verify live Cloudflare connectivity separately from API documentation and policy eligibility.
