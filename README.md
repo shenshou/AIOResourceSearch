@@ -36,7 +36,7 @@ The platform distinguishes Worker-backed **Provider** sources from **External Se
 - `packages/shared`: shared TypeScript contracts.
 - Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
-See [docs/architecture.md](docs/architecture.md) for boundaries and data flow.
+See [docs/architecture.md](docs/architecture.md) for boundaries and data flow. The phased execution plan, delivery criteria, and outstanding verification are tracked in [docs/development-roadmap.md](docs/development-roadmap.md).
 
 ## Local development
 
