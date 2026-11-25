@@ -12,11 +12,11 @@ This document defines the implementation gate for APIs whose terms require coord
 
 | API | Requirement | Design target |
 |---|---|---|
-| MusicBrainz `/ws/2` | At most 1 request/second per client application; meaningful identifying User-Agent | One shared lane per application, minimum 1,000 ms between upstream requests |
+| MusicBrainz `/ws/2` | Official documentation currently states an average maximum of 1 request/second per source IP (unless otherwise agreed), and requires a meaningful identifying User-Agent | One shared application lane at a minimum 1,000 ms between requests; this is deliberately stricter and helps coordinate all Worker traffic, but the published numeric limit is IP-based |
 | MangaDex REST | Initial documented limit 5 requests/second/IP, with endpoint-specific limits and response headers | One shared application-wide lane at 400 ms (2.5 requests/second), leaving headroom below the published ceiling; honor response headers and back off on 429 |
 | Bangumi API v0 | Search endpoint currently marked experimental in the official OpenAPI schema | Do not implement keyword search against the experimental endpoint as a required Provider. Prefer a stable endpoint or keep it external-search until the API contract is suitable |
 
-The MusicBrainz limit is application-scoped and must not be enforced independently per Worker instance. The MangaDex target is deliberately more conservative than its documented initial ceiling. Actual response headers and newer official policy always take precedence over these starting intervals.
+MusicBrainz documents its numeric 1 request/second ceiling against source IP, while also applying User-Agent-specific throttling. The project-wide lane is a conservative application-level control and must not be enforced independently per Worker instance. MangaDex documents an initial 5 requests/second per IP plus endpoint-specific limits; the project target is deliberately more conservative. Actual quota headers and newer official policy always take precedence over these starting intervals.
 
 ## Proposed implementation
 
@@ -53,7 +53,7 @@ This is preferable to embedding Durable Object calls separately in every adapter
 
 ### Backoff and failure behavior
 
-- Respect `Retry-After` and API-specific rate-limit headers.
+- Respect standard `Retry-After` where present and API-specific rate-limit headers. For MangaDex, also parse `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Retry-After` (Unix timestamp).
 - On a rate-limit response, extend the lane cooldown before another request can be reserved. For APIs that return 503 for throttling, use a conservative fallback delay when no usable header is present.
 - Do not retry the failed request in a tight loop.
 - If the coordinator is unavailable, fail closed for Providers that require it: return the normal per-source failure status and do not send an uncoordinated upstream request.
@@ -83,8 +83,8 @@ The coordinator is infrastructure state, not a general database backend. If the 
 
 A working limiter does not grant API permission. Before enabling a source, separately verify the current official terms, attribution, commercial status, data-license obligations, endpoint stability, response schema, and live Cloudflare connectivity.
 
-- MusicBrainz: use `/ws/2`, a descriptive User-Agent, and only data whose applicable license is understood. Non-commercial API access conditions must remain satisfied.
-- MangaDex: metadata only; visibly credit MangaDex; do not add chapter reading or proxy chapter content; the project must not run ads or paid services while relying on its public API.
+- MusicBrainz: use `/ws/2`, a descriptive User-Agent, and only data whose applicable license is understood. The published 1 req/s limit is per source IP; non-commercial API access conditions must remain satisfied.
+- MangaDex: metadata only; visibly credit MangaDex; do not add chapter reading or proxy chapter content; the project must not run ads or paid services while relying on its public API. Initial documented limit is 5 req/s per IP, plus endpoint-specific limits.
 - Bangumi: use the maintained public `/v0/` API only. Do not rely on experimental keyword search as a production dependency or attempt to access NSFW-only data without authorization.
 
 ## Official references
