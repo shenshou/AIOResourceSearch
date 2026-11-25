@@ -861,3 +861,52 @@ Decision: keep the catalog entry as an external reference only. Do not infer a p
 - SexInSex's 21+ warning and user-submitted-link disclaimer were not misrepresented as automation authorization.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review South-Plus, T66Y, 夯鸭论坛, and 色花堂98堂, then finish the remaining forum entries.
+
+
+## Individual source audit — twelfth batch (2026-11-25)
+
+This batch reviewed South-Plus, T66Y, 夯鸭论坛 (Hung-Ya), and 色花堂98堂 (SeHuaTang). It prioritizes first-party notices and avoids treating unofficial mirror announcements or an age-gate as permission for automated collection.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| South-Plus | Canonical homepage could not be retrieved; third-party reports indicate mainland-China regional blocking but no canonical automation policy was found | **Unverified / regionally inaccessible in some networks** | Keep homepage-only; no Worker access pending canonical terms and public interface |
+| T66Y草榴社区 | First-party visitor notice explicitly says not to use scripts and warns abnormal access may cause IP blocking and account deletion | **Automated access expressly disallowed by site notice** | User-initiated external link only; no scripts, scraping, or Worker requests |
+| 夯鸭论坛 (Hung-Ya) | Canonical homepage displays an 18+ age gate and general legal-content warning; no current terms or public API/search contract was found | **Age-gated; policy/interface unresolved** | Keep homepage-only; no scraping or age-gate bypass |
+| 色花堂98堂 (SeHuaTang) | Operator-associated Telegram channel lists .net and .org as permanent domains; current .org homepage renders unrelated generic text and canonical terms/API were not verified | **Domain/content mismatch; unverified** | Keep existing .org reference only; no mirror switching or automated access |
+
+### Source-specific findings
+
+#### South-Plus
+
+The catalog points to south-plus.net. The research fetcher could not retrieve the canonical homepage. GreatFire's regional measurement reports that south-plus.net URLs are blocked in mainland China, but this is a network-specific observation and does not establish global unavailability or the site's automation policy. No canonical current terms, official RSS/API documentation, or stable public search contract was identified.
+
+Decision: retain homepage-only. Do not treat regional blocking as an invitation to use proxies or alternate domains; no Worker access is approved pending canonical terms and a supported public interface.
+
+#### T66Y草榴社区
+
+The site's own visitor notice at /notice.php?fid=-1 states that the forum is for adults 18+, warns against distributing content to minors, and explicitly instructs visitors not to use scripts. It further warns that abnormal access can cause the visitor's IP to be disabled and their account deleted. The notice also describes account-based forum functions and user-provided torrent links.
+
+Decision: do not implement automated search, HTML parsing, post extraction, or Worker requests. Retain only a user-initiated external link. The first-party instruction not to use scripts is treated as a direct prohibition, not merely a technical warning.
+
+#### 夯鸭论坛 (Hung-Ya)
+
+The canonical hung-ya.com homepage currently presents an 18+ age gate and states that the site contains adult material, with a general reminder to comply with local law. This is an age/content notice, not a terms-of-service document or permission for automated access. No canonical current automation policy, public API/RSS feed, or stable search contract was verified.
+
+Decision: retain homepage-only. Do not bypass the age gate or implement Worker crawling until the operator publishes an applicable policy and supported public interface.
+
+#### 色花堂98堂 (SeHuaTang)
+
+The catalog points to sehuatang.org. An operator-associated Telegram channel under the SeHuaTang name lists sehuatang.net and sehuatang.org as permanent domains and posts forum-rule updates. However, the current research fetch of sehuatang.org renders an unrelated generic quotation page rather than a forum. A third-party RSSHub issue from 2023 requests author-level RSS and is marked login-required; it is not evidence of an official public feed or automation permission. The channel's domain announcements do not provide a canonical API or grant data-reuse rights.
+
+Decision: keep the existing .org entry as an unverified external reference. Do not silently switch to .net, a mirror, or a Telegram-derived address; do not scrape posts or author pages. Revisit only after the operator's current canonical domain, terms, and supported public interface are independently verified.
+
+### Batch outcome
+
+- 4 forum candidates received source-specific decisions.
+- T66Y's first-party no-scripts instruction rules out automated collection.
+- South-Plus regional blocking was not misrepresented as global outage or permission to circumvent.
+- SeHuaTang's Telegram announcements were treated as domain-discovery evidence only; no mirror substitution was made.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- The initial forum candidate list is now fully reviewed; remaining directory entries should be checked for duplicates, stale domains, and whether any have a genuine first-party API/RSS before being considered for integration.
