@@ -1158,3 +1158,52 @@ Decision: keep as a name-only unverified candidate. Do not guess a domain, infer
 - PornTW remains name-only; no URL was guessed.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review PornHK, PornJP, PornHoHo, and PornLuLu.
+
+
+## Individual source audit — eighteenth batch (2026-11-25)
+
+This batch reviewed four FetchJAV-listed candidates: PornHK, PornJP, PornHoHo, and PornLuLu. The review focuses on current domain ownership/status and avoids assuming that a name in an old supported-site list still corresponds to an active site.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| PornHK | pornHK.com RDAP reports the domain registered but parked, with domain-marketplace nameservers; no active operator-controlled service or Terms were verified | **Parked / no current service verified** | Remove destination; keep historical name-only record |
+| PornJP | No exact canonical domain, current Terms, API/RSS, or public search interface was verified | **Name-only unverified candidate** | No domain guessing or automated access |
+| PornHoHo | pornhoho.com could not be retrieved; third-party status data reports offline and a WHOIS snapshot lists 2025-12-12 expiry | **Historical / apparently inactive** | Remove destination; keep historical name-only record |
+| PornLuLu | Domain remains active, but the research fetcher receives a Cloudflare challenge; no current canonical Terms or public API/search contract was verified | **Active domain; access/policy unresolved** | External-only; no cookie reuse, proxying, or challenge bypass |
+
+### Source-specific findings
+
+#### PornHK
+
+The FetchJAV candidate name maps to pornhk.com in third-party references. Current RDAP data reports that pornhk.com is registered but parked, with nameservers associated with a domain marketplace rather than an identifiable operator-controlled content service. The research fetcher cannot retrieve a site, and no current canonical Terms, public API/RSS, or supported search contract was found.
+
+Decision: remove any clickable destination and retain only a historical name-only record. Do not substitute another PornHK-like domain or a parked-domain marketplace listing.
+
+#### PornJP
+
+FetchJAV's supported-site list names PornJP, but the exact canonical domain could not be established. Searches did not surface a first-party website, current Terms, official API/RSS, or a stable public search interface for the exact name. Similar domain strings are not sufficient evidence to identify the operator.
+
+Decision: keep as a name-only unverified candidate. Do not guess a domain or implement automated access.
+
+#### PornHoHo
+
+The likely catalog domain pornhoho.com could not be retrieved. Third-party site-status data reports the site offline, and a WHOIS snapshot lists a 2025-12-12 expiry date. These are third-party observations, not proof of current ownership or permanent deletion, but no current operator-controlled service or canonical policy could be verified.
+
+Decision: remove any clickable destination and keep only a historical name-only record. Do not follow unrelated redirects or guess replacement domains.
+
+#### PornLuLu
+
+The canonical pornlulu.com domain remains registered and has current DNS/certificate activity in third-party records. However, the research fetcher receives a Cloudflare “Just a moment” challenge response rather than the site's ordinary content. This does not prove that normal visitors cannot access the site. No canonical current Terms, public API/RSS, or supported search contract was verified. The challenge is an access-control signal, not an invitation to reuse browser cookies, proxy requests, or attempt a bypass.
+
+Decision: retain user-initiated external access only. Do not implement Worker fetching, HTML parsing, or metadata extraction pending canonical policy and supported-interface verification. Do not circumvent the challenge.
+
+### Batch outcome
+
+- 4 FetchJAV-listed candidates received source-specific decisions.
+- PornHK is currently parked; PornHoHo appears inactive; neither received a guessed replacement URL.
+- PornJP remains name-only because its exact domain is unresolved.
+- PornLuLu remains external-only because the research fetcher receives a challenge and no policy/API permission was verified.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review PornNVR, Seselah, XJISHI, and any remaining FetchJAV candidates.
