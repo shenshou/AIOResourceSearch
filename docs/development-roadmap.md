@@ -165,7 +165,7 @@ Acceptance:
 
 ## Current implementation snapshot
 
-As of the roadmap introduction:
+Current branch implementation snapshot:
 
 | Area | Status |
 |---|---|
@@ -175,6 +175,7 @@ As of the roadmap introduction:
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
 | Site-specific Providers | Four implemented; live verification pending |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
+| Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; no Provider opts in yet; real Cloudflare concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
 | Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
