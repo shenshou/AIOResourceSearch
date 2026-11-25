@@ -1059,3 +1059,53 @@ Decision: keep as a name-only candidate. Do not substitute hanime.moe or any oth
 - AApp11 and HAnime XYZ remain name-only candidates rather than receiving guessed URLs.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue with Hanime1, HanimeTV, MIEN321, and PigAV.
+
+
+## Individual source audit — sixteenth batch (2026-11-25)
+
+This batch reviewed four FetchJAV-listed other-index candidates: Hanime1, HanimeTV, MIEN321, and PigAV. Similar names and historical domain snapshots are not treated as proof of a common operator or current integration permission.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Hanime1 | Exact site has a 2257 statement requiring visitors to be at least 18; canonical homepage returned HTTP 403; no current Terms or public API/search contract was verified | **Age-restricted; policy/interface unresolved** | External-only; no Worker scraping or challenge bypass |
+| HanimeTV | First-party Terms updated 2026-06-25 expressly prohibit robots, spiders, scrapers, automated access, and data mining/extraction | **Automated access expressly prohibited** | External-only; no Worker API calls or scraping |
+| MIEN321 | FetchJAV names the source but no exact canonical domain, Terms, or public interface was verified | **Name-only unverified candidate** | No domain guessing or automated access |
+| PigAV | Current homepage renders a PeerTube-style JavaScript-required shell; no canonical instance policy/terms or verified API scope; older third-party WordPress records may be stale | **Platform/domain identity changed or unresolved** | External-only; no API harvesting or HTML scraping pending operator verification |
+
+### Source-specific findings
+
+#### Hanime1
+
+The catalog entry is Hanime1, whose exact domain is hanime1.me. The site publishes a 2257 statement saying visitors must be at least 18 or the age of majority in their jurisdiction, whichever is higher. The research fetcher received HTTP 403 from the canonical homepage, and no current Terms of Service, public API, or authorized search contract was verified. Third-party mobile clients and scraper projects exist, but their own disclaimers explicitly say they are unaffiliated and do not establish Hanime1 authorization.
+
+Decision: retain user-initiated external access only. Do not implement Worker scraping, use third-party unofficial wrappers as permission, or attempt challenge/cookie bypass. Revisit after the canonical Terms and a supported public interface are verified.
+
+#### HanimeTV
+
+The canonical hanime.tv homepage links to its first-party Terms of Use, last updated 2026-06-25. The Terms define the service to include its website, interfaces, content, and software. They limit use to personal/non-commercial viewing and state that, unless expressly authorized, users may not archive, reproduce, distribute, publish, license, or otherwise use content/information obtained through the service without express written permission. They expressly prohibit using any robot, spider, scraper, or other automated means to access the service, and prohibit data mining, data gathering, or extraction methods.
+
+Decision: do not implement a Worker Provider, use the site's internal API from the Worker, scrape HTML, or extract metadata absent express written permission. Keep the source as an external destination only.
+
+#### MIEN321
+
+FetchJAV's supported-site list names MIEN321, but the current source catalog does not have a verified canonical domain. Searches did not establish a first-party website, current Terms, public API/RSS, or stable public search contract for the exact source name. Similar-looking domains are insufficient to select a destination.
+
+Decision: keep as a name-only candidate. Do not guess a domain, copy FetchJAV-specific scraping code, or implement automated access.
+
+#### PigAV
+
+The current pigav.com homepage renders a JavaScript-required shell with wording and controls characteristic of a PeerTube-style instance. A third-party historical page describes pigav.com as a WordPress-based AV site, but that older snapshot may be stale and conflicts with the current response. The research fetcher could not retrieve an instance About page or Terms route, and no operator-published API policy or stable search contract was verified. PeerTube's existence as an open-source platform does not automatically authorize this instance's data to be harvested or redistributed.
+
+Decision: keep user-initiated external access only. Do not query PeerTube API endpoints, crawl the HTML, or extract metadata until the instance operator and current rules are verified.
+
+### Batch outcome
+
+- 4 FetchJAV-listed candidates received source-specific decisions.
+- HanimeTV's first-party Terms explicitly rule out automated access and data extraction absent express authorization.
+- Hanime1 remains distinct from HanimeTV and from similarly named Hanime services.
+- MIEN321 remains name-only rather than receiving a guessed domain.
+- PigAV's current PeerTube-style response was recorded; stale third-party WordPress records were not treated as current truth.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review ThisAV, Porn5F, PornBest, and PornTW.
