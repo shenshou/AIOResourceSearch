@@ -42,7 +42,7 @@ function readTag(xml: string, name: string): string {
 }
 
 function readAttribute(xml: string, name: string): string {
-  const match = new RegExp("\\b" + name + "\\s*=\\s*([\\"'])([\\s\\S]*?)\\1", "i").exec(xml);
+  const match = new RegExp("\\b" + name + "\\s*=\\s*([\"'])([\\s\\S]*?)\\1", "i").exec(xml);
   return match ? decodeXml(match[2]) : "";
 }
 
