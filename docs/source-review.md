@@ -1207,3 +1207,51 @@ Decision: retain user-initiated external access only. Do not implement Worker fe
 - PornLuLu remains external-only because the research fetcher receives a challenge and no policy/API permission was verified.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review PornNVR, Seselah, XJISHI, and any remaining FetchJAV candidates.
+
+
+## Individual source audit — nineteenth batch (2026-11-25)
+
+This batch reviewed four remaining FetchJAV-listed names: PornNVR, Seselah, XJISHI, and Video01. The focus was canonical-domain identity; similar names, redirects, and stale WHOIS/technology snapshots are not treated as proof of a supported source.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| PornNVR | No exact canonical domain, current Terms, API/RSS, or stable public search contract was found | **Name-only unverified candidate** | No domain guessing or automated access |
+| Seselah | Third-party records report seselah.com redirecting to papalah.com, but no first-party operator confirmation or exact-domain policy was verified | **Possible redirect; alias unconfirmed** | Keep name-only; do not switch to Papalah or scrape |
+| XJISHI | FetchJAV names the source, but xjishi.com third-party records show a holding/placeholder-style response and stale data; no canonical operator site was verified | **Name-only; domain mismatch** | No domain guessing or automated access |
+| Video01 | FetchJAV names the source but no exact canonical domain was verified; video01.com appears unrelated and video01.org records do not establish the intended operator | **Name-only; domain unresolved** | No domain substitution or automated access |
+
+### Source-specific findings
+
+#### PornNVR
+
+FetchJAV's supported-site list names PornNVR, but no exact canonical domain could be established. Searches did not surface a first-party site, current Terms, official API/RSS documentation, or a stable public search interface for the exact name. The catalog therefore has no verified URL.
+
+Decision: keep PornNVR as a name-only unverified candidate. Do not guess a domain or infer a search route.
+
+#### Seselah
+
+The catalog contains the name Seselah. Third-party domain information reports that seselah.com redirects to papalah.com, but no first-party announcement from the operator was found confirming that Papalah is the official successor or that the two domains share the same current Terms. Other third-party records describe Cloudflare challenges and historical technical details, which do not establish an automation policy or a supported public search contract.
+
+Decision: keep Seselah as a name-only candidate. Do not silently rewrite it to Papalah or implement scraping until the operator confirms the canonical domain and applicable terms.
+
+#### XJISHI
+
+FetchJAV names XJISHI but does not establish a current canonical URL in the reviewed material. Third-party records for xjishi.com show a generic/holding-page style response and stale registration snapshots; they do not establish that xjishi.com is the source FetchJAV intended. A similarly named xjishi.site record is also stale and cannot be substituted.
+
+Decision: keep as a name-only unverified candidate. Do not link to xjishi.com or xjishi.site, and do not guess another domain.
+
+#### Video01
+
+FetchJAV names Video01, but no exact canonical domain was verified. The search result for video01.com identifies a generic company/contact site rather than the intended adult-content source. Third-party records for video01.org mention a human-check page but do not establish operator identity or a canonical supported-site relationship.
+
+Decision: keep as a name-only unverified candidate. Do not substitute video01.com or video01.org without first-party confirmation.
+
+### Batch outcome
+
+- 4 remaining FetchJAV names received source-specific decisions.
+- No canonical domains were guessed for PornNVR, Seselah, XJISHI, or Video01.
+- Seselah's third-party redirect to Papalah was recorded as an unconfirmed lead only.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review the remaining FetchJAV candidates Jable.org and TnaFlix, then perform a full reconciliation of the 26 named sites against the 28 FetchJAV-tagged catalog records.
