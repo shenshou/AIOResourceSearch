@@ -2489,3 +2489,26 @@ This section records official API candidates reviewed while expanding beyond the
   - Anime type contract: https://notify.moe/api/anime
   - Beginner guide (API described as ongoing and subject to change): https://notify.moe/thread/I3MMiOtzR
   - Terms of Service: https://notify.moe/terms
+
+
+## Movie / TV torrent API follow-up — 2026-11-25
+
+### EZTV public API — deferred; current API does not provide keyword search
+
+- The current EZTV API page on the site's own domain states that its API is in beta, requires no API login or key, and returns JSON from `https://eztvx.to/api/get-torrents`.
+- The documented parameters are `limit` and `page`; a separate `imdb_id` parameter retrieves torrents for a show when its IMDb ID is already known. The page does not document a free-text title/query parameter.
+- This is therefore not a drop-in Provider for the product's free-text search flow. It could only be useful in a future metadata-enrichment chain after a trusted upstream supplies an IMDb ID; that dependency and the API's beta status would need separate review.
+- No numeric quota, cache policy, or broad third-party republication permission was established from the API page.
+- **Decision: defer Provider implementation.** Do not crawl the search UI to compensate for the missing API query parameter. Reconsider only if EZTV documents stable keyword search or a clearly permitted ID-enrichment use, plus quota/cache guidance.
+- Official reference: https://eztvx.to/api/
+
+### YTS — API endpoint identity and current contract not verified
+
+- YTS's status page lists its current official domains and reports its API as operational, but the status page does not identify a canonical API base URL or publish the current API contract.
+- A current search result for YTS API documentation was hosted on a third-party proxy/documentation domain and directed clients to `movies-api.accel.li`. That is not sufficient evidence that this endpoint is operated or authorized by YTS; older YTS API documentation hosted on GitHub refers to retired domains such as `yts.am`.
+- The API's historical ability to return movie torrents or construct Magnet URIs does not establish current endpoint ownership, data-use permission, or a stable contract.
+- **Decision: pending / do not implement.** Do not connect the Worker to third-party proxy API hosts or guess an API origin from mirrors. Reconsider only when YTS publishes a current API specification and canonical API host on an official domain, with terms that permit this use.
+- References:
+  - YTS status page: https://yifystatus.com/
+  - Third-party API documentation lead (not treated as authoritative): https://yts.proxyninja.org/api
+  - Historical API documentation (retired host examples): https://github.com/BrokenEmpire/YTS/blob/master/API.md

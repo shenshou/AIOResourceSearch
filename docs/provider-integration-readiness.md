@@ -274,3 +274,27 @@ References:
 - https://notify.moe/api/anime
 - https://notify.moe/thread/I3MMiOtzR
 - https://notify.moe/terms
+
+
+## 7. Movie / TV torrent API candidates — 2026-11-25
+
+### EZTV — public beta API, but no documented keyword-search operation
+
+- First-party API page: `https://eztvx.to/api/get-torrents`.
+- The page states the API is in beta and does not require an API login or key. It documents JSON output, `limit` and `page` parameters, and lookup by `imdb_id` when the caller already knows the show's IMDb ID.
+- It does not document a free-text title/search parameter. A broad recent-torrents feed is not equivalent to searching the user's query and should not be fetched and filtered locally.
+- The page does not establish a numeric quota, cache policy, or broad metadata republication permission.
+- **Decision: deferred.** No Provider until EZTV publishes a stable keyword-search contract or explicitly confirms that ID-based enrichment is an allowed use and documents operating limits. Do not scrape the search UI to fill the API gap.
+
+Reference: https://eztvx.to/api/
+
+### YTS — current API origin not verified
+
+- YTS's status page lists official domains and marks its API operational, but does not publish a canonical API hostname or current endpoint contract.
+- A current API documentation result is hosted on a third-party proxy/documentation domain and points to `movies-api.accel.li`; this is not sufficient proof of YTS ownership or permission. Older API docs refer to historical domains and cannot be assumed current.
+- **Decision: pending; do not implement.** Require a current API specification and canonical API host published by YTS itself, plus terms that permit this product's use. Do not depend on third-party proxy APIs or infer an API host from old documentation.
+
+References:
+- https://yifystatus.com/
+- https://yts.proxyninja.org/api (third-party lead only)
+- https://github.com/BrokenEmpire/YTS/blob/master/API.md (historical docs)
