@@ -30,7 +30,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const isDocumentation = (path) =>
-              path.startsWith("docs/") || /\\.mdx?$/i.test(path);
+              path.startsWith("docs/") || /\.mdx?$/i.test(path);
 
             async function changedPaths(base, head) {
               try {
@@ -54,7 +54,10 @@ jobs:
                   const files = response.data.files;
                   // GitHub truncates large commit file lists. Be conservative.
                   if (!Array.isArray(files) || files.length >= 300) return null;
-                  paths.push(...files.map((file) => file.filename));
+                  for (const file of files) {
+                    paths.push(file.filename);
+                    if (file.previous_filename) paths.push(file.previous_filename);
+                  }
                 }
                 return paths;
               } catch (error) {
@@ -68,20 +71,24 @@ jobs:
             if (context.eventName === "pull_request") {
               const pr = context.payload.pull_request;
               const currentHead = pr.head.sha;
-              const runs = await github.rest.actions.listWorkflowRuns({
-                owner,
-                repo,
-                workflow_id: "ci.yml",
-                event: "pull_request",
-                per_page: 100,
-              });
-
-              const successfulRuns = runs.data.workflow_runs
-                .filter((run) =>
-                  run.conclusion === "success" &&
-                  run.pull_requests?.some((item) => item.number === pr.number)
-                )
-                .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+              let successfulRuns = [];
+              try {
+                const runs = await github.rest.actions.listWorkflowRuns({
+                  owner,
+                  repo,
+                  workflow_id: "ci.yml",
+                  event: "pull_request",
+                  per_page: 100,
+                });
+                successfulRuns = runs.data.workflow_runs
+                  .filter((run) =>
+                    run.conclusion === "success" &&
+                    run.pull_requests?.some((item) => item.number === pr.number)
+                  )
+                  .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+              } catch (error) {
+                core.warning(`Could not inspect previous CI runs: ${error.message}`);
+              }
 
               // Reuse the newest successful CI baseline that is an ancestor of this PR head.
               for (const run of successfulRuns) {
