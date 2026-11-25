@@ -148,6 +148,8 @@ jobs:
 
       - name: Run Worker unit tests
         run: npm run test:worker
+      - name: Run Worker Durable Object runtime tests
+        run: npm run test:worker:runtime
 
       - name: Build frontend and type-check Worker
         run: npm run build

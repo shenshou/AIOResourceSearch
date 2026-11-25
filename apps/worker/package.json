@@ -7,7 +7,8 @@
     "dev": "wrangler dev --config wrangler.jsonc",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/providers/search.test.ts tests/routes/index.test.ts tests/validation/validation.test.ts tests/rate-limit-coordinator.test.ts tests/providers/mangadex-api.test.ts"
+    "test": "tsx --test tests/providers/search.test.ts tests/routes/index.test.ts tests/validation/validation.test.ts tests/rate-limit-coordinator.test.ts tests/providers/mangadex-api.test.ts",
+    "test:runtime": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@aio-resource-search/shared": "0.1.0"
@@ -15,6 +16,8 @@
   "devDependencies": {
     "typescript": "~5.7.2",
     "wrangler": "^4.0.0",
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "@cloudflare/vitest-plugin": "^1.9.2",
+    "vitest": "^4.1.12"
   }
 }

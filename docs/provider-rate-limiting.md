@@ -101,3 +101,17 @@ A working limiter does not grant API permission. Before enabling a source, separ
 - Bangumi public API documentation: https://bangumi.github.io/api/
 - Bangumi public API repository and OpenAPI schema: https://github.com/bangumi/server/blob/master/openapi/v0.yaml
 - Cloudflare Durable Objects pricing: https://developers.cloudflare.com/durable-objects/platform/pricing/
+
+## Local Durable Object runtime test suite
+
+The opt-in local runtime suite is implemented with `@cloudflare/vitest-plugin` and loads the existing `apps/worker/wrangler.jsonc` directly:
+
+```sh
+npm run test:worker:runtime
+```
+
+It runs inside the local `workerd` runtime and covers concurrent reservation spacing, per-lane isolation, cooldown revalidation, and SQLite state persistence after Durable Object eviction. It is separate from the existing fast Node `tsx --test` suite so focused Worker tests remain quick.
+
+The runtime suite uses the existing declarative `exports` configuration. Do not add legacy `migrations` alongside it: Wrangler treats the two Durable Object lifecycle declarations as mutually exclusive. The test command does not deploy a Worker, create a hosted namespace, access production KV, or call upstream Providers.
+
+The full CI workflow runs both the fast Node suite and this local runtime suite as part of the same comprehensive verification run. Hosted non-production Cloudflare verification remains a separate operational gate and is not replaced by local `workerd` tests.
