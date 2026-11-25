@@ -3,6 +3,7 @@ import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
 import { createCoordinatedFetch, type RateLimitCoordinatorNamespace } from "../rate-limit-coordinator";
+import { readSourceCredential, type Env } from "../env";
 
 const MAX_RESULTS_PER_SOURCE = 50;
 const MAX_TOTAL_RESULTS = 100;
@@ -22,7 +23,8 @@ export interface SourceSearchStatus {
     | "adapter_unavailable"
     | "adapter_incompatible"
     | "provider_failed"
-    | "provider_timeout";
+    | "provider_timeout"
+    | "credential_unavailable";
 }
 
 export interface ExternalSearchLink {
@@ -187,6 +189,7 @@ async function searchOneSource(
   cache?: Cache,
   requestSignal?: AbortSignal,
   rateLimitCoordinator?: RateLimitCoordinatorNamespace,
+  env?: Env,
 ): Promise<{
   status: SourceSearchStatus;
   resources: NormalizedResource[];
@@ -206,6 +209,19 @@ async function searchOneSource(
   }
 
   const provider = resolution.provider;
+  const credential = readSourceCredential(env, source);
+  if (source.credentialBinding && !credential) {
+    return {
+      status: {
+        sourceId: source.id,
+        sourceName: source.name,
+        status: "unavailable",
+        resultCount: 0,
+        errorCode: "credential_unavailable",
+      },
+      resources: [],
+    };
+  }
   if (requestSignal?.aborted) {
     throw requestSignal.reason ?? new DOMException("Search request was cancelled.", "AbortError");
   }
@@ -241,7 +257,7 @@ async function searchOneSource(
 
     const providerResult = provider.search(
       { query: request.query, mode: request.mode },
-      { source, fetch: providerFetch, signal: controller.signal, cache, parseHtml: parseHtmlResults },
+      { source, fetch: providerFetch, signal: controller.signal, cache, parseHtml: parseHtmlResults, ...(credential ? { credential } : {}) },
     );
     const resources = await Promise.race([providerResult, timeout, cancelled]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
@@ -288,6 +304,7 @@ export async function executeSourceTest(
   cache?: Cache,
   signal?: AbortSignal,
   rateLimitCoordinator?: RateLimitCoordinatorNamespace,
+  env?: Env,
 ): Promise<{ status: SourceSearchStatus; results: NormalizedResource[] }> {
   const result = await searchOneSource(
     source,
@@ -297,6 +314,7 @@ export async function executeSourceTest(
     cache,
     signal,
     rateLimitCoordinator,
+    env,
   );
   return { status: result.status, results: result.resources };
 }
@@ -309,6 +327,7 @@ export async function executeSearch(
   cache?: Cache,
   signal?: AbortSignal,
   rateLimitCoordinator?: RateLimitCoordinatorNamespace,
+  env?: Env,
 ): Promise<SearchResponse> {
   const matchesContentCategory = (source: SourceDefinition) =>
     request.contentCategory === undefined ||
@@ -352,7 +371,7 @@ export async function executeSearch(
     while (nextIndex < enabledSources.length) {
       const index = nextIndex++;
       if (signal?.aborted) return;
-      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache, signal, rateLimitCoordinator);
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache, signal, rateLimitCoordinator, env);
     }
   }));
 
