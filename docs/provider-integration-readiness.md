@@ -68,14 +68,15 @@ Official references:
 
 Initial implementation should keep the request narrow:
 
-- `title[]`: the user's search query
+- `title`: the user's search query (single string parameter; do not send `title[]`)
 - `limit`: bounded to 20 results for this aggregator (never request the maximum merely because the API allows it)
 - `offset`: initially 0; only paginate if the caller explicitly requests more results and within the Worker result cap
 - `contentRating[]`: explicitly choose allowed content ratings; do not depend on the API's changing default
-- `includes[]`: only `author`, `artist`, and optionally `cover_art`
+- `contentRating[]`: repeat explicitly for the ratings the product intends to include; the API currently documents `safe`, `suggestive`, `erotica`, and `pornographic`
+- `includes[]`: omit in the first version; do not expand author, artist, or cover relationships until their need and data mapping are separately reviewed
 - No chapter, feed, upload, user, account, or reading endpoints
 
-Exact query parameter spelling, enum values, maximums and schema must be checked against the live official OpenAPI document at implementation time; this profile is a contract checklist, not a hardcoded implementation yet.
+The current OpenAPI contract defines `title` as a scalar string, `limit` as an integer from 0 to 100, `offset` as a non-negative integer, `contentRating[]` as an array of the four values above, and `includes[]` as a relationship-expansion array. The implementation deliberately requests only 20 results and does not paginate.
 
 ### Proposed field mapping
 
@@ -85,7 +86,7 @@ Exact query parameter spelling, enum values, maximums and schema must be checked
 | `url` | `https://mangadex.org/title/{id}` |
 | `releaseDate` | Do not fabricate a release date; `year` is a year-only value and belongs in metadata unless the shared type explicitly supports year precision |
 | `description` | `attributes.description` in selected locale, bounded |
-| `metadata` | Status, original language, content rating, publication year, tags, author/artist names |
+| `metadata` | Status, original language, content rating, publication year, tags; author/artist omitted in v1 because relationships are not expanded |
 | `image` | Omit initially; cover hotlinking and image-display policy must be verified separately |
 | Resource links | None; never fetch or proxy chapter images or chapter content |
 
@@ -106,7 +107,7 @@ The published initial global limit is 5 requests/second per source IP, with addi
 
 ### Decision
 
-**Conditional implementation candidate.** It is the strongest of these three for a direct search Provider, provided the shared coordinator is implemented and the product remains ad-free/free. First version should return metadata and official MangaDex detail links only.
+**Implemented in Worker code; not enabled.** The Provider uses the documented scalar `title` parameter, 20-result limit, explicit content-rating filters, metadata-only mapping, visible MangaDex attribution, and the shared 400 ms Durable Object lane. It is registered in the compile-time Worker registry, but no source/adapter configuration has been written to KV. Enablement still requires the non-production Cloudflare coordinator/runtime checks and confirmation that the deployed product remains ad-free/free.
 
 Official references:
 - https://api.mangadex.org/docs/
