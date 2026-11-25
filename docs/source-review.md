@@ -1450,3 +1450,52 @@ Decision: retain user-initiated external access only. Do not use the undocumente
 - TorrentKitty's cross-domain Terms were not misrepresented as definitely applying to torrentkitty.tv.
 - XXXClub's third-party indexer route was recorded as technical evidence only, not authorization.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+
+
+## Atlas source inventory — final reconciliation (2026-11-25)
+
+This section closes the reconciliation item left after the twenty-third individual audit batch. It compares the current Atlas default seed file with the AIOResourceSearch catalog and the completed source-specific review batches. The seed file itself says it is not automatically executed on deployment and may differ from Atlas production configuration.
+
+### Scope and count
+
+The current Atlas `database/seeds/003_search_sources.sql` contains 119 rows:
+
+| Atlas seed category | Rows | Included in the original AIOResourceSearch candidate import |
+|---|---:|---|
+| JAV database | 4 | Yes |
+| JAV streaming | 21 | Yes |
+| JAV torrent | 15 | Yes |
+| JAV community | 16 | Yes |
+| Anime database / torrent / streaming / manga | 23 | No — separate multi-category discovery scope |
+| Movie database / torrent / streaming | 19 | No — separate multi-category discovery scope |
+| Manga database / resources | 13 | No — separate multi-category discovery scope |
+| Novel database | 8 | No — separate multi-category discovery scope |
+| **Total** | **119** | **56 included seed rows** |
+
+The original AIOResourceSearch Atlas import deliberately included the 56 JAV, torrent, and community seed rows. All 56 are represented in the current candidate catalog:
+
+- 54 rows have an exact ID match.
+- The remaining two are naming/ID migrations, not missing sources:
+  - Atlas `jable` → catalog `jabletv` (JableTV; same canonical `jable.tv` source).
+  - Atlas `javguru` → catalog `jav-guru` (JAV.guru; same canonical `jav.guru` source).
+- Atlas README also identifies DMM/FANZA as a metadata source; it is represented by the additional `dmm-fanza` candidate.
+- Therefore the current catalog has 57 Atlas-tagged candidates: 56 relevant seed entries plus the DMM/FANZA README candidate.
+
+The 63 Atlas seed rows outside the original import scope have not been silently discarded as “audited” or “integrated.” They remain a separate discovery backlog for anime, film/TV, manga, and novel categories. They require their own policy, API, attribution, and rate-limit review before registration or implementation.
+
+### Current catalog reconciliation
+
+- Current candidate catalog: 91 unique records.
+- Reference-project candidate records: 88 unique records across Atlas, FetchJAV, and Lustpress.
+- AIOResourceSearch-origin candidates: 3 (Torlock, Bitsearch, YourBittorrent).
+- Project tags overlap on five shared records; project-tag totals therefore exceed unique candidate count.
+- Current `sourceCatalog.ts` contains three search URL templates: JAV.guru, r/JAV, and YourBittorrent. These are external-search/backup entry points; they are not three additional Worker Providers.
+- The four implemented site-specific Providers remain Sukebei RSS, Perverzija DB, Torlock Torznab, and YourBittorrent JSON. The reusable `generic-html` adapter is a framework, not a fifth site-specific Provider.
+
+### Review completion versus integration status
+
+The 56 imported Atlas seed candidates have source-specific decisions recorded across the first through twelfth individual audit batches and the DMM/FANZA API eligibility review. “Reviewed” means the canonical identity, available interface evidence, and relevant policy constraints were assessed. It does not mean every source is approved for automation, reachable from Cloudflare Workers, enabled in KV, or implemented as a Provider.
+
+The remaining 63 Atlas rows outside the original import scope are not part of the 57-candidate Atlas review count. They are the next Atlas-derived discovery scope if/when those additional content categories are pursued.
+
+No Provider implementation, source enablement, production KV mutation, or Cloudflare deployment was performed by this reconciliation.
