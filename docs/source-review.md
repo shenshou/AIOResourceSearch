@@ -1782,3 +1782,104 @@ Reference:
 - HIDIVE remains external-only.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review Atlas anime/manga crossover and movie metadata candidates, beginning with Bilibili Comic and the TMDB/Douban/IMDb/Trakt/Letterboxd/Rotten Tomatoes/Metacritic entries.
+
+
+## Individual source audit — twenty-seventh batch (2026-11-25)
+
+This batch reviews the eight Atlas movie/TV metadata entries: TMDB, Douban Movie, IMDb, Trakt, Letterboxd, Rotten Tomatoes, Metacritic, and the duplicate “TMDB Chinese Forum” entry.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| TMDB | Official API legal notice prohibits using its data/images in connection with pornographic or offensive content; AIOResourceSearch includes adult-resource search in the same product | **Do not integrate in current product context** | No API key, metadata, images, or Provider; reconsider only with explicit written permission covering the entire product |
+| Douban Movie | Same current Douban User Agreement as Douban Anime; no official public third-party movie metadata API permission verified | **External-only** | No scraping, cookies, or unofficial API |
+| IMDb | Official policy permits only limited non-commercial use of provided datasets, forbids site scraping, and prohibits repurposing data to create an online/offline movie database | **Not suitable for this aggregator** | No scraping or dataset ingestion |
+| Trakt | Official API policy allows public discovery in general but explicitly prohibits using Trakt data in applications that promote copyright infringement or piracy | **Not suitable for current product context** | No API registration or Provider |
+| Letterboxd | Official API exists but access is request-only; current access page says it is not granting access for data-analysis, visualization, recommendation, or private/personal projects | **Access not available / application required** | No API use until Letterboxd explicitly grants access for this exact product |
+| Rotten Tomatoes | Official Terms prohibit data mining, automated collection, and systematic retrieval to build a collection/database without written consent | **Automation prohibited absent written consent** | No scraping or metadata aggregation |
+| Metacritic | No official public developer API or third-party aggregation permission was verified | **External-only** | No scraping or unofficial API |
+| TMDB Chinese Forum | The seed points to the same `themoviedb.org` host as TMDB and no separate operator/API identity was established | **Duplicate catalog entry** | Do not create a separate source or Provider |
+
+### Source-specific findings
+
+#### TMDB
+
+The official TMDB API FAQ/legal notice states that API data and images may not be used in connection with libelous, defamatory, obscene, pornographic, abusive, or otherwise offensive content. AIOResourceSearch is one product that includes adult-resource discovery; separating calls into a Film/TV category does not establish that TMDB's restriction no longer applies to the product context.
+
+Decision: do not integrate TMDB in the current product. Do not put a TMDB API key in Worker Secrets or consume its metadata/images unless TMDB provides explicit written permission or a license that covers the complete product context.
+
+Reference:
+- https://developer.themoviedb.org/docs/faq
+
+#### Douban Movie
+
+The official Douban User Agreement published on 2025-05-27 applies across Douban's service surfaces, including film. This review did not find an official public third-party movie metadata API or permission for this product to automate collection.
+
+Decision: external-only. Do not scrape movie pages, reuse session cookies, or adopt unofficial API wrappers.
+
+Reference:
+- https://www.douban.com/about/agreement
+
+#### IMDb
+
+IMDb's official Help and Conditions pages state that limited non-commercial use is restricted to the datasets IMDb makes available. The data cannot be obtained by scraping the website, and the permitted dataset use cannot be repurposed to create an online/offline database of movie information. The datasets also require source acknowledgment and are subject to their accompanying terms.
+
+Decision: not suitable for AIOResourceSearch's multi-source online catalog. Do not ingest the datasets or scrape IMDb pages. Individual users may independently use IMDb's consumer website.
+
+References:
+- https://help.imdb.com/article/imdb/general-information/can-i-use-imdb-data-in-my-software/G5JTRESSHJBBHTGX
+- https://www.imdb.com/conditions/
+- https://www.imdb.com/interfaces/
+
+#### Trakt
+
+Trakt's current official API Use Policy permits public discovery features in ordinary apps, including search results and title/person details, but explicitly prohibits using Trakt data in applications or websites that promote copyright infringement or piracy. Because AIOResourceSearch aggregates torrent and adult-resource sources in the same product, it cannot safely claim that the Trakt integration would be isolated from that product context.
+
+Decision: do not register a Trakt API app or implement a Provider for the current product. Reconsider only if Trakt gives written approval for this exact integrated product context.
+
+References:
+- https://developer.trakt.tv/docs/api-use-policy
+- https://developer.trakt.tv/docs/rate-limiting
+
+#### Letterboxd
+
+Letterboxd has an official API with OAuth2 and public-data client-credentials support, but its API access page states that access is by request only. The same page says it is not currently granting access for data-analysis, visualization, recommendation, LLM/GPT, private/personal projects, or recreations of paid-tier features. It recommends TMDB for general film/TV metadata.
+
+Decision: no API access should be assumed. Do not use undocumented endpoints or scrape Letterboxd pages. Revisit only if Letterboxd grants access in writing for AIOResourceSearch's actual use case.
+
+References:
+- https://api-docs.letterboxd.com/
+- https://letterboxd.com/api-beta/access/
+
+#### Rotten Tomatoes
+
+The official Terms of Use (last updated 2026-01-06) limit site use to personal, non-commercial purposes and prohibit data mining, automated collection, and systematic retrieval to create a collection, compilation, database, or directory without prior written consent.
+
+Decision: no Worker scraping or metadata aggregation. Keep only a user-opened homepage link if the catalog later retains the entry.
+
+Reference:
+- https://www.rottentomatoes.com/policies/terms-of-use
+
+#### Metacritic
+
+This pass did not verify a current official public developer API, data license, or third-party aggregation permission. Search-engine snippets, third-party scraping libraries, or the fact that pages are publicly visible do not establish a supported interface or permission.
+
+Decision: external-only. Do not scrape, use unofficial API wrappers, or republish ratings/reviews.
+
+#### TMDB Chinese Forum
+
+The Atlas seed labels this row “TMDB Chinese Forum” but points to `themoviedb.org`, the same canonical host as TMDB. No separate operator-controlled forum service or API was verified.
+
+Decision: treat as a duplicate/alias of the TMDB entry, not an independent source. Do not add a second Provider or source configuration.
+
+### Batch outcome
+
+- 8 Atlas movie/TV metadata entries received individual decisions.
+- TMDB and Trakt are unsuitable for the current integrated product context under their published policies.
+- Letterboxd requires an application and currently excludes several adjacent project types from API access.
+- IMDb's non-commercial datasets are not a license for a third-party online movie catalog.
+- Douban, Rotten Tomatoes, and Metacritic remain external-only.
+- The “TMDB Chinese Forum” seed is a duplicate of TMDB, not an independent provider.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review Atlas movie streaming and torrent candidates (Netflix, YouTube Movies, JustWatch, Reelgood, PlayPilot, Putlocker, FMovies, SolarMovie, The Pirate Bay, EZTV, and MejorTorrent).
