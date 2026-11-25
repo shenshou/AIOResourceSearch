@@ -5,6 +5,12 @@ const API_HOST = "yourbittorrent.com";
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const CACHE_TTL_SECONDS = 900;
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException("Provider request was cancelled.", "AbortError");
+  }
+}
+
 interface TorrentRecord {
   id?: unknown;
   name?: unknown;
@@ -130,9 +136,15 @@ export const yourBittorrentProvider: ProviderAdapter = {
     url.searchParams.set("category", "7");
     url.searchParams.set("limit", "50");
 
+    throwIfAborted(context.signal);
     const cacheKey = new Request(url.toString(), { method: "GET" });
     const cached = await context.cache?.match(cacheKey);
-    if (cached) return parseResults(JSON.parse(await readLimitedText(cached)));
+    throwIfAborted(context.signal);
+    if (cached) {
+      const cachedText = await readLimitedText(cached);
+      throwIfAborted(context.signal);
+      return parseResults(JSON.parse(cachedText));
+    }
 
     const response = await context.fetch(url.toString(), {
       method: "GET",
@@ -140,6 +152,7 @@ export const yourBittorrentProvider: ProviderAdapter = {
       redirect: "manual",
       signal: context.signal,
     });
+    throwIfAborted(context.signal);
     if (!response.ok) {
       throw new Error("YourBittorrent API returned HTTP " + response.status + ".");
     }
@@ -160,7 +173,9 @@ export const yourBittorrentProvider: ProviderAdapter = {
 
     let payload: unknown;
     try {
-      payload = JSON.parse(await readLimitedText(response));
+      const responseText = await readLimitedText(response);
+      throwIfAborted(context.signal);
+      payload = JSON.parse(responseText);
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error("YourBittorrent returned malformed JSON.", { cause: error });
@@ -169,6 +184,7 @@ export const yourBittorrentProvider: ProviderAdapter = {
     }
 
     const results = parseResults(payload);
+    throwIfAborted(context.signal);
     if (context.cache) {
       await context.cache.put(cacheKey, new Response(JSON.stringify(payload), {
         status: 200,
