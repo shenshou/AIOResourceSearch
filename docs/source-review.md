@@ -627,3 +627,40 @@ Decision: do not implement a Worker Provider, HTML parser, metadata extractor, o
 - JavyNow's canonical Terms expressly prohibit automated content retrieval absent authorization.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - The remaining catalog search templates are now primarily the user-initiated external-search cases and existing implemented-provider fallback. The next review should validate those remaining entries, then continue through homepage-only torrent/forum candidates.
+
+
+## Individual source audit — seventh batch (2026-11-25)
+
+This batch revisited the two unresolved candidates, JableTV and SupJAV. It verifies the policy from the exact site's own page where possible and does not treat a terms document hosted on an unrelated domain as canonical policy.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JableTV | Canonical homepage and its linked Terms at https://jable.tv/terms/ | **Personal, non-commercial linking only; automated integration not approved** | Remove the unverified /videos/{query}/ search template; no Worker scraping, metadata extraction, or content copying |
+| SupJAV | Canonical homepage fetch returned HTTP 403; the Terms result found on hmsea.com is hosted on a different domain and cannot be confirmed as SupJAV's canonical policy | **Unverified; no automated access** | Remove the unverified search template; no Worker requests pending canonical terms and ordinary public search verification |
+
+### Source-specific findings
+
+#### JableTV
+
+The canonical jable.tv homepage links directly to /terms/. The current page identifies the agreement as governing Jable.TV and states that the site is for personal use, prohibits unauthorized framing/linking, and limits permitted linking to personal, non-commercial purposes. It also restricts copying, reproduction, distribution, and other exploitation of site content without prior written consent. The terms page is dated 2019-03-28, so it is the current page linked by the site but is not a recently revised policy.
+
+The catalog's old https://jable.tv/videos/{query}/ template was not verified as a search route. The homepage exposes a search field, but the existence of a field does not establish that this guessed URL is the route it submits to. No official API or authorization for automated extraction was found.
+
+Decision: remove the unverified search template. Retain only the homepage as a directory reference. Do not implement Worker fetching, HTML parsing, metadata extraction, or content copying. Any future user-initiated link must remain within the site's stated personal/non-commercial linking conditions and use a verified search destination.
+
+#### SupJAV
+
+The canonical supjav.com homepage returned HTTP 403 to the research fetcher. A search result surfaced a terms document hosted on hmsea.com that mentions both SUPJAV and jable.tv, but it is not hosted on supjav.com and its canonical provenance could not be established. It must not be treated as SupJAV's authoritative current policy. Third-party reputation reports and domain records do not establish permission to automate access.
+
+Decision: remove the unverified search template. Keep SupJAV unverified and do not implement Worker requests, HTML parsing, or alternate-route/cookie/challenge workarounds. Revisit only after obtaining the canonical terms and confirming an ordinary public search interface for the exact domain.
+
+### Batch outcome
+
+- 2 sources received source-specific decisions.
+- Both search templates were removed.
+- JableTV is restricted to personal, non-commercial linking under its canonical linked Terms; the old catalog URL was not a verified search route.
+- SupJAV remains unverified; a terms document hosted on a different domain was not misrepresented as canonical.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Remaining search templates should now be reviewed individually: JAV.guru (personal/non-commercial external link), r/JAV (external-search only), and YourBittorrent (implemented Provider fallback).
