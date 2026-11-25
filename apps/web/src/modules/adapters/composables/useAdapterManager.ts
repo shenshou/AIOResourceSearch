@@ -46,6 +46,8 @@ export function useAdapterManager() {
         operationGeneration += 1;
         reloadSequence += 1;
         session.clear();
+        loading.value = false;
+        saving.value = false;
         adapters.value = [];
         etag.value = "";
         revision.value = 0;
@@ -67,7 +69,10 @@ export function useAdapterManager() {
       error.value = "请输入管理员令牌。";
       return false;
     }
+    const loginGeneration = operationGeneration;
+    const loginToken = token.value;
     const success = await reload();
+    if (loginGeneration !== operationGeneration || token.value !== loginToken) return false;
     if (success) notice.value = "管理员验证成功。";
     else session.clear();
     return success;
@@ -107,6 +112,7 @@ export function useAdapterManager() {
       if (cause instanceof AdapterApiError && cause.status === 409) {
         const conflictMessage = cause.message;
         await reload();
+        if (generation !== operationGeneration || token.value !== requestToken) return false;
         error.value = conflictMessage;
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
