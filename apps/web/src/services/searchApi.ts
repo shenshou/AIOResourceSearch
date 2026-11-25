@@ -7,6 +7,11 @@ export interface SearchResource {
   sourceId: string;
   sourceName: string;
   category: string;
+  sourceAttributions?: Array<{
+    sourceId: string;
+    sourceName: string;
+    category: string;
+  }>;
   contentCategory?: ContentCategory;
   title: string;
   url: string;
