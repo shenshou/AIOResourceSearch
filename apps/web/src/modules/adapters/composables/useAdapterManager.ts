@@ -112,11 +112,11 @@ export function useAdapterManager() {
       notice.value = successMessage;
       return true;
     } catch (cause) {
-      if (generation !== operationGeneration || token.value !== requestToken) return false;
+      if (generation !== operationGeneration || sharedGeneration !== sessionGeneration.value || token.value !== requestToken) return false;
       if (cause instanceof AdapterApiError && cause.status === 409) {
         const conflictMessage = cause.message;
         await reload();
-        if (generation !== operationGeneration || token.value !== requestToken) return false;
+        if (generation !== operationGeneration || sharedGeneration !== sessionGeneration.value || token.value !== requestToken) return false;
         error.value = conflictMessage;
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
