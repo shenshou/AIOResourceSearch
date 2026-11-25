@@ -487,3 +487,51 @@ Decision: remove the unverified search template. Keep the source unverified unti
 - No site is declared offline solely because a research fetch failed.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - The next batch should continue through the remaining JAV search-template candidates, then review the torrent/forum candidates with homepage-only entries.
+
+
+## Individual source audit — fourth batch (2026-11-25)
+
+This batch reviewed JAV.sb, JAVCL, JavDoe, and JavGG. It distinguishes canonical policy evidence from technical observations made by the research fetcher. HTTP errors and timeouts from that fetcher do not establish that ordinary users are blocked or that a site is offline.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JAV.sb | Canonical homepage fetch returned HTTP 502 to the research fetcher; no canonical current terms or stable search contract was verified | **Unverified** | Remove the unverified search template; no Worker requests pending canonical policy and ordinary public search verification |
+| JAVCL | Canonical homepage fetch returned HTTP 403 to the research fetcher; no canonical current terms or stable search contract was verified | **Unverified** | Remove the unverified search template; do not treat the research fetcher's 403 as proof of site-wide blocking |
+| JavDoe | Canonical homepage fetch timed out; search results did not establish current canonical terms or a supported search contract | **Unverified** | Remove the unverified search template; no Worker requests pending verification |
+| JavGG | Canonical Terms of Service: https://javgg.net/terms-of-service/ | **Automated extraction prohibited by the published Terms** | Remove the search template; do not fetch search results, mine data, extract metadata, or redistribute site material |
+
+### Source-specific findings
+
+#### JAV.sb
+
+The catalog points to jav.sb and previously contained a /search/{query} template. The research fetcher returned HTTP 502 for the canonical homepage. The available search evidence did not establish a canonical current terms page or a supported public search contract. A fetch failure is not evidence that the site is offline or that ordinary users receive the same response.
+
+Decision: remove the unverified search template and retain only the homepage as an unverified directory reference. Do not implement Worker fetching or HTML parsing until canonical terms and ordinary public access are verified.
+
+#### JAVCL
+
+The catalog points to javcl.com and previously contained a /search/{query} template. The research fetcher received HTTP 403 from the canonical homepage. The available results did not establish current canonical terms or a stable public search contract. A research fetcher's 403 is a point-in-time tool response, not proof of a site-wide block and not a reason to try alternate routes, proxies, cookies, or challenge bypasses.
+
+Decision: remove the unverified search template. Retain the homepage as an unverified directory reference only; do not automate access pending verification.
+
+#### JavDoe
+
+The catalog points to javdoe.to and previously contained a /search?q={query} template. The research fetcher timed out when opening the canonical homepage. Third-party domain/reputation records do not establish the site's own automation policy or a supported search interface.
+
+Decision: remove the unverified search template. Keep the source unverified; do not infer availability, permission, or a search contract from the timeout or third-party records.
+
+#### JavGG
+
+The canonical Terms of Service grant a limited license for viewing site material and expressly restrict data mining, data harvesting, and data extraction. The terms also restrict publishing, commercializing, or publicly showing website material. This is direct policy evidence for the exact catalog domain, not a third-party scan.
+
+Decision: remove the search template and do not implement automated search, HTML parsing, metadata extraction, or redistribution. Keep only the homepage as a directory reference; do not treat the presence of a public search page as permission to automate it.
+
+### Batch outcome
+
+- 4 sources received source-specific decisions.
+- All 4 unverified search templates were removed.
+- JavGG's canonical Terms explicitly prohibit data extraction; the other 3 remain unverified rather than being labeled offline or blocked.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue auditing the remaining search-template candidates, then move to homepage-only forum and torrent candidates.
