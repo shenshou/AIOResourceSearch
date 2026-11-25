@@ -1,13 +1,13 @@
 import type { Env } from "./env";
 
-function json(data: unknown, status = 200, headers?: HeadersInit): Response {
+export function json(data: unknown, status = 200, headers?: HeadersInit): Response {
   const responseHeaders = new Headers(headers);
   responseHeaders.set("Content-Type", "application/json; charset=utf-8");
   responseHeaders.set("Cache-Control", "no-store");
   return new Response(JSON.stringify(data), { status, headers: responseHeaders });
 }
 
-function getCorsHeaders(request: Request, env: Env): Headers | Response {
+export function getCorsHeaders(request: Request, env: Env): Headers | Response {
   const headers = new Headers();
   const origin = request.headers.get("Origin");
   if (!origin) return headers;
@@ -30,7 +30,7 @@ function getCorsHeaders(request: Request, env: Env): Headers | Response {
   return headers;
 }
 
-function withEtag(response: Response, version: number): Response {
+export function withEtag(response: Response, version: number): Response {
   const headers = new Headers(response.headers);
   headers.set("ETag", `"${version}"`);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
@@ -46,7 +46,7 @@ function publicAdapter(adapter: AdapterDefinition): Omit<AdapterDefinition, "not
   return safeAdapter;
 }
 
-async function readJsonBody(request: Request): Promise<unknown> {
+export async function readJsonBody(request: Request): Promise<unknown> {
   const contentLength = Number(request.headers.get("Content-Length") ?? "0");
   if (contentLength > MAX_CONFIG_BYTES) throw new Error("Request body is too large.");
   const text = await request.text();
@@ -54,7 +54,7 @@ async function readJsonBody(request: Request): Promise<unknown> {
   return JSON.parse(text);
 }
 
-function expectedVersion(request: Request): number | null {
+export function expectedVersion(request: Request): number | null {
   const raw = request.headers.get("If-Match");
   if (!raw) return null;
   const value = raw.trim().replace(/^W\//, "").replace(/^"|"$/g, "");
