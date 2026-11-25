@@ -71,6 +71,7 @@ The following names are intentionally retained in the source catalog and review 
 | 夯鸭论坛 | Homepage-only; 18+ age gate is not an automation permission or API contract | Current terms and a supported public interface are published; no age-gate bypass |
 | 色花堂98堂 | Unverified external reference; listed domains do not currently establish a canonical, functioning site or API | Operator confirms canonical domain and publishes current terms plus a supported interface |
 | Empornium | External link only; private tracker with account/invite access | A genuinely public, operator-authorized interface becomes available; no account-cookie automation |
+| JAVDatabase | Homepage-only external entry; no first-party public API or automation permission verified; third-party scraper/API options are not eligible | Official free API/feed and applicable automation/data-use terms are published |
 | JAVDB / JAVLibrary / JAV.guru | External-search candidates only; no verified public API contract and/or automation permission for this aggregator | First-party API/feed or explicit written authorization permits the intended metadata use |
 | javinfo / Datawebot scraper services | Not eligible under the project's no-paid-services rule | A free official interface becomes available; paid third-party scraping remains excluded |
 
