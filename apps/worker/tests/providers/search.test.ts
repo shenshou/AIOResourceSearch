@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import type { Env } from "../../src/env.ts";
 import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
@@ -1278,4 +1279,53 @@ test("generic HTML adapter drops detail links outside the configured source host
   );
 
   assert.deepEqual(results, []);
+});
+
+ 
+test("resolves only the configured Worker secret binding and passes it to the matching Provider", async () => {
+  let receivedCredential: string | undefined;
+  const configuredSource = source({ credentialBinding: "TEST_SOURCE_TOKEN" });
+  const authenticatedProvider = provider(async (_input, context) => {
+    receivedCredential = context.credential;
+    return [resource({ sourceId: configuredSource.id, sourceName: configuredSource.name })];
+  });
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(configuredSource),
+    adapters,
+    resolve(authenticatedProvider),
+    undefined,
+    undefined,
+    undefined,
+    { TEST_SOURCE_TOKEN: "test-secret-value" } as Env,
+  );
+
+  assert.equal(receivedCredential, "test-secret-value");
+  assert.equal(result.sources[0]?.status, "ok");
+  assert.equal(JSON.stringify(result).includes("test-secret-value"), false);
+});
+
+test("fails closed when a source secret binding is configured but missing", async () => {
+  let providerCalled = false;
+  const configuredSource = source({ credentialBinding: "MISSING_SOURCE_TOKEN" });
+  const authenticatedProvider = provider(async () => {
+    providerCalled = true;
+    return [];
+  });
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(configuredSource),
+    adapters,
+    resolve(authenticatedProvider),
+    undefined,
+    undefined,
+    undefined,
+    {} as Env,
+  );
+
+  assert.equal(providerCalled, false);
+  assert.equal(result.sources[0]?.status, "unavailable");
+  assert.equal(result.sources[0]?.errorCode, "credential_unavailable");
 });
