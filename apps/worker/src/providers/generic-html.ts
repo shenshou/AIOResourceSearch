@@ -133,7 +133,7 @@ export const genericHtmlProvider: ProviderAdapter = {
       const title = item.title.trim().slice(0, 500);
       if (!url || !title) continue;
       let imageUrl: string | undefined;
-      if (item.imageUrl) {
+      if (supportsImage && item.imageUrl) {
         try {
           const image = new URL(item.imageUrl, baseUrl);
           if (image.protocol === "https:" && !image.username && !image.password) imageUrl = image.toString();
@@ -151,7 +151,7 @@ export const genericHtmlProvider: ProviderAdapter = {
         ...(imageUrl ? { imageUrl } : {}),
         ...(item.description ? { description: item.description.slice(0, 4000) } : {}),
         ...(item.metadata ? { metadata: item.metadata } : {}),
-        ...(validMagnet(item.magnetUri) ? { magnetUri: validMagnet(item.magnetUri) } : {}),
+        ...(supportsMagnet && validMagnet(item.magnetUri) ? { magnetUri: validMagnet(item.magnetUri) } : {}),
       });
     }
     return resources;
