@@ -4,6 +4,12 @@ import type { ProviderAdapter } from "./types";
 const MAX_HTML_BYTES = 2 * 1024 * 1024;
 const MAX_RESULTS = 50;
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException("Provider request was cancelled.", "AbortError");
+  }
+}
+
 async function readBoundedHtml(response: Response): Promise<Response> {
   const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
   if (declaredLength > MAX_HTML_BYTES) throw new Error("HTML response exceeds the 2 MiB limit.");
@@ -126,7 +132,9 @@ export const genericHtmlProvider: ProviderAdapter = {
       ...(!supportsMagnet ? { magnet: undefined } : {}),
     };
     const boundedResponse = await readBoundedHtml(response);
+    throwIfAborted(signal);
     const extracted = await parseHtml(boundedResponse, selectors);
+    throwIfAborted(signal);
     const resources = [];
     for (const item of extracted.slice(0, MAX_RESULTS)) {
       const url = resolvePageUrl(item.url, baseUrl);
