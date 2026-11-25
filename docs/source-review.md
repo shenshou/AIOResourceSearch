@@ -2411,3 +2411,23 @@ References:
 - No personal subscription RSS token, group API key, login session, publish/delete endpoint, or other authenticated API is used.
 - The `robots.txt` URL could not be independently retrieved in this review; the implementation is restricted to the documented public Torznab endpoint. Do not probe alternate paths if it later becomes unavailable.
 - No KV source/adapter configuration, enablement, production changes, or deployment is included.
+
+## AnimeTosho — retired feed/API; do not integrate — 2026-11-25
+
+- The operator's own shutdown notice states that updates would stop on 2026-05-09 and that the website/feed/API might remain temporarily available only to serve old data. This means the endpoint is not a live source for new releases.
+- The operator's news archive records the shutdown plan; a later status report in October 2026 says the feed/API and download functions have been switched off. The later report is secondary evidence, while the operator's shutdown notice is the primary source.
+- Decision: do not add AnimeTosho as a Provider or count it among active candidates. Do not use its legacy JSON/RSS/Torznab URLs as a fallback or try alternate hosts to revive the retired service.
+- References:
+  - Operator shutdown notice: https://animetosho.org/about/shutdown
+  - Operator news archive: https://animetosho.org/about/news
+  - Secondary shutdown confirmation: https://otakudown.com/anime-tosho-shuts-down-downloads-feeds/
+
+## Tokyo Toshokan — public RSS capability historically documented; current integration not verified — 2026-11-25
+
+- The canonical site search result identifies Tokyo Toshokan as a Japanese-media BitTorrent index and documents that a new RSS feed/customizer was introduced in 2017, with search features supported in RSS at that time.
+- The current canonical page could not be retrieved by the research fetcher in this review (HTTP 403). That response alone does not prove the site blocks all clients or that a bypass is necessary; however, it also does not establish a currently supported RSS URL, present-day automation permission, or normal Worker reachability.
+- Decision: retain only a user-initiated external destination for now. Do not guess feed URLs, probe undocumented endpoints, rotate IPs, impersonate browsers, or attempt to bypass a challenge. Reconsider if the canonical site provides a currently documented feed URL and the terms/ordinary access can be verified.
+- References:
+  - Canonical site listing and RSS announcement: https://www.tokyotosho.info/
+  - Example current listing indexed by search: https://www.tokyotosho.info/?cat=10&date=2026-08-31
+
