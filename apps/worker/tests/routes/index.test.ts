@@ -466,7 +466,7 @@ function adminTestRequest(path: string, body?: unknown, signal?: AbortSignal) {
 test("admin source test endpoints require administrator authorization", async () => {
   const response = await worker.fetch(
     new Request("https://worker.example/api/admin/sources/perverzija-source/test-connection", { method: "POST" }),
-    createEnv(adminTestValues()),
+    createEnv(adminTestValues(), { adminToken: "test-secret" }),
   );
   assert.equal(response.status, 401);
   assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "unauthorized");
