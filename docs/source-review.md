@@ -2328,3 +2328,13 @@ The current official contracts were rechecked and a separate implementation-read
 - **MangaUpdates:** official docs list public `POST /series/search` and say most endpoints need no account; AUP requires attribution, spacing, caching and prohibits use assisting illegal actions. Since this product also aggregates torrent indexes, metadata-only use still needs written scope clarification. Defer implementation until the operator confirms this integrated product use is acceptable.
 - **Correction to rate-limit wording:** MusicBrainz's current official documentation describes the numeric 1 request/second limit as average per source IP (unless otherwise agreed), not as a literal per-client-app numeric quota. The proposed app-wide 1-second lane is a stricter project control that coordinates requests across Worker instances. The detailed rate-limit document has been corrected accordingly.
 - No source catalog record, Provider code, KV config, Durable Object binding, source enablement, or deployment was added.
+
+
+## MusicBrainz — implemented, disabled pending hosted verification
+
+- Implemented as `musicbrainz-api` v1.0.0 using the official `/ws/2/release-group` JSON search endpoint.
+- Read-only public search requires no API key, but the Web Service is free only for non-commercial use and requires a meaningful User-Agent.
+- All application requests use the shared `musicbrainz` Durable Object lane with at least 1,000 ms spacing; cache hits occur before reservation.
+- The Provider maps core release-group metadata only: MBID, title, artist credit, primary type, and first-release date. It does not map tags, ratings, annotations, user data, or cover art.
+- The MusicBrainz database license distinguishes CC0 core data from CC BY-NC-SA 3.0 supplementary data. Keep this Provider limited to the documented core fields and re-review if monetization or supplementary fields are added.
+- Code is registered in the Worker compile-time registry; no adapter/source record has been written to KV, and the Provider is not enabled. Hosted Cloudflare connectivity, quota behavior, and final product-policy review remain outstanding.

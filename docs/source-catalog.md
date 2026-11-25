@@ -26,7 +26,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 - 91 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 3；标签存在交叉，不能将标签数直接相加当作来源总数。
 - 当前仅保留 3 条搜索模板：JAV.guru、r/JAV、YourBittorrent。它们是外部搜索/备用入口，不代表新增 Worker Provider。
-- 当前 5 个具体 Provider：Sukebei RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API。MangaDex 仅提供元数据，已注册在 Worker 代码中，但尚未写入 KV、未启用，仍需完成 Durable Object 运行时验证和来源政策检查；另有可配置的通用 HTML adapter。
+- 当前 6 个具体 Provider：Sukebei RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API。MangaDex 仅提供元数据，MusicBrainz 仅提供音乐发行组元数据；两者均已注册在 Worker 代码中，但尚未写入 KV、未启用，仍需完成 hosted Cloudflare 验证和来源政策检查；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 

@@ -109,7 +109,7 @@ Acceptance:
 Deliverables:
 - [x] Provider registry and shared result contract.
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
-- [x] Five site-specific Provider implementations (including the metadata-only MangaDex Provider) and the reusable generic-html adapter.
+- [x] Six site-specific Provider implementations (including the metadata-only MangaDex and MusicBrainz Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
@@ -176,7 +176,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Five implemented; MangaDex registered but disabled; live verification pending |
+| Site-specific Providers | Six implemented; MangaDex and MusicBrainz registered but disabled; live verification pending |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex Provider declares the lane but no enabled KV source invokes it; real Cloudflare concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
