@@ -1678,3 +1678,107 @@ References:
 - Sukebei is an existing adult-content Provider, not an anime source; no duplicate was added.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review the remaining Atlas anime entries, starting with Bilibili, DiliDili, Crunchyroll, Funimation, HIDIVE, AniWatch, GogoAnime, and 9Anime.
+
+
+## Individual source audit — twenty-sixth batch (2026-11-25)
+
+This batch reviews the remaining eight Atlas anime-streaming candidates: Bilibili, DiliDili, Crunchyroll, Funimation, HIDIVE, AniWatch, GogoAnime, and 9Anime. It does not treat a website's public search UI as an authorized API, and it does not substitute similarly named domains.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Bilibili | Official Open Platform requires developer onboarding; its developer agreement prohibits automated acquisition of platform/Open Platform data without written consent | **Permission-gated; not approved** | No general-purpose scraping or metadata Provider; use only specifically authorized APIs and approved scope |
+| DiliDili | Atlas domain `dilidili.wang` is not confirmed as canonical; a historical operator announcement said the old domain was retired and named `dilidili.name` as replacement at that time | **Domain identity unresolved** | Remove/avoid .wang destination; do not silently switch to .name without current first-party confirmation |
+| Crunchyroll | Official Terms prohibit automated data gathering/extraction and prohibit indexing a significant portion of service content without express written authorization; no public developer API was verified | **Automation prohibited absent written permission** | No Worker scraping, catalog harvesting, or unofficial API |
+| Funimation | Crunchyroll confirms Funimation's website and app ended on 2024-04-02 and most catalog content migrated to Crunchyroll | **Retired service** | Remove as a separate active source; do not keep the old endpoint or create a duplicate Provider |
+| HIDIVE | Current official site/help center exists, but no public developer API or third-party metadata permission was verified | **External-only** | No scraping, account, or subscription access |
+| AniWatch | Atlas domain `aniwatch.to` could not be tied to a verified current operator policy/API; similarly named `aniswatch.com` is a different domain | **Unverified** | No mirror substitution, Worker scraping, or API integration |
+| GogoAnime | Atlas domain `gogoanime3.net` was not verified as the canonical operator domain; search results for `gogoanimes.org` are a different host | **Unverified** | No mirror substitution or scraping |
+| 9Anime | Atlas domain `9anime.gs` was not verified as an official current service; third-party reports describe the 9anime→AniWave rebrand and AniWave shutdown in 2024 | **Historical / current identity unverified** | Remove active destination; retain historical name only; do not link to unofficial clones |
+
+### Source-specific findings
+
+#### Bilibili
+
+The official Open Platform documentation describes an application/developer onboarding process and API permissions primarily for account authorization, creator/video management, and authorized user/creator data. The developer service agreement requires registration and review; it also prohibits automated programs, scripts, spiders, or crawlers from obtaining Open Platform data, user data, or related resources without Bilibili's written consent. The general Terms separately prohibit automated access except through an expressly authorized interface/API with prior written permission or as otherwise permitted by law.
+
+Decision: the existence of Bilibili APIs does not authorize a general anime metadata search adapter. Do not scrape search pages or use undocumented web APIs. Revisit only with an approved application and written permission for the exact public metadata use case.
+
+References:
+- https://open.bilibili.com/doc
+- https://open.bilibili.com/agreement/developer-service
+- https://www.bilibili.com/blackboard/era/termsofservice.html
+
+#### DiliDili
+
+The Atlas seed points to `dilidili.wang`. A 2019 announcement attributed to DiliDili said the service had changed domains to `www.dilidili.name` and that the old domain had stopped being used. This is historical evidence only; it does not establish that .name remains the current canonical domain in 2026, nor that .wang is an authorized mirror.
+
+Decision: do not treat .wang as verified. Do not silently replace it with .name based solely on a 2019 notice. Keep name-only until a current first-party operator announcement confirms the canonical domain and applicable access policy.
+
+Reference:
+- https://www.sohu.com/a/297856536_100193569
+
+#### Crunchyroll
+
+The official Terms prohibit automated robots, spiders, scrapers, and other automated data-gathering or extraction tools from accessing or collecting service content. They also prohibit creating or distributing an index of a significant portion of service content without express written authorization. The current public developer/API directory review did not identify an official public metadata API.
+
+Decision: external link only. Do not scrape, use unofficial reverse-engineered endpoints, collect the catalog, or attempt to work around regional restrictions.
+
+References:
+- https://www.crunchyroll.com/en/terms/privacy
+- https://www.crunchyroll.com/de/tos
+
+#### Funimation
+
+Crunchyroll's official support article confirms that the Funimation website and app ended on 2024-04-02 and that most of the catalog migrated to Crunchyroll. The legacy Atlas seed URL is therefore not a current independent service.
+
+Decision: treat Funimation as retired. Do not keep it as a separately active source or assume every title is available on Crunchyroll. Any future discovery should use the Crunchyroll source and its own access restrictions.
+
+Reference:
+- https://help.crunchyroll.com/hc/en-us/articles/22843839604500-Funimation-End-of-Services
+
+#### HIDIVE
+
+The official HIDIVE website and support center are reachable through search results, but this review did not find a public developer API or an authorization for third-party metadata aggregation. The presence of search pages or support documentation does not establish a public data interface.
+
+Decision: keep external-only. Do not automate catalog searches, use subscription credentials, or attempt to access internal/unauthorized endpoints.
+
+References:
+- https://www.hidive.com/
+- https://support.hidive.com/
+
+#### AniWatch
+
+The Atlas seed points to `aniwatch.to`. Search results for `aniswatch.com` describe a separate editorial site and are not evidence about `aniwatch.to`. No current first-party Terms, API specification, or authorized automation interface for the exact Atlas domain was verified.
+
+Decision: retain no automated integration and do not substitute a similarly named domain or mirror. Keep unverified pending first-party identity and policy evidence.
+
+#### GogoAnime
+
+The Atlas seed points to `gogoanime3.net`. Search results for `gogoanimes.org` describe a GogoAnime-branded streaming catalog, but the domains are not identical and no first-party announcement establishing their relationship was found. A public search UI does not authorize automated extraction.
+
+Decision: keep the Atlas domain unverified. Do not use .org or any other mirror as a replacement, and do not scrape the site.
+
+Reference:
+- https://gogoanimes.org/about/
+
+#### 9Anime
+
+The Atlas seed points to `9anime.gs`. Current third-party reporting describes the original 9anime brand rebranding to AniWave in August 2023 and AniWave's shutdown on 2024-08-27. This does not prove that every domain using the 9anime name is fraudulent, but it does mean the current .gs endpoint cannot be presumed to be the original operator's official service.
+
+Decision: remove the active destination and keep a historical name-only record. Do not link to or integrate an unverified clone or mirror.
+
+Reference:
+- https://www.itechguides.com/9anime-down-not-working-or-showing-invalid-request-heres-what-happened/
+
+### Batch outcome
+
+- 8 Atlas anime-streaming candidates received individual decisions.
+- Bilibili is permission-gated despite having an official developer platform.
+- Crunchyroll automation is prohibited absent express written authorization.
+- Funimation is retired and should not be treated as an independent active source.
+- DiliDili, AniWatch, GogoAnime, and 9Anime require canonical identity caution; no mirror was substituted.
+- HIDIVE remains external-only.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review Atlas anime/manga crossover and movie metadata candidates, beginning with Bilibili Comic and the TMDB/Douban/IMDb/Trakt/Letterboxd/Rotten Tomatoes/Metacritic entries.
