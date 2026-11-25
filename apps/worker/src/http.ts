@@ -82,8 +82,8 @@ export async function readJsonBody(request: Request): Promise<unknown> {
 export function expectedVersion(request: Request): number | null {
   const raw = request.headers.get("If-Match");
   if (!raw) return null;
-  const value = raw.trim().replace(/^W\\//, "").replace(/^"|"$/g, "");
-  if (!/^\\d+$/.test(value)) return null;
+  const value = raw.trim().replace(/^W\//, "").replace(/^"|"$/g, "");
+  if (!/^\d+$/.test(value)) return null;
   const version = Number(value);
   return Number.isSafeInteger(version) ? version : null;
 }
