@@ -12,7 +12,7 @@ function namespace(
 ): RateLimitCoordinatorNamespace {
   return {
     idFromName: (name) => name,
-    get: (_id) => ({
+    get: () => ({
       fetch: async (request) => {
         calls.push(new URL(request.url).pathname);
         return handler(request);
