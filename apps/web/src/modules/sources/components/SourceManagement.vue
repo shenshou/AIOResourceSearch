@@ -301,7 +301,7 @@ async function deleteSource(source: SourceDefinition) {
                 {{ source.enabled ? "已启用" : "已禁用" }}
               </span>
             </div>
-            <p class="source-meta">{{ categoryLabels[source.category] }} / {{ contentCategoryLabels[source.contentCategory ?? (source.category === "other-index" ? "general" : "jav")] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · Adapter: {{ source.adapterId }}</template></p>
+            <p class="source-meta">{{ categoryLabels[source.category] }} / {{ contentCategoryLabels[source.contentCategory ?? "jav"] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · Adapter: {{ source.adapterId }}</template></p>
             <div class="source-tags">
               <span v-for="mode in source.searchModes" :key="mode">{{ modeLabels[mode] }}</span>
               <span v-for="capability in source.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
