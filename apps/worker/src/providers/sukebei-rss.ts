@@ -3,6 +3,12 @@ import type { ProviderAdapter } from "./types";
 const FEED_ENDPOINT = "https://sukebei.nyaa.net/feed/magnet";
 const MAX_FEED_BYTES = 2 * 1024 * 1024;
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException("Provider request was cancelled.", "AbortError");
+  }
+}
+
 function decodeXml(value: string): string {
   const decodeCodePoint = (raw: string, radix: number): string => {
     const codePoint = Number.parseInt(raw, radix);
@@ -158,6 +164,7 @@ export const sukebeiRssProvider: ProviderAdapter = {
     }
 
     const xml = await readTextLimited(response, MAX_FEED_BYTES);
+    throwIfAborted(context.signal);
     if (!/<rss\b/i.test(xml)) {
       throw new Error("Sukebei returned an unexpected feed format.");
     }
