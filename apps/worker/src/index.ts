@@ -95,6 +95,7 @@ export default {
         headers,
       });
     } catch {
+      if (request.signal.aborted) return new Response(null, { status: 499 });
       const response = json({ error: { code: "internal_error", message: "An unexpected server error occurred." } }, 500);
       cors.forEach((value, key) => response.headers.set(key, value));
       return response;
