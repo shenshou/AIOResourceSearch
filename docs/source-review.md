@@ -1499,3 +1499,96 @@ The 56 imported Atlas seed candidates have source-specific decisions recorded ac
 The remaining 63 Atlas rows outside the original import scope are not part of the 57-candidate Atlas review count. They are the next Atlas-derived discovery scope if/when those additional content categories are pursued.
 
 No Provider implementation, source enablement, production KV mutation, or Cloudflare deployment was performed by this reconciliation.
+
+
+## Individual source audit — twenty-fourth batch (2026-11-25)
+
+This batch begins the separate Atlas multi-category backlog and reviews the eight anime-database candidates. It distinguishes a documented API from permission to use it in this product.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Bangumi | Official developer documentation identifies the maintained public `/v0/` API and distinguishes it from the unmaintained legacy API | **Conditional API candidate** | Public subject metadata only; use `/v0/`, meaningful User-Agent, conservative request pacing; no private website API or auth-gated data |
+| MyAnimeList (MAL) | MAL has a public API v2 ecosystem, but the current official API developer agreement and the exact permitted third-party aggregation scope were not independently verified in this pass | **Policy / agreement verification required** | No scraping or Provider implementation; do not treat community API clients as authorization |
+| AniList | Official API terms prohibit hoarding/mass collection and use in competing, non-complementary services; this project's aggregator fit remains unresolved | **Deferred pending written clarification** | No Provider implementation |
+| Douban Anime | Official 2025-05-27 User Agreement was reviewed; no current public third-party API permission for this product was verified | **External-only** | No Worker HTML scraping, cookie use, or unofficial API |
+| Kitsu | Search results for “Kitsu API” resolve to CGWire's production-management API, not the anime database at kitsu.io; no matching official anime metadata API/policy was verified | **Unverified** | No API substitution; external-only |
+| LiveChart.me | The canonical site could not be inspected by the research fetcher and no official public API or automation policy was verified | **Unverified** | No Worker requests or scraping |
+| AniDB | Official policy directs automated clients to its supported API rather than website scraping; the official API documentation endpoint returned 403 to this research fetcher | **API-only candidate; implementation deferred** | No website scraping; verify current API client registration and rate rules before implementation |
+| Notify.moe | Official site exposes a public REST API at `https://notify.moe/api`; its schema includes public anime entities but also user, activity, notification, and payment-related types | **Narrow API candidate; policy review required** | Do not call user/activity/payment endpoints; no Provider until permitted public metadata scope and request limits are confirmed |
+
+### Source-specific findings
+
+#### Bangumi
+
+The official developer documentation distinguishes the maintained public API under `/v0/` from the legacy unversioned API, which is no longer maintained. The current decision from the earlier cross-category review remains unchanged: consider only public subject metadata, use a meaningful non-browser User-Agent, respect response limits and 429 responses, and do not use private website APIs or attempt to access NSFW data that requires authorization. Search endpoints marked experimental must not become critical dependencies.
+
+References:
+- https://github.com/bangumi/dev-docs
+- https://bangumi.github.io/api/
+
+#### MyAnimeList
+
+The catalog's `myanimelist.net` entry is a metadata candidate, not permission to collect or republish MAL data. This pass did not retrieve the current first-party API developer agreement or confirm whether a third-party multi-source search aggregator may use the API under that agreement. Third-party API directories and unofficial client libraries are not substitutes for the current official agreement.
+
+Decision: keep external-only for now. Revisit only after the current first-party API terms, client registration requirements, application-notification obligations, and permitted data display/redistribution scope are verified.
+
+#### AniList
+
+The official API terms prohibit use as a backup/data-storage service, hoarding or mass collection, and use within competing non-complementary services of the same nature. AIOResourceSearch is a multi-source search aggregator, so it is not safe to assume that public GraphQL access alone authorizes integration. The previously recorded decision to seek written clarification remains in force.
+
+References:
+- https://docs.anilist.co/guide/terms-of-use
+- https://docs.anilist.co/guide/rate-limiting
+
+#### Douban Anime
+
+The current official Douban User Agreement was published on 2025-05-27. It describes platform services and reserves the right to impose usage limits and terminate access for improper or program-like behavior. This review did not establish an official public anime metadata API or an authorization for third-party automated aggregation.
+
+Decision: keep user-initiated external access only. Do not use unofficial API wrappers, session cookies, or Worker HTML scraping.
+
+Reference:
+- https://www.douban.com/about/agreement
+
+#### Kitsu
+
+The Atlas seed points to `kitsu.io`. Search results for a current “Kitsu API” documentation site resolved to CGWire's Kitsu production-management system, whose API requires JWT authentication and is unrelated to the Kitsu anime database. This is a name collision, not evidence of an anime metadata API.
+
+Decision: do not substitute the CGWire API or claim it serves kitsu.io. Keep the Atlas entry unverified and external-only until the correct operator-controlled API and policy are found.
+
+#### LiveChart.me
+
+The canonical site could not be retrieved by the research fetcher (robots restriction), and no first-party API specification or automation permission was established. A blocked research fetch is not evidence that ordinary users cannot access the site, nor is it permission to automate access.
+
+Decision: keep external-only; no Worker fetching or scraping.
+
+#### AniDB
+
+AniDB's policy identifies its supported API as the channel for bots, scripts, and other automated methods, rather than scraping the website. The official API documentation and policy endpoints returned 403 to this research fetcher, so the complete current API contract and numeric request limits could not be independently checked here. Third-party client documentation commonly describes a two-second request interval, but that figure is not treated as an independently verified first-party rule in this audit.
+
+Decision: API-only candidate. Before implementation, verify the current official HTTP API definition, client-name/version registration, rate limit, caching requirement, and permitted metadata fields. No website scraping or unofficial scraper reuse.
+
+References:
+- https://anidb.net/policy
+- https://wiki.anidb.net/HTTP_API_Definition
+
+#### Notify.moe
+
+The official API page lists a REST endpoint at `https://notify.moe/api` and documents an `Anime` entity, but the same schema also exposes user accounts, activity, notifications, and payment-related types. The official support page says site data is accessible through a public API, but this alone does not establish unlimited collection or permission to ingest user-related data.
+
+Decision: consider only public anime metadata if the operator's API policy, attribution expectations, and request limits are confirmed. Explicitly exclude user profiles, anime lists, activity feeds, notifications, payment, and other personal/account data. No Provider is implemented.
+
+References:
+- https://media.notify.moe/api
+- https://media.notify.moe/support
+
+### Batch outcome
+
+- 8 Atlas anime-database candidates received individual decisions.
+- Bangumi remains a conditional public API candidate under the previously documented constraints.
+- AniList remains deferred pending written clarification.
+- AniDB and Notify.moe are narrow API leads, not approved Providers.
+- MAL, Douban, Kitsu, and LiveChart remain external-only or unverified.
+- No new source, Provider, KV configuration, source enablement, or Cloudflare deployment was added.
+- Next batch: review Atlas anime torrent candidates Nyaa.si, Mikan Project, DMHY, AnimeBytes, Sukebei Nyaa, and Shana Project.
