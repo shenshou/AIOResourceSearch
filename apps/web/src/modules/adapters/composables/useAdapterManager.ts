@@ -82,8 +82,9 @@ export function useAdapterManager() {
       return true;
     } catch (cause) {
       if (cause instanceof AdapterApiError && cause.status === 409) {
-        error.value = cause.message;
+        const conflictMessage = cause.message;
         await reload();
+        error.value = conflictMessage;
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
       }
