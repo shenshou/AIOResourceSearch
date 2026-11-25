@@ -71,12 +71,11 @@ Initial implementation should keep the request narrow:
 - `title`: the user's search query (single string parameter; do not send `title[]`)
 - `limit`: bounded to 20 results for this aggregator (never request the maximum merely because the API allows it)
 - `offset`: initially 0; only paginate if the caller explicitly requests more results and within the Worker result cap
-- `contentRating[]`: explicitly choose allowed content ratings; do not depend on the API's changing default
 - `contentRating[]`: repeat explicitly for the ratings the product intends to include; the API currently documents `safe`, `suggestive`, `erotica`, and `pornographic`
 - `includes[]`: omit in the first version; do not expand author, artist, or cover relationships until their need and data mapping are separately reviewed
 - No chapter, feed, upload, user, account, or reading endpoints
 
-The current OpenAPI contract defines `title` as a scalar string, `limit` as an integer from 0 to 100, `offset` as a non-negative integer, `contentRating[]` as an array of the four values above, and `includes[]` as a relationship-expansion array. The implementation deliberately requests only 20 results and does not paginate.
+The current OpenAPI contract (version 5.13.1) defines `title` as a scalar string, `limit` as an integer from 0 to 100, `offset` as a non-negative integer, `contentRating[]` as an array of the four values above, and `includes[]` as a relationship-expansion array. The implementation deliberately requests only 20 results and does not paginate.
 
 ### Proposed field mapping
 
@@ -95,7 +94,7 @@ The current OpenAPI contract defines `title` as a scalar string, `limit` as an i
 MangaDex's official Acceptable Usage Policy requires visible credit and prohibits ads or paid services on the integrating website/app. Chapter reading would add scanlation-group credit and content-removal obligations; this project does not need chapter reading.
 
 Before enabling:
-- Add a visible MangaDex attribution link in the UI.
+- Keep the visible MangaDex attribution link rendered on each result card.
 - Keep the product ad-free and free of paid services while relying on this API.
 - Use metadata only; do not build a reader, proxy chapter images, fetch chapter text, or mirror chapter data.
 - Respect content ratings and do not bypass any API restriction.
