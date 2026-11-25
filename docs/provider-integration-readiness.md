@@ -170,3 +170,12 @@ Implementation sequence:
 ## Explicit non-changes
 
 This readiness review does not add Provider code, source catalog records, KV configuration, Durable Object bindings, secrets, source enablement, or Cloudflare deployment.
+
+
+## DMHY public RSS — implemented, disabled pending hosted verification
+
+- Official FAQ documents `https://share.dmhy.org/topics/rss/rss.xml?keyword={query}` as a public keyword RSS interface and describes AND/OR query syntax.
+- The Provider is `dmhy-rss` v1.0.0, RSS mechanism, torrent source category, anime content category, metadata + magnet capabilities, keyword-only.
+- The official FAQ describes the site as free and its focus as anime/tokusatsu/Japanese drama; its publishing rules prohibit real-person pornography. This is not classified as a JAV source.
+- No numeric request quota was identified in the reviewed FAQ. Keep disabled until Cloudflare Hosted access, conservative request pacing, current terms/robots and content legality are reviewed.
+- No KV configuration or source enablement is included.

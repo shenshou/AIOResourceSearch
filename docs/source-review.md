@@ -2346,3 +2346,12 @@ The current official contracts were rechecked and a separate implementation-read
 - **Shana Project** (`https://www.shanaproject.com`): its official Help page documents a public site RSS feed containing only the latest 50 releases, plus separate public and private personal feeds. The secure private feed is explicitly for its account holder and must not be used as a shared source. The site-wide feed is not a query-specific search endpoint, so using it as a keyword Provider would produce incomplete and misleading search results. Keep as homepage-only; do not request personal feeds.
 - Both entries are tagged `contentCategory: anime` and `category: torrent`. The catalog-registration flow now preserves an entry's declared content category rather than forcing every imported source into `jav`.
 - Source catalog count is now 93 unique candidates: 91 existing candidates plus these two supplemental external entries. Both remain disabled after registration; no Provider code, KV mutation, source activation, or deployment is included.
+
+
+## DMHY — documented public keyword RSS, Provider implemented but disabled — 2026-11-25
+
+- Official FAQ: `https://www.dmhy.org/cms/page/name/faq.html` documents the public RSS endpoint `https://share.dmhy.org/topics/rss/rss.xml`, keyword filtering via `?keyword=`, and the site's AND/OR query syntax. It also documents category/team/user feed variants; this implementation uses only the public keyword feed.
+- The same FAQ describes the service as free, focuses publication on anime, tokusatsu, and Japanese drama, and prohibits real-person pornography. Classify the source as `contentCategory: anime`, not JAV.
+- Implemented `dmhy-rss` v1.0.0 with GET-only RSS parsing, exact HTTPS host/path validation, bounded 2 MiB response streaming, BTIH magnet validation, canonical HTTPS detail URLs, and no detail-page/image/torrent fetching.
+- No numeric request quota was found in the reviewed official FAQ. The public RSS feature is documented for subscriptions, but that alone is not a comprehensive third-party automation license. Keep the source disabled pending hosted Worker reachability, conservative pacing verification, current terms/robots review, and content/legal review.
+- Code is registered in the Worker compile-time registry. No KV adapter/source record was written, no source was enabled, no live upstream request was performed by Cloudflare, and no deployment occurred.

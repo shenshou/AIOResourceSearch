@@ -1,5 +1,6 @@
 import type { ProviderAdapter } from "./types";
 import { genericHtmlProvider } from "./generic-html";
+import { dmhyRssProvider } from "./dmhy-rss";
 import { mangaDexProvider } from "./mangadex-api";
 import { musicBrainzProvider } from "./musicbrainz-api";
 import { perverzijaDbProvider } from "./perverzija-db";
@@ -15,6 +16,7 @@ import { yourBittorrentProvider } from "./yourbittorrent-json";
  */
 const providerAdapters: readonly ProviderAdapter[] = [
   genericHtmlProvider,
+  dmhyRssProvider,
   sukebeiRssProvider,
   perverzijaDbProvider,
   torlockProvider,
