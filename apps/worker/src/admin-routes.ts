@@ -192,7 +192,7 @@ export async function handleAdmin(
     );
     const elapsedMs = Math.max(0, Date.now() - startedAt);
     if (result.status.status === "unavailable") {
-      return json({ error: { code: result.status.errorCode ?? "adapter_unavailable", message: "The source and adapter configuration are incompatible." } }, 409);
+      return json({ error: { code: result.status.errorCode ?? "adapter_unavailable", message: result.status.errorCode === "credential_unavailable" ? "The configured Worker Secret binding is missing or empty." : "The source and adapter configuration are incompatible." } }, 409);
     }
     const sampleResults = result.results.slice(0, 3).map((item) => ({
       title: item.title,
