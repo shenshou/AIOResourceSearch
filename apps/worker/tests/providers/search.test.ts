@@ -867,6 +867,7 @@ test("generic HTML adapter requests only the configured HTTPS origin and normali
         baseUrl: "https://example.com",
         providerSearchUrlTemplate: "https://example.com/search?q={query}",
         htmlSelectors: { result: "article.result", title: ".title", link: "a.title", image: "img.cover" },
+        capabilities: ["metadata", "image"],
       }),
       signal: new AbortController().signal,
       fetch: async (input, init) => {
@@ -893,6 +894,75 @@ test("generic HTML adapter requests only the configured HTTPS origin and normali
   assert.equal(results[0]?.url, "https://example.com/item/1");
   assert.equal(results[0]?.imageUrl, "https://example.com/cover.jpg");
   assert.deepEqual(results[0]?.metadata, { releaseDate: "2026-11-25", author: "Example author" });
+});
+
+test("generic HTML adapter only extracts optional fields declared by the source", async () => {
+  let receivedImageSelector: string | undefined;
+  let receivedMagnetSelector: string | undefined;
+  const sourceConfig = source({
+    adapterId: "generic-html",
+    baseUrl: "https://example.com",
+    providerSearchUrlTemplate: "https://example.com/search?q={query}",
+    htmlSelectors: {
+      result: "article",
+      title: "h2",
+      link: "a",
+      image: "img.cover",
+      magnet: "a.magnet",
+    },
+    capabilities: ["metadata"],
+  });
+
+  const resources = await genericHtmlProvider.search(
+    { query: "test", mode: "keyword" },
+    {
+      source: sourceConfig,
+      signal: new AbortController().signal,
+      fetch: async () => new Response("<html></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+      parseHtml: async (_response, selectors) => {
+        receivedImageSelector = selectors.image;
+        receivedMagnetSelector = selectors.magnet;
+        return [{
+          title: "Result",
+          url: "/item",
+          imageUrl: "https://cdn.example/image.jpg",
+          magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
+        }];
+      },
+    },
+  );
+
+  assert.equal(receivedImageSelector, undefined);
+  assert.equal(receivedMagnetSelector, undefined);
+  assert.equal(resources[0]?.imageUrl, undefined);
+  assert.equal(resources[0]?.magnetUri, undefined);
+});
+
+test("generic HTML adapter rejects declared optional capabilities without matching selectors", async () => {
+  await assert.rejects(
+    genericHtmlProvider.search(
+      { query: "test", mode: "keyword" },
+      {
+        source: source({
+          adapterId: "generic-html",
+          baseUrl: "https://example.com",
+          providerSearchUrlTemplate: "https://example.com/search?q={query}",
+          htmlSelectors: { result: "article", title: "h2", link: "a" },
+          capabilities: ["metadata", "magnet"],
+        }),
+        signal: new AbortController().signal,
+        fetch: async () => new Response("<html></html>", {
+          status: 200,
+          headers: { "Content-Type": "text/html" },
+        }),
+        parseHtml: async () => [],
+      },
+    ),
+    /require matching image or Magnet selectors/,
+  );
 });
 
 test("generic HTML adapter rejects cross-origin search templates and redirects", async () => {
