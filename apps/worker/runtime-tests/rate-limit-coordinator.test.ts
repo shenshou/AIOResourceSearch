@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { evictDurableObject } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { createCoordinatedFetch } from "../src/rate-limit-coordinator";
 
 interface CoordinatorStub {
   fetch(request: Request): Promise<Response>;
@@ -88,6 +89,45 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
     });
 
     expect(validation.scheduledAt).toBeGreaterThanOrEqual(cooldownUntil);
+  });
+
+
+
+  it("enforces the MusicBrainz one-second interval in SQLite", async () => {
+    const stub = createStub("musicbrainz");
+    const slots = await Promise.all(
+      Array.from({ length: 4 }, () => reserve(stub, "musicbrainz")),
+    );
+    const ordered = slots.sort((left, right) => left - right);
+
+    for (let index = 1; index < ordered.length; index += 1) {
+      expect(ordered[index] - ordered[index - 1]).toBeGreaterThanOrEqual(1_000);
+    }
+  });
+
+  it("persists a real upstream 429 cooldown through the coordinated fetch path", async () => {
+    const id = coordinator.idFromName("mangadex-integration-" + crypto.randomUUID());
+    const stub = coordinator.get(id);
+    const namespace = {
+      idFromName: (name: string) => coordinator.idFromName(name),
+      get: (objectId: unknown) => coordinator.get(objectId),
+    };
+    const startedAt = Date.now();
+    const coordinatedFetch = createCoordinatedFetch(
+      namespace,
+      "mangadex",
+      new AbortController().signal,
+      async () => new Response("rate limited", {
+        status: 429,
+        headers: { "Retry-After": "2" },
+      }),
+    );
+
+    const response = await coordinatedFetch("https://api.mangadex.org/manga");
+    expect(response.status).toBe(429);
+
+    const nextSlot = await reserve(stub, "mangadex");
+    expect(nextSlot).toBeGreaterThanOrEqual(startedAt + 1_800);
   });
 
   it("persists SQLite reservation state after Durable Object eviction", async () => {

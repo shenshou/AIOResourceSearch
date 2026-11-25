@@ -110,7 +110,7 @@ The opt-in local runtime suite is implemented with `@cloudflare/vitest-plugin` a
 npm run test:worker:runtime
 ```
 
-It runs inside the local `workerd` runtime and covers concurrent reservation spacing, per-lane isolation, cooldown revalidation, and SQLite state persistence after Durable Object eviction. It is separate from the existing fast Node `tsx --test` suite so focused Worker tests remain quick.
+It runs inside the local `workerd` runtime and covers concurrent reservation spacing for both configured lanes, per-lane isolation, cooldown revalidation, persistence of an upstream 429 cooldown through the coordinated-fetch path, and SQLite state persistence after Durable Object eviction. It is separate from the existing fast Node `tsx --test` suite so focused Worker tests remain quick.
 
 The runtime suite uses the existing declarative `exports` configuration. Do not add legacy `migrations` alongside it: Wrangler treats the two Durable Object lifecycle declarations as mutually exclusive. The test command does not deploy a Worker, create a hosted namespace, access production KV, or call upstream Providers.
 
