@@ -32,6 +32,12 @@ export interface ExternalSearchLink {
   url: string;
 }
 
+export interface SourceAttribution {
+  sourceId: string;
+  sourceName: string;
+  category: SourceDefinition["category"];
+}
+
 export interface SearchResponse {
   query: string;
   mode: SearchRequest["mode"];
@@ -111,20 +117,20 @@ function normalizeResource(
     contentCategory: source.contentCategory ?? "jav",
     title: value.title.trim(),
     url: value.url,
-    ...(typeof value.catalogNumber === "string" && value.catalogNumber.length <= 100
+    ...(source.capabilities.includes("metadata") && typeof value.catalogNumber === "string" && value.catalogNumber.length <= 100
       ? { catalogNumber: value.catalogNumber.trim() }
       : {}),
-    ...(typeof value.releaseDate === "string" && value.releaseDate.length <= 40
+    ...(source.capabilities.includes("metadata") && typeof value.releaseDate === "string" && value.releaseDate.length <= 40
       ? { releaseDate: value.releaseDate }
       : {}),
-    ...(isHttpsUrl(value.imageUrl) ? { imageUrl: value.imageUrl } : {}),
-    ...(typeof value.description === "string" && value.description.length <= 4000
+    ...(source.capabilities.includes("image") && isHttpsUrl(value.imageUrl) ? { imageUrl: value.imageUrl } : {}),
+    ...(source.capabilities.includes("metadata") && typeof value.description === "string" && value.description.length <= 4000
       ? { description: value.description }
       : {}),
-    ...(metadata && Object.keys(metadata).length ? { metadata } : {}),
-    ...(isMagnetUri(value.magnetUri) ? { magnetUri: value.magnetUri } : {}),
-    ...(isEd2kUri(value.ed2kUri) ? { ed2kUri: value.ed2kUri } : {}),
-    ...(isHttpsUrl(value.torrentUrl) ? { torrentUrl: value.torrentUrl } : {}),
+    ...(source.capabilities.includes("metadata") && metadata && Object.keys(metadata).length ? { metadata } : {}),
+    ...(source.capabilities.includes("magnet") && isMagnetUri(value.magnetUri) ? { magnetUri: value.magnetUri } : {}),
+    ...(source.capabilities.includes("ed2k") && isEd2kUri(value.ed2kUri) ? { ed2kUri: value.ed2kUri } : {}),
+    ...(source.capabilities.includes("torrent") && isHttpsUrl(value.torrentUrl) ? { torrentUrl: value.torrentUrl } : {}),
     ...(externalLinks?.length ? { externalLinks } : {}),
   };
 }
@@ -178,6 +184,7 @@ async function searchOneSource(
   adapterConfig: AdaptersConfig,
   getAdapter: (adapterId: string) => ProviderAdapter | null,
   cache?: Cache,
+  requestSignal?: AbortSignal,
 ): Promise<{
   status: SourceSearchStatus;
   resources: NormalizedResource[];
@@ -197,9 +204,21 @@ async function searchOneSource(
   }
 
   const provider = resolution.provider;
+  if (requestSignal?.aborted) {
+    throw requestSignal.reason ?? new DOMException("Search request was cancelled.", "AbortError");
+  }
+
   const controller = new AbortController();
+  const abortFromRequest = () => controller.abort(requestSignal?.reason);
+  requestSignal?.addEventListener("abort", abortFromRequest, { once: true });
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
+    const cancelled = new Promise<never>((_, reject) => {
+      if (!requestSignal) return;
+      const rejectOnAbort = () => reject(requestSignal.reason ?? new DOMException("Search request was cancelled.", "AbortError"));
+      if (requestSignal.aborted) rejectOnAbort();
+      else requestSignal.addEventListener("abort", rejectOnAbort, { once: true });
+    });
     const timeout = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
         controller.abort();
@@ -213,7 +232,7 @@ async function searchOneSource(
       { query: request.query, mode: request.mode },
       { source, fetch, signal: controller.signal, cache, parseHtml: parseHtmlResults },
     );
-    const resources = await Promise.race([providerResult, timeout]);
+    const resources = await Promise.race([providerResult, timeout, cancelled]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
 
     const normalized = resources
@@ -231,6 +250,7 @@ async function searchOneSource(
       resources: normalized,
     };
   } catch (error) {
+    if (requestSignal?.aborted) throw error;
     const timedOut = error instanceof Error &&
       (error.name === "TimeoutError" || error.name === "AbortError");
     return {
@@ -245,6 +265,7 @@ async function searchOneSource(
     };
   } finally {
     if (timeoutId !== undefined) clearTimeout(timeoutId);
+    requestSignal?.removeEventListener("abort", abortFromRequest);
   }
 }
 
@@ -254,6 +275,7 @@ export async function executeSearch(
   adapterConfig: AdaptersConfig,
   getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
   cache?: Cache,
+  signal?: AbortSignal,
 ): Promise<SearchResponse> {
   const matchesContentCategory = (source: SourceDefinition) =>
     request.contentCategory === undefined ||
@@ -296,19 +318,54 @@ export async function executeSearch(
   await Promise.all(Array.from({ length: workerCount }, async () => {
     while (nextIndex < enabledSources.length) {
       const index = nextIndex++;
-      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache);
+      if (signal?.aborted) return;
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache, signal);
     }
   }));
 
-  const seen = new Set<string>();
+  if (signal?.aborted) {
+    throw signal.reason ?? new DOMException("Search request was cancelled.", "AbortError");
+  }
+
+  const resultIndexes = new Map<string, number>();
   const results: NormalizedResource[] = [];
   for (const item of settled) {
     for (const resource of item.resources) {
       const key = canonicalUrl(resource.url);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      results.push(resource);
-      if (results.length >= MAX_TOTAL_RESULTS) break;
+      const existingIndex = resultIndexes.get(key);
+      const attribution: SourceAttribution = {
+        sourceId: resource.sourceId,
+        sourceName: resource.sourceName,
+        category: resource.category,
+      };
+      if (existingIndex === undefined) {
+        resultIndexes.set(key, results.length);
+        results.push({ ...resource, sourceAttributions: [attribution] });
+        if (results.length >= MAX_TOTAL_RESULTS) break;
+        continue;
+      }
+
+      const existing = results[existingIndex];
+      const attributions = existing.sourceAttributions ?? [];
+      const hasAttribution = attributions.some((item) => item.sourceId === attribution.sourceId);
+      const links = [...(existing.externalLinks ?? []), ...(resource.externalLinks ?? [])];
+      const uniqueLinks = [...new Map(links.map((link) => [link.url, link])).values()].slice(0, 20);
+      results[existingIndex] = {
+        ...existing,
+        sourceAttributions: hasAttribution ? attributions : [...attributions, attribution],
+        catalogNumber: existing.catalogNumber ?? resource.catalogNumber,
+        releaseDate: existing.releaseDate ?? resource.releaseDate,
+        imageUrl: existing.imageUrl ?? resource.imageUrl,
+        description: existing.description ?? resource.description,
+        metadata: {
+          ...(resource.metadata ?? {}),
+          ...(existing.metadata ?? {}),
+        },
+        magnetUri: existing.magnetUri ?? resource.magnetUri,
+        ed2kUri: existing.ed2kUri ?? resource.ed2kUri,
+        torrentUrl: existing.torrentUrl ?? resource.torrentUrl,
+        ...(uniqueLinks.length ? { externalLinks: uniqueLinks } : {}),
+      };
     }
     if (results.length >= MAX_TOTAL_RESULTS) break;
   }
