@@ -2372,3 +2372,13 @@ References:
 - Verified keyword search: https://mikanani.me/Home/Search?searchstr=Rewrite
 - Third-party client RSS configuration (interface lead only): https://github.com/yaqinking/DMHY/blob/master/DMHY/support-site.json
 - Auto_Bangumi issue showing RSS endpoint use: https://github.com/EstrellaXD/Auto_Bangumi/issues/893
+
+
+## Authenticated-source eligibility and current implementation gap
+
+- A source is not excluded merely because it requires a free account. Candidate review may include public search/API endpoints that require ordinary account authentication, provided the source's own terms permit the intended automated use and no access control is bypassed.
+- Record the exact authentication model separately: official API key, OAuth, account session/Cookie, or a user-specific/private feed. These are not interchangeable.
+- A personal subscription/export/feed token is not automatically a general-purpose search credential. Do not place one user's private feed into a shared source configuration or treat it as a public keyword-search API.
+- **Current runtime limitation:** the shared source contract has a `credentialBinding` metadata field, but the current Worker `Env` and `ProviderContext` do not yet expose a generic credential store to Provider implementations. Therefore, authenticated sources can be researched and cataloged, but must not be implemented as runnable Providers until a secure credential-injection path is designed and reviewed.
+- Never put passwords, session cookies, API keys, or OAuth client secrets in source catalog entries, ordinary KV source records, public API responses, browser storage, or logs. The eventual implementation must use Worker-side secrets, scope credentials to the intended source/host, and define rotation/expiry and failure behavior.
+- Do not automate interactive login flows, defeat CAPTCHA/anti-bot checks, reuse stolen/shared sessions, bypass paywalls, or evade account/region/rate restrictions.
