@@ -109,7 +109,7 @@ Acceptance:
 Deliverables:
 - [x] Provider registry and shared result contract.
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
-- [x] Six site-specific Provider implementations (including the metadata-only MangaDex and MusicBrainz Providers) and the reusable generic-html adapter.
+- [x] Eight site-specific Provider implementations (including the metadata-only MangaDex and MusicBrainz Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
@@ -179,7 +179,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Seven implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
+| Site-specific Providers | Eight implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex Provider declares the lane but no enabled KV source invokes it; real Cloudflare concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
@@ -187,8 +187,8 @@ Current branch implementation snapshot:
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
 | Local Workers / Durable Object runtime integration tests | Implemented and passing in CI; hosted Cloudflare verification remains pending |
-| Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI and hosted verification pending |
-| Real Cloudflare integration testing | Not started |
+| Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
+| AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |\n| Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 
 ## Related documents
