@@ -151,8 +151,8 @@ export async function handleAdmin(
     }
 
     const kind = testMatch[2];
-    let query = "AIOResourceSearch connection check";
     let mode = source.searchModes.includes("keyword") ? "keyword" as const : "number" as const;
+    let query = mode === "keyword" ? "AIOResourceSearch connection check" : "AIO-TEST-001";
     if (kind === "test-search") {
       let body: unknown;
       try {
