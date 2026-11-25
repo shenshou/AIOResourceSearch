@@ -725,6 +725,28 @@ test("uses a cached Torlock response without making another upstream request", a
   assert.equal(resources.length, 1);
 });
 
+test("keeps valid Torlock results when cache lookup and write fail", async () => {
+  let fetchCount = 0;
+  const cache = {
+    match: async () => { throw new Error("cache unavailable"); },
+    put: async () => { throw new Error("cache write unavailable"); },
+  } as unknown as Cache;
+
+  const resources = await torlockProvider.search(
+    { query: "ABP-123", mode: "number" },
+    torlockContext(async () => {
+      fetchCount += 1;
+      return new Response(torlockFixture, {
+        status: 200,
+        headers: { "Content-Type": "application/rss+xml" },
+      });
+    }, cache),
+  );
+
+  assert.equal(fetchCount, 1);
+  assert.equal(resources.length, 1);
+});
+
 test("does not fetch or write cache when cancellation occurs during cache lookup", async () => {
   const controller = new AbortController();
   let fetchCount = 0;
@@ -929,6 +951,28 @@ test("uses cached YourBittorrent JSON without another upstream request", async (
   );
 
   assert.equal(fetchCount, 0);
+  assert.equal(resources.length, 1);
+});
+
+test("keeps valid YourBittorrent results when cache lookup and write fail", async () => {
+  let fetchCount = 0;
+  const cache = {
+    match: async () => { throw new Error("cache unavailable"); },
+    put: async () => { throw new Error("cache write unavailable"); },
+  } as unknown as Cache;
+
+  const resources = await yourBittorrentProvider.search(
+    { query: "ABP-123", mode: "number" },
+    yourBittorrentContext(async () => {
+      fetchCount += 1;
+      return new Response(JSON.stringify(yourBittorrentFixture), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }, cache),
+  );
+
+  assert.equal(fetchCount, 1);
   assert.equal(resources.length, 1);
 });
 
