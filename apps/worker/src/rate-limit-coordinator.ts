@@ -1,4 +1,4 @@
-type RateLimitLane = "musicbrainz" | "mangadex" | "anibt";
+type RateLimitLane = "musicbrainz" | "mangadex" | "anibt" | "therarbg";
 
 interface SqlCursor<T> extends Iterable<T> {
   one(): T | null;
@@ -18,6 +18,8 @@ const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
   mangadex: 400,
   // AniBT documents 60 Torznab requests per 60 seconds per IP; 1.1s spacing leaves headroom.
   anibt: 1_100,
+  // The RarBg anonymous API allows 30 requests/minute/IP; leave headroom.
+  therarbg: 2_100,
 };
 const MAX_COOLDOWN_MS = 86_400_000;
 
@@ -33,11 +35,12 @@ function json(value: unknown, status = 200): Response {
 }
 
 function isLane(value: unknown): value is RateLimitLane {
-  return value === "musicbrainz" || value === "mangadex" || value === "anibt";
+  return value === "musicbrainz" || value === "mangadex" || value === "anibt" || value === "therarbg";
 }
 
 function parseCooldownUntil(response: Response, now: number): number | null {
-  const quotaExhausted = response.headers.get("X-RateLimit-Remaining") === "0";
+  const quotaExhausted = response.headers.get("X-RateLimit-Remaining") === "0" ||
+    response.headers.get("X-RateLimit-Remaining-Day") === "0";
   if (response.status !== 429 && response.status !== 503 && !quotaExhausted) return null;
 
   const mangaDexRetry = response.headers.get("X-RateLimit-Retry-After");
@@ -57,6 +60,12 @@ function parseCooldownUntil(response: Response, now: number): number | null {
     }
     const parsed = Date.parse(retryAfter);
     if (Number.isFinite(parsed)) return boundedCooldownUntil(parsed, now);
+  }
+
+  const dayReset = response.headers.get("X-RateLimit-Reset-Day");
+  if (response.headers.get("X-RateLimit-Remaining-Day") === "0" && dayReset && /^\\d+$/.test(dayReset)) {
+    const seconds = Number(dayReset);
+    if (Number.isFinite(seconds)) return boundedCooldownUntil(now + seconds * 1_000, now);
   }
 
   return now + 1_000;

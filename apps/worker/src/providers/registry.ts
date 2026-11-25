@@ -7,6 +7,7 @@ import { musicBrainzProvider } from "./musicbrainz-api";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 import { torlockProvider } from "./torlock-torznab";
+import { theRarBgProvider } from "./the-rarbg-json";
 import { yourBittorrentProvider } from "./yourbittorrent-json";
 
 /**
@@ -22,6 +23,7 @@ const providerAdapters: readonly ProviderAdapter[] = [
   sukebeiRssProvider,
   perverzijaDbProvider,
   torlockProvider,
+  theRarBgProvider,
   yourBittorrentProvider,
   mangaDexProvider,
   musicBrainzProvider,

@@ -317,3 +317,16 @@ References:
   - https://therarbg.com/api/openapi.json
   - https://therarbg.com/about-us/
   - https://therarbg.com/dmca/
+
+
+### The RarBg Provider implementation — code added, not configured or enabled
+
+- Adapter ID: `the-rarbg-json`, version `1.0.0`; source category `torrent`; capabilities `metadata` + `magnet`; search modes `number` and `keyword`.
+- Supported content categories: JAV (API category `XXX`), Anime, Film/TV (`Movies,TV`), Games, and Music. Manga, novels, and generic resources are deliberately unsupported.
+- Uses only `GET /api/v1/search/`; never calls TMDB-backed title, extras, collection, upcoming, or streaming endpoints.
+- Uses the shared `therarbg` Durable Object lane at 2,100 ms between requests (approximately 28.6/minute) and respects minute/day exhaustion signals, 429, and `Retry-After`.
+- Uses a 120-second edge cache for identical query/category requests; anonymous quota only, no account or API key.
+- Validates the 40-character infohash and requires the Magnet URI's BTIH to match it; detail links must be HTTPS on `therarbg.com` under `/post-detail/`. No Magnet is synthesized.
+- No images, torrent-file downloads, detail-page scraping, TMDB-backed metadata, or account credentials.
+- Focused fixture tests cover category selection, field normalization, hash/Magnet consistency, unsafe detail URLs, and unsupported categories. The Durable Object lane test checks the 2,100 ms reservation interval.
+- **Not enabled:** no KV source/adapter configuration has been created, and no Cloudflare deployment or production changes have been made. Hosted connectivity and actual upstream behavior remain unverified.

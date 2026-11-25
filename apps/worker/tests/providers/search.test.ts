@@ -14,6 +14,7 @@ import { sukebeiRssProvider } from "../../src/providers/sukebei-rss.ts";
 import { torlockProvider } from "../../src/providers/torlock-torznab.ts";
 import { anibtTorznabProvider } from "../../src/providers/anibt-torznab.ts";
 import { yourBittorrentProvider } from "../../src/providers/yourbittorrent-json.ts";
+import { theRarBgProvider } from "../../src/providers/the-rarbg-json.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
 
 const adapterMetadata: AdapterDefinition = {
@@ -1455,4 +1456,110 @@ test("AniBT Provider is registered with anime torrent and .torrent capabilities"
   assert.equal(anibtTorznabProvider.rateLimitLane, "anibt");
   assert.deepEqual(anibtTorznabProvider.contentCategories, ["anime"]);
   assert.deepEqual(anibtTorznabProvider.capabilities, ["metadata", "torrent"]);
+});
+
+
+test("The RarBg searches only the requested content category and validates torrent identities", async () => {
+  const hash = "0123456789012345678901234567890123456789";
+  let requestedUrl = "";
+  const resources = await theRarBgProvider.search(
+    { query: "sample query", mode: "keyword" },
+    {
+      source: source({
+        id: "rarbg-anime",
+        name: "The RarBg Anime",
+        category: "torrent",
+        contentCategory: "anime",
+        adapterId: "the-rarbg-json",
+      }),
+      signal: new AbortController().signal,
+      fetch: async (input, init) => {
+        requestedUrl = String(input);
+        assert.equal(init?.redirect, "manual");
+        return new Response(JSON.stringify({
+          total: 1,
+          page: 1,
+          pageSize: 50,
+          pages: 1,
+          results: [{
+            id: "release-1",
+            name: "Example Anime Release",
+            infoHash: hash,
+            magnet: "magnet:?xt=urn:btih:" + hash + "&dn=Example",
+            category: "Anime",
+            size: 1024,
+            seeders: 12,
+            leechers: 3,
+            added: 1_700_000_000,
+            qualityScore: 88,
+            tags: ["1080p", "HEVC"],
+            url: "https://therarbg.com/post-detail/abc123/example-release/",
+          }],
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
+      },
+    },
+  );
+
+  const url = new URL(requestedUrl);
+  assert.equal(url.hostname, "therarbg.com");
+  assert.equal(url.pathname, "/api/v1/search/");
+  assert.equal(url.searchParams.get("category"), "Anime");
+  assert.equal(url.searchParams.get("q"), "sample query");
+  assert.equal(url.searchParams.get("limit"), "50");
+  assert.equal(url.searchParams.get("clean"), "1");
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.id, hash);
+  assert.equal(resources[0]?.magnetUri, "magnet:?xt=urn:btih:" + hash + "&dn=Example");
+  assert.equal(resources[0]?.metadata?.qualityScore, "88");
+  assert.equal(resources[0]?.releaseDate, new Date(1_700_000_000 * 1000).toISOString());
+});
+
+test("The RarBg rejects mismatched hashes, untrusted detail URLs, and unsupported categories", async () => {
+  const hash = "0123456789012345678901234567890123456789";
+  const resources = await theRarBgProvider.search(
+    { query: "sample", mode: "keyword" },
+    {
+      source: source({
+        id: "rarbg-jav",
+        name: "The RarBg",
+        category: "torrent",
+        contentCategory: "jav",
+        adapterId: "the-rarbg-json",
+      }),
+      signal: new AbortController().signal,
+      fetch: async (input) => {
+        const url = new URL(String(input));
+        assert.equal(url.searchParams.get("category"), "XXX");
+        return Response.json({
+          results: [
+            {
+              name: "Mismatched hash",
+              infoHash: hash,
+              magnet: "magnet:?xt=urn:btih:ffffffffffffffffffffffffffffffffffffffff",
+              url: "https://therarbg.com/post-detail/1/item/",
+            },
+            {
+              name: "Untrusted detail",
+              infoHash: hash,
+              magnet: "magnet:?xt=urn:btih:" + hash,
+              url: "https://evil.example/post-detail/1/item/",
+            },
+          ],
+        });
+      },
+    },
+  );
+  assert.deepEqual(resources, []);
+
+  await assert.rejects(
+    theRarBgProvider.search(
+      { query: "sample", mode: "keyword" },
+      {
+        source: source({ contentCategory: "manga", category: "torrent" }),
+        signal: new AbortController().signal,
+        fetch: async () => { throw new Error("must not fetch unsupported categories"); },
+      },
+    ),
+    /does not support this content category/,
+  );
 });
