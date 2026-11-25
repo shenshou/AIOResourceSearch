@@ -2668,3 +2668,25 @@ This section records official API candidates reviewed while expanding beyond the
 - No first-party operator statement, current Terms, public API/RSS/search contract, or canonical replacement was verified.
 - **Decision: retain name-only.** Do not describe the domain as definitively expired or offline based solely on the stale snapshot; do not link or guess mirrors.
 - Reference: https://sitetrends.org/site/pornhoho.com
+
+
+## FetchJAV name-only candidate group recheck — 2026-11-26
+
+The current FetchJAV public README lists the following additional site names in its supported-site matrix but does not provide canonical domains, first-party Terms, or official API/RSS contracts for these individual entries:
+
+- AApp11
+- HAnime XYZ
+- MIEN321
+- PornJP
+- PornNVR
+- PornTW
+- Video01
+- XJISHI
+
+The matrix is evidence that these names appear in FetchJAV's adapter inventory; it is not first-party evidence of the target sites' identity, canonical domain, or permission for this aggregator to access them. The README describes a local desktop application and site adapters, not a public integration service. Its networking dependency list includes TLS-fingerprint and Cloudflare-bypass components; those techniques are explicitly excluded from this project.
+
+**Decision:** retain all eight as name-only candidates. Do not infer domains from names, reuse FetchJAV adapter code, follow unofficial mirrors, or implement Worker HTML scraping. Reconsider each independently only after the source operator confirms its canonical domain and publishes a supported public interface plus applicable automation/data-use terms.
+
+References:
+- FetchJAV supported-sites matrix: https://github.com/FetchJAV/FetchJAV_Public
+- FetchJAV networking/dependency description: https://github.com/FetchJAV/FetchJAV_Public
