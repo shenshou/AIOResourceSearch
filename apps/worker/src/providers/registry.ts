@@ -1,5 +1,6 @@
 import type { ProviderAdapter } from "./types";
 import { genericHtmlProvider } from "./generic-html";
+import { mangaDexProvider } from "./mangadex-api";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 import { torlockProvider } from "./torlock-torznab";
@@ -17,6 +18,7 @@ const providerAdapters: readonly ProviderAdapter[] = [
   perverzijaDbProvider,
   torlockProvider,
   yourBittorrentProvider,
+  mangaDexProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
