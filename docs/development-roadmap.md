@@ -60,7 +60,7 @@ Acceptance:
 
 ## Phase 2 — Engineering quality and maintainability
 
-**Status: In progress**
+**Status: In progress — frontend baseline and static checks established; further review ongoing**
 
 ### 2.1 Worker boundaries
 - [x] Add HTTP route-level tests for health, CORS, malformed search requests, public filtering, and admin authorization/configuration.
@@ -77,8 +77,9 @@ Acceptance:
 - [x] Audit SearchPage.vue and extract the search request lifecycle/state into a focused composable; keep page-specific presentation and interactions in the page component.
 - [x] Review current navigation and view switching. Keep the existing three-view switch for now: there are no nested routes, deep-link requirements, or route-driven refresh needs that justify Vue Router.
 - [x] Review state ownership before considering Pinia. Keep search and management data local to their views; the administrator token remains in the existing module-scoped shared session. No cross-view state requirement currently justifies Pinia.
-- [ ] Establish a small reusable UI foundation for repeated primitives and interaction patterns; avoid creating abstractions for one-off elements.
-- [ ] Evaluate Lucide Vue Next, ESLint, and Prettier against existing dependencies and code style before adding them. Adopt incrementally and avoid broad formatting churn.
+- [x] Establish a small reusable UI foundation for repeated primitives and interaction patterns; the shared administrator login panel is the first documented component.
+- [x] Evaluate Lucide Vue Next, ESLint, and Prettier against existing dependencies and code style. ESLint and Prettier are installed; Prettier is available as a developer command but is not yet a CI gate. Lucide Vue Next was evaluated and deferred because current icon usage does not justify another dependency.
+- [x] Add ESLint to CI without broad formatting churn; keep the existing Worker test runner and test structure.
 
 Acceptance:
 - Container/page components coordinate data and state; display components receive explicit props and emit explicit events.
@@ -163,7 +164,7 @@ As of the roadmap introduction:
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
 | Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
-| Frontend maintainability improvements | Planned after audit |
+| Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
 | Real Cloudflare integration testing | Not started |
 | Production release | Not started |
