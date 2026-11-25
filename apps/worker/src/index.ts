@@ -37,6 +37,7 @@ async function route(request: Request, env: Env): Promise<Response> {
       undefined,
       (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default,
       request.signal,
+      env.RATE_LIMIT_COORDINATOR,
     );
     return json(result);
   }
