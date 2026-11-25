@@ -88,6 +88,29 @@ test("POST /api/search rejects malformed JSON", async () => {
   assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "invalid_json");
 });
 
+test("POST /api/search cancels oversized streamed bodies without Content-Length", async () => {
+  let cancelled = false;
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      controller.enqueue(new Uint8Array(70 * 1024));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  const request = new Request("https://worker.example/api/search", {
+    method: "POST",
+    body,
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+
+  const response = await worker.fetch(request, createEnv());
+
+  assert.equal(response.status, 400);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "invalid_json");
+  assert.equal(cancelled, true);
+});
+
 test("POST /api/search validates the query before reading configuration", async () => {
   const response = await worker.fetch(
     new Request("https://worker.example/api/search", {
