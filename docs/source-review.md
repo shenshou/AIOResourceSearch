@@ -1319,3 +1319,52 @@ Each of these 26 has now received an individual source review in this document o
 ## Next source-review scope
 
 With the explicitly listed FetchJAV sites reconciled, the next review pass returns to the remaining Atlas-tagged `other-index` and torrent/forum candidates. Prioritize entries with first-party APIs/RSS or stable public metadata interfaces; treat any site-specific FetchJAV/Atlas scraper code only as technical evidence, never as permission to reuse it.
+
+
+## Individual source audit — twenty-first batch (2026-11-25)
+
+This batch reviewed four Atlas-listed torrent candidates: JAVBEE, JavJunkies, LoveTorrent, and MagnetDL. The review distinguishes inaccessible/uncertain domains from known historical shutdowns and does not adopt unofficial mirrors.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JAVBEE | Canonical homepage could not be retrieved; no current Terms or public API/RSS/search contract was verified | **Unverified** | Homepage-only; no Worker fetching or HTML parsing |
+| JavJunkies | javjunkies.org shows a “No Access” page in third-party observations; security services flag possible phishing/malware signals, not definitive | **Access/security risk unresolved** | Remove clickable destination; no login, credential submission, or automated access |
+| LoveTorrent | Canonical lovetorrent.net homepage could not be retrieved; no current operator-controlled service or policy was verified | **Unverified** | Name-only; no mirror guessing or automated access |
+| MagnetDL | MagnetDL.com announced shutdown in May 2019 and briefly returned; current third-party monitoring reports .com offline; .io/.co domains are unverified mirrors | **Historical / current service unverified** | Remove destination; no mirror substitution or automated access |
+
+### Source-specific findings
+
+#### JAVBEE
+
+The catalog points to javbee.org. The research fetcher could not retrieve the canonical homepage. Searches did not establish current first-party Terms, an operator-confirmed API/RSS feed, or a stable public search contract. Third-party technical or domain records do not establish permission to collect and republish torrent metadata.
+
+Decision: retain the homepage reference only as unverified. Do not implement Worker requests or an HTML scraper until the operator publishes a supported interface and applicable policy.
+
+#### JavJunkies
+
+The catalog points to javjunkies.org. The research fetcher could not retrieve the homepage. Third-party observations identify the current page title as “JAVJunkies » No Access,” while security services have flagged possible phishing or malware signals. These reputation assessments are not definitive findings, but they are sufficient to avoid directing users to a login or credential-entry page until the operator's identity and site integrity are verified. The separate javjunkies.com domain appears parked and is not treated as an official mirror.
+
+Decision: remove the clickable destination and retain only a historical name-only record. Do not submit credentials, reuse cookies, or automate requests. Do not replace .org with .com.
+
+#### LoveTorrent
+
+The catalog points to lovetorrent.net. The research fetcher could not retrieve the canonical homepage, and searches did not establish a current operator-controlled service, canonical Terms, public API/RSS, or stable search contract. Similar torrent site names and third-party proxy lists are not sufficient to identify a legitimate replacement domain.
+
+Decision: keep LoveTorrent as a name-only unverified candidate. Do not guess mirrors or implement automated access.
+
+#### MagnetDL
+
+MagnetDL.com announced that it had closed in May 2019; TorrentFreak subsequently reported that the operator briefly reversed the shutdown and brought the site back. Current third-party status monitoring reports the .com domain offline, and the research fetcher cannot retrieve it. Search results surface magnetdl.io and magnetdl.co, but no first-party operator announcement verifies either as an official successor. A mirror's use of the MagnetDL name does not establish common ownership or policy.
+
+Decision: remove the clickable .com destination and retain only a historical name-only record. Do not switch to .io, .co, or other mirror domains absent a first-party announcement.
+
+### Batch outcome
+
+- 4 Atlas-listed torrent candidates received source-specific decisions.
+- JavJunkies was removed from clickable destinations due unresolved identity/security signals.
+- MagnetDL's old .com destination was removed; no unofficial mirror was substituted.
+- JAVBEE and LoveTorrent remain unverified; no scraping or API integration was added.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review MyJavBay, NextJAV, OneJAV, and Project JAV.
