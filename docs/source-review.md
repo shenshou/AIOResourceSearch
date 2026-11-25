@@ -583,3 +583,47 @@ Decision: remove the unverified search template. Keep the source unverified; do 
 - JavMost's catalog host was not silently changed to javmost.ws; its 2257 page was not misclassified as a ToS.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue with JAVSeen, JAVTsunami, and JavyNow, then review remaining external-search and homepage-only candidates.
+
+
+## Individual source audit — sixth batch (2026-11-25)
+
+This batch reviewed JAVSeen, JAVTsunami, and JavyNow. It distinguishes terms linked from a site's own page from terms whose stated operator/scope clearly covers the exact catalog domain. A linked policy with a different named service/domain is recorded as ambiguous rather than silently extended.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JAVSeen | Canonical homepage links to a Terms page, but the Terms identify Javhd.today and its operator/service rather than clearly stating that they govern javseen.tv; the linked Terms prohibit automated systems | **Policy scope ambiguous; automation not approved** | Remove the search template; do not automate retrieval pending operator clarification |
+| JAVTsunami | Canonical homepage fetch timed out; third-party technical scan reports HTTP 403, but no canonical current terms or supported search contract was verified | **Unverified** | Remove the unverified search template; no Worker access pending verification |
+| JavyNow | Canonical homepage and its linked Terms of Service at https://javynow.com/tos | **Automated content retrieval prohibited absent express authorization** | Remove the search template; no scraper, spider, robot, offline reader, or Worker fetching |
+
+### Source-specific findings
+
+#### JAVSeen
+
+The canonical javseen.tv homepage links to a Terms of Service page at /static/terms/. However, the Terms state that they form an agreement with Sun Media Limited as operator of Javhd.today and describe use of the Javhd.today website and the operator's services. The homepage itself also lists javhd.today as a related destination. The same linked Terms prohibit automated systems/software/devices from using the service or obtaining content/information, and restrict copying, redistribution, and commercial exploitation.
+
+Because the policy's stated website/service scope names javhd.today rather than clearly naming javseen.tv, this review does not assume that the terms definitively govern every javseen.tv activity. The prohibition is nevertheless a strong reason not to automate access while the operator/scope relationship remains unclear.
+
+Decision: remove the search template. Keep only the homepage as a directory reference. Reconsider only after the operator confirms in writing that the linked Terms govern javseen.tv and clarifies whether any automated metadata retrieval is authorized.
+
+#### JAVTsunami
+
+The catalog points to javtsunami.com and previously contained a /search/{query} template. The research fetcher timed out on the canonical homepage. A third-party technical/reputation scan reports a point-in-time HTTP 403, but that is not a canonical policy statement and does not establish that ordinary users are blocked. No current canonical terms or stable public search contract was verified.
+
+Decision: remove the unverified search template. Keep the source unverified; do not try alternate routes, proxies, cookies, or challenge bypasses.
+
+#### JavyNow
+
+The canonical javynow.com homepage links directly to its Terms of Service at /tos. The Terms state that the website is for personal, non-commercial use, prohibit copying or distributing site content without prior written authorization, and expressly prohibit computerized/automatic mechanisms—including web scrapers, offline readers, spiders, and robots—from accessing, extracting, or downloading website content unless expressly authorized.
+
+Decision: do not implement a Worker Provider, HTML parser, metadata extractor, or other automated retrieval for JavyNow absent express authorization. The existing catalog search template was not independently verified as the site's supported public search route, so it is removed as well. Retain only the homepage reference.
+
+### Batch outcome
+
+- 3 sources received source-specific decisions.
+- All 3 unverified search templates were removed.
+- JAVSeen's linked terms are recorded with an explicit domain/scope caveat rather than misrepresented as definitively applicable.
+- JavyNow's canonical Terms expressly prohibit automated content retrieval absent authorization.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- The remaining catalog search templates are now primarily the user-initiated external-search cases and existing implemented-provider fallback. The next review should validate those remaining entries, then continue through homepage-only torrent/forum candidates.
