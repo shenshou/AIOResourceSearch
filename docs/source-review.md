@@ -271,3 +271,72 @@ The remaining host differences are useful candidates for manual review, grouped 
 4. **Treat torrent/index and manga/novel resource sites as individual legal/terms reviews**, not as a single generic adapter batch. Do not bypass login, paywalls, challenges, CAPTCHA, geoblocking, or rate limits.
 5. **Avoid duplicate source records for one service.** The future catalog model should support multiple content categories on one source, and alias metadata for hostname migrations/subdomains, rather than duplicating a provider for each Atlas category.
 6. This inventory reconciliation changes documentation only. It does not add or enable sources, change adapter implementations, or modify Cloudflare KV.
+
+
+## Cross-category official API eligibility review (2026-11-25)
+
+This review separates API reachability from permission to use the data in this specific public, multi-category resource-search application. The project currently has no paid tier or advertising in scope. Any future monetization, advertisements, or materially different use must trigger a fresh terms review. This is a source-eligibility decision, not an implementation or live-connectivity test.
+
+### Decision summary
+
+| API | Scope | Current decision | Main constraints / unresolved points |
+|---|---|---|---|
+| Bangumi API v0 | Anime, games, books/manga-related subject metadata | **Conditional candidate** | Use only the maintained `/v0/` public API, never the legacy unversioned API or private website API. Non-browser clients should send a descriptive project User-Agent. NSFW subject visibility requires authorization; do not attempt to bypass this. No explicit general request-rate number was confirmed in the reviewed official docs, so start with conservative sequential requests and honor server responses. |
+| AniList GraphQL | Anime and manga metadata | **Hold — obtain clarification first** | Public unauthenticated metadata queries are technically supported, but the terms prohibit hoarding/mass collection and use in competing, non-complementary services of the same nature. A multi-source search aggregator may or may not be considered complementary; do not integrate until AniList confirms this use is acceptable. The current docs report a temporary degraded limit of 30 requests/minute, while the normal documented limit is 90/minute. |
+| MangaDex REST API | Manga metadata | **Conditional candidate — metadata only** | Public API requires visible MangaDex credit. Its acceptable-use policy prohibits ads and paid services; this project currently has neither in scope. If chapter reading were ever added, scanlation-group credit and takedown/removal requests would also apply; chapter reading is outside this project's scope. Official docs describe an initial limit of 5 requests/second/IP, with additional endpoint-specific limits and response headers. Keep requests conservative and honor 429/Retry-After. |
+| TMDB API v3 | Film/TV metadata | **Do not integrate into this project at present** | TMDB's official FAQ states free API use is for non-commercial purposes and requires logo plus prominent attribution. The same FAQ's API legal notice prohibits using its API data/images in connection with pornographic or otherwise offensive content. Because AIOResourceSearch is a multi-category platform that includes adult-resource search, this creates a direct compatibility concern. Do not assume a separate movie category isolates TMDB data from the platform's adult context. Reconsider only with written permission/licensing that explicitly covers the product's full context. |
+| MusicBrainz Web Service v2 | Music metadata | **Conditional candidate; defer implementation** | No API key is needed for public lookups, JSON is supported, and every client application must stay at or below 1 request/second with a meaningful identifying User-Agent. The Web Service is free for non-commercial use; commercial use requires a separate plan/license. Core database data is CC0, but supplementary data is CC BY-NC-SA 3.0 and must not be treated as uniformly CC0. Current architecture has no strict global rate limiter; Cache API is edge-local and KV is not a transactional global limiter. Defer production integration until a shared limiter/queue is designed. |
+| IGDB API v4 | Game metadata | **Conditional candidate; credentials and shared throttle required** | Uses Twitch application credentials and OAuth client-credentials flow; secrets must remain in Worker Secrets. Official docs state 4 requests/second and up to 8 concurrent open requests. Tokens expire after 60 days. API is free for non-commercial use; commercial usage requires a partnership. The API does not support browser requests, so Worker proxying is the correct architecture. Defer implementation until shared rate limiting and token refresh handling are designed. |
+
+### Evidence and implementation implications
+
+#### Bangumi
+
+- The official developer documentation distinguishes the maintained public `/v0/` API from the legacy API, which remains reachable for compatibility but is no longer maintained. The private API used by the new website is a separate interface with no compatibility guarantee; do not use it.
+- The official API repository recommends a meaningful User-Agent for non-browser clients, including the developer/project identity and project homepage for open-source projects.
+- Some public subject reads do not require authorization. The OpenAPI security description states NSFW content is visible only to authorized users; unauthenticated requests may return 404. Do not try to obtain or expose NSFW-only data through another route.
+- Some search endpoints in the OpenAPI schema are explicitly marked experimental. Avoid making those endpoints a required dependency until their stability is confirmed.
+- Suggested initial use, if implemented: public subject metadata lookup/search only, no user accounts, collections, or write endpoints.
+
+#### AniList
+
+- Public anime/manga metadata can be queried without OAuth.
+- The terms prohibit backup/data-storage use, hoarding/mass collection, and competing non-complementary services of the same nature. The exact boundary for a general multi-source resource-search engine is not explicit in the reviewed terms. This is a policy question, not something to infer from the API being public.
+- Current rate-limit docs show a temporary degraded state at 30 requests/minute, with 90 requests/minute described as the normal limit. Respect the actual response headers and Retry-After rather than hardcoding the normal ceiling.
+- Decision: keep in the research list but do not add to the runtime catalog or implement before obtaining written clarification from AniList.
+
+#### MangaDex
+
+- The official acceptable-use policy requires crediting MangaDex and prohibits advertisements or paid services. It additionally requires scanlation-group credit and honoring group removal requests only if the consuming app offers chapter reading. AIOResourceSearch will not offer chapter reading.
+- Limit use to title/author/artist/status/public metadata and MangaDex's own detail page. Do not proxy chapter images, chapter content, or other media.
+- The documented initial per-IP limit is 5 requests/second; endpoint-specific limits can apply. Respect response rate-limit headers, avoid bursts, and back off on rate-limit responses.
+- Before enabling, add a persistent visible attribution/credits entry and verify that the product remains non-advertising and non-paid.
+
+#### TMDB
+
+- The official FAQ requires use of an approved TMDB logo and a prominent notice: "This product uses the TMDB API but is not endorsed or certified by TMDB."
+- The same FAQ's API legal notice says TMDB data/images cannot be used in connection with pornographic or otherwise offensive content. The project's adult-resource category means the safe decision is not to integrate TMDB under the current product design.
+- A free developer key is not a blanket permission to use the data in every product context. Do not put an API key in frontend code; if the product scope changes and written permission is obtained, use a Worker Secret.
+
+#### MusicBrainz
+
+- Use the maintained `/ws/2` Web Service, not the deprecated `/ws/1` service.
+- Public lookup/search can use JSON and does not require an API key. Each client application must remain at or below one request per second and provide a meaningful User-Agent containing the application name/version and a contact or project URL.
+- The Web Service is free for non-commercial use; commercial usage requires contacting MetaBrainz for an appropriate plan.
+- Do not describe the entire MusicBrainz database as CC0: core data is CC0, while supplementary data has CC BY-NC-SA 3.0 terms. API access terms and data licenses are separate concerns.
+- Existing Cache API entries are edge-local and cannot guarantee one request/second globally. A strict shared throttle would need a dedicated coordination primitive or serialized queue; KV writes are not a safe substitute for atomic rate limiting.
+
+#### IGDB
+
+- Requests go through the Worker because the API does not support browser CORS. Store Twitch Client ID/Secret and token state only in server-side secrets/state, never in the public source catalog or frontend.
+- Respect the 4 requests/second limit, the maximum of 8 open requests, HTTP 429 and rate-limit headers. OAuth access tokens are time-limited (documented as 60 days); implement refresh/re-acquisition safely.
+- The official FAQ states the API is free for non-commercial and commercial projects, but commercial integrations require a partnership and user-facing attribution. This project should treat itself as non-commercial only while it remains genuinely non-commercial.
+- The 4 req/s ceiling is per app/client and can be exceeded by concurrent visitors unless requests are coordinated centrally. Do not assume per-Worker-instance or per-edge throttling is sufficient.
+
+### Current source classification outcome
+
+- **Eligible for a controlled prototype after implementation details are settled:** Bangumi (public/non-NSFW metadata), MangaDex (metadata only; attribution and no-ads/no-paid policy), MusicBrainz (non-commercial; strict shared 1 req/s limiter).
+- **Hold pending policy clarification:** AniList.
+- **Do not integrate under current product scope:** TMDB.
+- **Technically promising but defer until credentials and shared throttling are designed:** IGDB.
+- None of these APIs has been added to `sourceCatalog.ts`, registered in KV, enabled, or deployed by this review.
