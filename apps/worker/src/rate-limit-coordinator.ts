@@ -1,4 +1,4 @@
-type RateLimitLane = "musicbrainz" | "mangadex";
+type RateLimitLane = "musicbrainz" | "mangadex" | "anibt";
 
 interface SqlCursor<T> extends Iterable<T> {
   one(): T | null;
@@ -16,6 +16,8 @@ interface CoordinatorState {
 const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
   musicbrainz: 1_000,
   mangadex: 400,
+  // AniBT documents 60 Torznab requests per 60 seconds per IP; 1.1s spacing leaves headroom.
+  anibt: 1_100,
 };
 const MAX_COOLDOWN_MS = 86_400_000;
 
@@ -31,7 +33,7 @@ function json(value: unknown, status = 200): Response {
 }
 
 function isLane(value: unknown): value is RateLimitLane {
-  return value === "musicbrainz" || value === "mangadex";
+  return value === "musicbrainz" || value === "mangadex" || value === "anibt";
 }
 
 function parseCooldownUntil(response: Response, now: number): number | null {
