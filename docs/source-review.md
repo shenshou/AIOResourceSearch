@@ -1368,3 +1368,52 @@ Decision: remove the clickable .com destination and retain only a historical nam
 - JAVBEE and LoveTorrent remain unverified; no scraping or API integration was added.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review MyJavBay, NextJAV, OneJAV, and Project JAV.
+
+
+## Individual source audit — twenty-second batch (2026-11-25)
+
+This batch reviewed four Atlas-listed torrent candidates: My JAV Bay, NextJAV, OneJAV, and Project JAV. The review distinguishes public UI/RSS discovery from a supported and authorized integration contract.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| My JAV Bay | Public VR catalog and search UI are visible; no canonical Terms, official API/RSS, or metadata-reuse permission was verified | **External homepage only** | No Worker scraping or metadata extraction |
+| NextJAV | nextjav.com DNS records point to ParkLogic nameservers/parking infrastructure; no active operator-controlled site or policy was verified | **Parked / no current service verified** | Remove destination; keep historical name-only record |
+| OneJAV | Third-party RSSHub documentation identifies /feeds/ as an official feed but says it does not support BT-download subscriptions; feed request returned HTTP 403; community BT route is a scraper | **Feed lead only; content and policy unverified** | External-only; no RSS/API integration or community scraper reuse |
+| Project JAV | Public search/filter UI, metadata, and magnet links are visible; footer has DMCA/contact and a no-hosted-video disclaimer but no Terms/API/automation policy | **Public interface visible; automation permission unresolved** | External-only; no Worker scraping, metadata extraction, or magnet harvesting |
+
+### Source-specific findings
+
+#### My JAV Bay
+
+The canonical myjavbay.com homepage is publicly visible and identifies the service as a VR JAV collection. It exposes search inputs and recent posts with identifiers, dates, cast metadata, and file-size information. However, the reviewed page does not expose a canonical Terms of Service or an official public API/RSS contract, and the site's robots.txt could not be retrieved. A third-party commercial scraping service advertises paid JSON extraction for myjavbay.com; that is neither an official My JAV Bay API nor authorization from the site operator, and it is not adopted as a dependency.
+
+Decision: retain only the user-initiated homepage link. Do not implement Worker HTML parsing, metadata extraction, or use third-party paid scraping services pending operator policy and a supported interface.
+
+#### NextJAV
+
+The catalog points to nextjav.com. Current third-party DNS records show ParkLogic nameservers and a parking-oriented DNS configuration rather than an identifiable active operator-controlled site. The research fetcher could not retrieve the homepage, and no canonical current Terms, public API/RSS, or stable search contract was verified.
+
+Decision: remove the clickable destination and keep only a historical name-only record. Do not follow unrelated parking redirects or guess a replacement domain.
+
+#### OneJAV
+
+The canonical onejav.com homepage returned HTTP 403 to the research fetcher. RSSHub's third-party route documentation points to https://onejav.com/feeds/ as the site's official feed page and explicitly states that the official feed does not support BT-download subscriptions. The same documentation offers a separate community-maintained `/onejav/:type/:key?` route that parses OneJAV pages and provides BT-related results. That route is a third-party scraper, not an official API, and its existence does not authorize AIOResourceSearch to collect or republish the site's metadata. The direct feed page could not be inspected and no canonical automation policy was verified.
+
+Decision: keep user-initiated external access only. Do not implement the RSSHub scraping route or consume the unverified feed until the exact feed contents and current terms are reviewed.
+
+#### Project JAV
+
+The canonical projectjav.com homepage is currently reachable and exposes a search/filter UI for titles, codes, actresses, makers, and tags. Public listings include metadata and magnet links, and the footer shows a DMCA/contact link plus a disclaimer that the site does not host videos and that links are uploaded/shared by others. The footer does not expose a Terms of Service, privacy policy, public API documentation, or automation permission. A no-hosted-video disclaimer does not grant permission to scrape, extract, or redistribute the site's metadata or magnets. Third-party WHOIS snapshots disagree about expiry/renewal dates, but the current site response and latest update timestamp establish that the page is presently reachable; the stale domain-expiry snapshot is not treated as proof of shutdown.
+
+Decision: retain user-initiated external access only. Do not implement Worker scraping, magnet extraction, or metadata redistribution until the operator publishes applicable terms and a supported interface or grants written permission.
+
+### Batch outcome
+
+- 4 Atlas-listed torrent candidates received source-specific decisions.
+- My JAV Bay and Project JAV have visible public search UIs but no verified automation permission.
+- OneJAV's public feed remains a lead only; community scraper code was not adopted.
+- NextJAV's current DNS indicates parking; no replacement domain was guessed.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review TorrentKitty and XXXClub, then reconcile the remaining Atlas torrent entries against the original Atlas seed list and current catalog.
