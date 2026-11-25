@@ -173,7 +173,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Four implemented; live verification pending |
+| Site-specific Providers | Five implemented; MangaDex registered but disabled; live verification pending |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; no Provider opts in yet; real Cloudflare concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
