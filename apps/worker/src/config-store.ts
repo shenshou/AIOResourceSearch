@@ -96,11 +96,14 @@ export async function saveConfig(env: Env, current: SourcesConfig, sources: Sour
 }
 
 export function publicSource(source: SourceDefinition): Omit<SourceDefinition, "credentialBinding" | "notes"> {
-  const { credentialBinding: _credentialBinding, notes: _notes, ...safeSource } = source;
+  const { credentialBinding, notes, ...safeSource } = source;
+  void credentialBinding;
+  void notes;
   return safeSource;
 }
 
 export function publicAdapter(adapter: AdapterDefinition): Omit<AdapterDefinition, "notes"> {
-  const { notes: _notes, ...safeAdapter } = adapter;
+  const { notes, ...safeAdapter } = adapter;
+  void notes;
   return safeAdapter;
 }
