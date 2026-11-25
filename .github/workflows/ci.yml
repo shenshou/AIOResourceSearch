@@ -5,14 +5,123 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 # Keep only the newest run for each PR (or branch push).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
+  changes:
+    name: Detect unverified code changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_full_ci: ${{ steps.detect.outputs.run_full_ci }}
+    steps:
+      - name: Decide whether the full suite is needed
+        id: detect
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const isDocumentation = (path) =>
+              path.startsWith("docs/") || /\\.mdx?$/i.test(path);
+
+            async function changedPaths(base, head) {
+              try {
+                const comparison = await github.rest.repos.compareCommits({
+                  owner, repo, base, head,
+                });
+                const data = comparison.data;
+
+                if (data.status === "identical") return [];
+                if (data.status !== "ahead") return null;
+                if (
+                  typeof data.total_commits === "number" &&
+                  data.total_commits > data.commits.length
+                ) return null;
+
+                const paths = [];
+                for (const item of data.commits) {
+                  const response = await github.rest.repos.getCommit({
+                    owner, repo, ref: item.sha,
+                  });
+                  const files = response.data.files;
+                  // GitHub truncates large commit file lists. Be conservative.
+                  if (!Array.isArray(files) || files.length >= 300) return null;
+                  paths.push(...files.map((file) => file.filename));
+                }
+                return paths;
+              } catch (error) {
+                core.warning(`Could not safely inspect commit range: ${error.message}`);
+                return null;
+              }
+            }
+
+            let paths = null;
+
+            if (context.eventName === "pull_request") {
+              const pr = context.payload.pull_request;
+              const currentHead = pr.head.sha;
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: "ci.yml",
+                event: "pull_request",
+                per_page: 100,
+              });
+
+              const successfulRuns = runs.data.workflow_runs
+                .filter((run) =>
+                  run.conclusion === "success" &&
+                  run.pull_requests?.some((item) => item.number === pr.number)
+                )
+                .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+
+              // Reuse the newest successful CI baseline that is an ancestor of this PR head.
+              for (const run of successfulRuns) {
+                const candidate = await changedPaths(run.head_sha, currentHead);
+                if (candidate !== null) {
+                  paths = candidate;
+                  core.info(`Comparing against previously successful CI commit ${run.head_sha}.`);
+                  break;
+                }
+              }
+
+              // First run, force-push, or no usable successful baseline: inspect the full PR diff.
+              if (paths === null) {
+                paths = await changedPaths(pr.base.sha, currentHead);
+                core.info("No usable successful CI baseline; comparing against the PR base.");
+              }
+            } else {
+              const before = context.payload.before;
+              const after = context.payload.after;
+              if (!before || /^0+$/.test(before)) {
+                paths = null;
+              } else {
+                paths = await changedPaths(before, after);
+              }
+            }
+
+            // Any uncertainty or non-documentation change must run the full suite.
+            const docsOnly = paths !== null && paths.every(isDocumentation);
+            const runFull = !docsOnly;
+            core.info(
+              runFull
+                ? `Full CI required. Changed paths: ${paths === null ? "unknown (conservative fallback)" : paths.join(", ")}`
+                : `Full CI skipped: documentation-only changes (${paths.length} changed paths).`
+            );
+            core.setOutput("run_full_ci", runFull ? "true" : "false");
+
   verify:
+    name: verify
+    needs: changes
+    if: needs.changes.outputs.run_full_ci == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
