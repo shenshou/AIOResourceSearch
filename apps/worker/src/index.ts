@@ -6,27 +6,16 @@ import type {
   SOURCE_CAPABILITIES,
   SOURCE_CATEGORIES,
   AdapterDefinition,
-  AdaptersConfig,
   SourceDefinition,
-  SourcesConfig,
 } from "@aio-resource-search/shared";
 import type { Env } from "./env";
 import { expectedVersion, getCorsHeaders, json, readJsonBody, withEtag } from "./http";
-
-const CONFIG_KEY = "sources:config:v1";
-const ADAPTER_CONFIG_KEY = "adapters:config:v1";
-const MAX_CONFIG_BYTES = 64 * 1024;
-
-const DEFAULT_CONFIG: SourcesConfig = {
-  version: 0,
-  updatedAt: null,
-  sources: [],
-};
-const DEFAULT_ADAPTERS_CONFIG: AdaptersConfig = {
-  version: 0,
-  updatedAt: null,
-  adapters: [],
-};
+import {
+  readAdaptersConfig,
+  readConfig,
+  saveAdaptersConfig,
+  saveConfig,
+} from "./config-store";
 
 const categories = ["jav", "torrent", "forum", "other-index"] satisfies readonly (typeof SOURCE_CATEGORIES)[number][];
 const contentCategories = [...CONTENT_CATEGORIES];
@@ -34,56 +23,6 @@ const fetchMechanisms = [...FETCH_MECHANISMS];
 const sourceTypes = ["provider", "external-search"] as const;
 const searchModes = ["number", "keyword"] satisfies readonly (typeof SEARCH_MODES)[number][];
 const capabilities = ["metadata", "image", "magnet", "ed2k", "torrent", "forum-post"] satisfies readonly (typeof SOURCE_CAPABILITIES)[number][];
-
-async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
-  const raw = await env.SOURCES_KV.get(ADAPTER_CONFIG_KEY, "text", { cacheTtl: 30 });
-  if (!raw) return { ...DEFAULT_ADAPTERS_CONFIG, adapters: [] };
-
-  const parsed: unknown = JSON.parse(raw);
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("version" in parsed) ||
-    !("adapters" in parsed) ||
-    !Array.isArray(parsed.adapters)
-  ) {
-    throw new Error("Stored adapter configuration is invalid.");
-  }
-
-  const config = parsed as AdaptersConfig;
-  return {
-    ...config,
-    adapters: config.adapters.map((adapter) => {
-      const implementation = getProviderAdapter(adapter.id);
-      const implemented = isProviderImplemented(adapter.id);
-      return {
-        ...adapter,
-        mechanism: implementation?.mechanism ?? adapter.mechanism ?? "api",
-        contentCategories: [...(implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"])],
-        implemented,
-        enabled: Boolean(adapter.enabled && implemented),
-      };
-    }),
-  };
-}
-
-async function readConfig(env: Env): Promise<SourcesConfig> {
-  const raw = await env.SOURCES_KV.get(CONFIG_KEY, "text", { cacheTtl: 30 });
-  if (!raw) return { ...DEFAULT_CONFIG, sources: [] };
-
-  const parsed: unknown = JSON.parse(raw);
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("version" in parsed) ||
-    !("sources" in parsed) ||
-    !Array.isArray(parsed.sources)
-  ) {
-    throw new Error("Stored source configuration is invalid.");
-  }
-
-  return parsed as SourcesConfig;
-}
 
 async function authorize(request: Request, env: Env): Promise<boolean> {
   if (!env.ADMIN_API_TOKEN) return false;
@@ -219,20 +158,6 @@ function validateSource(input: unknown): SourceDefinition | null {
   };
 }
 
-async function saveAdaptersConfig(
-  env: Env,
-  current: AdaptersConfig,
-  adapters: AdapterDefinition[],
-): Promise<AdaptersConfig> {
-  const next: AdaptersConfig = {
-    version: current.version + 1,
-    updatedAt: new Date().toISOString(),
-    adapters,
-  };
-  await env.SOURCES_KV.put(ADAPTER_CONFIG_KEY, JSON.stringify(next));
-  return next;
-}
-
 function validateAdapter(input: unknown): AdapterDefinition | null {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
   const value = input as Record<string, unknown>;
@@ -267,16 +192,6 @@ function validateAdapter(input: unknown): AdapterDefinition | null {
     implemented,
     ...(typeof value.notes === "string" ? { notes: value.notes } : {}),
   };
-}
-
-async function saveConfig(env: Env, current: SourcesConfig, sources: SourceDefinition[]): Promise<SourcesConfig> {
-  const next: SourcesConfig = {
-    version: current.version + 1,
-    updatedAt: new Date().toISOString(),
-    sources,
-  };
-  await env.SOURCES_KV.put(CONFIG_KEY, JSON.stringify(next));
-  return next;
 }
 
 async function handleAdminAdapters(
