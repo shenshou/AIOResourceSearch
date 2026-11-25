@@ -5,10 +5,10 @@ import { getProviderAdapter } from "../../src/providers/registry.ts";
 
 const magnet = "magnet:?xt=urn:btih:WCEZZOUBYIFBBFCU5IDPHOC7WVAKQ32B";
 const feed = (items: string) => `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>DMHY</title>${items}</channel></rss>`;
-const item = (overrides: { title?: string; guid?: string; magnet?: string; date?: string } = {}) => `
+const item = (overrides: { title?: string; guid?: string; link?: string; magnet?: string; date?: string } = {}) => `
   <item>
     <title><![CDATA[${overrides.title ?? "[字幕组] 示例动画 [01][1080p]"}]]></title>
-    <link>http://share.dmhy.org/topics/view/731088_Example.html</link>
+    <link>${overrides.link ?? "http://share.dmhy.org/topics/view/731088_Example.html"}</link>
     <guid isPermaLink="true">${overrides.guid ?? "http://share.dmhy.org/topics/view/731088_Example.html"}</guid>
     <pubDate>${overrides.date ?? "Mon, 16 Nov 2026 20:33:00 +0800"}</pubDate>
     <enclosure url="${overrides.magnet ?? magnet}" length="1" type="application/x-bittorrent"/>
@@ -70,7 +70,7 @@ test("uses the official HTTPS keyword RSS endpoint and maps result metadata", as
 });
 
 test("drops entries with an untrusted detail host or invalid magnet", async () => {
-  const hostile = item({ guid: "https://evil.example/topics/view/1_Evil.html" });
+  const hostile = item({ guid: "https://evil.example/topics/view/1_Evil.html", link: "https://evil.example/topics/view/1_Evil.html" });
   const noMagnet = item({ magnet: "magnet:?xt=urn:btih:not-a-hash" });
   const results = await dmhyRssProvider.search(
     { query: "test", mode: "keyword" },
