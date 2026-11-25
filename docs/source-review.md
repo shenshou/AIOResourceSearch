@@ -2690,3 +2690,52 @@ The matrix is evidence that these names appear in FetchJAV's adapter inventory; 
 References:
 - FetchJAV supported-sites matrix: https://github.com/FetchJAV/FetchJAV_Public
 - FetchJAV networking/dependency description: https://github.com/FetchJAV/FetchJAV_Public
+
+## Follow-up source revalidation — 2026-11-26
+
+This pass rechecked the previously deferred JavJunkies, LoveTorrent, NextJAV, MagnetDL, and RedTube entries. It did not establish any new first-party automation contract or permission, so no source was promoted to a Worker Provider or given a replacement URL.
+
+### JavJunkies
+- The current third-party page record still identifies `www.javjunkies.org` as “JAVJunkies » No Access”. A separate security-reputation service continues to flag possible phishing behavior. These are third-party observations, not a definitive finding about the operator or site content.
+- Domain-registration records show the .org domain remains registered; registration and a valid TLS certificate do not establish that the current page is controlled by the historical operator.
+- The similarly named `javjunkies.com` appears to use ParkLogic parking nameservers and is not treated as an official mirror.
+- **Decision: retain name-only.** Do not link to the current No Access page, submit credentials, or automate access. Reconsider only after operator identity, canonical domain, and a permitted public interface are confirmed.
+- References:
+  - https://www.ipaddress.com/website/www.javjunkies.org/
+  - https://gridinsoft.com/online-virus-scanner/url/javjunkies-org
+  - https://www.whois.com/whois/javjunkies.com
+
+### LoveTorrent
+- A direct attempt to retrieve `https://lovetorrent.net/` remained unavailable in this review.
+- Search did not establish a current operator-controlled site, first-party Terms, official API/RSS feed, or stable public search contract.
+- **Decision: retain name-only.** Do not infer a replacement from similarly named domains or third-party mirror lists; no Worker request or HTML parsing.
+- Reference:
+  - https://lovetorrent.net/
+
+### NextJAV
+- A direct attempt to retrieve `https://nextjav.com/` remained unavailable.
+- Third-party DNS observations continue to show ParkLogic nameservers and parking-oriented records. This does not establish an official successor or an active NextJAV service.
+- No first-party Terms, public API/RSS, or stable search contract was verified.
+- **Decision: retain historical name-only record.** Do not guess or substitute a mirror and do not automate access.
+- References:
+  - https://viewdns.info/dnsrecord/?domain=nextjav.com
+  - https://nextjav.com/
+
+### MagnetDL
+- The existing review remains accurate: the 2019 shutdown announcement was followed by a reported brief return, so the old announcement alone is not proof of permanent closure.
+- Current third-party status evidence still does not verify an operator-controlled .com service or establish `magnetdl.io` / `magnetdl.co` as official successors.
+- **Decision: retain historical name-only record.** Do not substitute a mirror or build a Provider without first-party canonical-domain and interface evidence.
+- References:
+  - https://torrentfreak.com/magnetdl-shuts-down-190520/
+  - https://www.torrentdownloads.pro/
+  - Existing source-review evidence remains the basis for the historical shutdown/return distinction.
+
+### RedTube
+- The direct first-party Terms URL redirected to a regional access notice during this review, so the Terms body could not be independently re-read in this session.
+- The earlier first-party Terms review recorded in this document remains the operative evidence: the license is limited to personal use and restricts public linking/reproduction/distribution absent express permission.
+- **Decision: no change.** Keep RedTube out of the public source catalog; no Worker scraping, metadata extraction, or public aggregator link absent written permission for this exact use.
+- References:
+  - https://www.redtube.com/information/terms
+  - https://www.redtube.com/
+
+**Batch outcome:** zero sources promoted, zero mirror substitutions, zero new Provider implementations, and zero access-control workarounds. The deferred-source backlog remains unchanged; these entries continue to require first-party confirmation and an expressly permitted public interface before reconsideration.
