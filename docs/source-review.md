@@ -763,3 +763,52 @@ Decision: keep user-initiated external access only. Do not implement Worker scra
 - No undocumented Discuz endpoints, session cookies, proxies, or challenge workarounds were attempted.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue with Cool18, EYNY, HJD2048, and JKForum, then assess the remaining forum directory entries.
+
+
+## Individual source audit — tenth batch (2026-11-25)
+
+This batch reviewed Cool18, EYNY, HJD2048, and JKForum. The review records research-fetch behavior separately from site availability and treats third-party scraper implementations as technical references, not permission.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Cool18 | Research fetch could not retrieve the canonical homepage; a community RSSHub route contains HTML scraping/search logic, but no official API/RSS contract or current automation policy was verified | **Technical route exists; permission unresolved** | Keep homepage-only; do not copy community scraping logic into Worker |
+| EYNY | Canonical homepage returned a transient “system busy” message; no current canonical terms or supported public API/search contract was verified | **Unverified / transient response** | Keep homepage-only; no automated access pending verification |
+| HJD2048 | Research fetch returned HTTP 403; third-party records report the forum as online, but do not establish automation permission | **Unverified** | Keep homepage-only; no alternate-route probing, cookies, or challenge bypass |
+| JKForum | Research fetch returned HTTP 451; third-party reports indicate regional blocking in mainland China, which does not establish global availability or policy | **Access/policy unresolved** | Keep homepage-only; no Worker requests or attempts to circumvent access restrictions |
+
+### Source-specific findings
+
+#### Cool18
+
+The catalog points to cool18.com. The research fetcher could not retrieve the canonical homepage. A community-maintained RSSHub route exists and its source code constructs search URLs and parses forum pages, including search.php and board-specific endpoints. That proves only that a third-party scraper has been written; it is not an official API, an operator-supported RSS feed, or permission for AIOResourceSearch to collect and republish forum posts. No canonical current automation policy was verified.
+
+Decision: retain homepage-only. Do not copy RSSHub's scraping implementation or infer permission from its existence. Reconsider only if the operator documents a public API/RSS interface and applicable terms permit this use.
+
+#### EYNY
+
+The canonical www.eyny.com homepage returned a short transient “系統繁忙中，請稍等幾秒再試。” message to the research fetcher. This response does not establish that the forum is offline or that ordinary users receive the same result. Search results did not establish a canonical current terms page or a supported public search/API contract.
+
+Decision: retain homepage-only and mark the source unverified. Do not probe undocumented endpoints or treat transient errors as automation permission.
+
+#### HJD2048
+
+The canonical hjd2048.com homepage returned HTTP 403 to the research fetcher. Third-party site records describe a forum and report successful checks from other times, but such records are not the operator's terms and do not establish a stable public search contract. A 403 from the research fetcher is not proof that ordinary visitors are globally blocked.
+
+Decision: retain homepage-only. Do not use cookies, alternate routes, proxies, or challenge workarounds. Reconsider only after a documented public interface and applicable policy are verified.
+
+#### JKForum
+
+The catalog points to jkforum.net. The research fetcher received HTTP 451. GreatFire reports that URLs under jkforum.net are blocked in mainland China, but that regional measurement does not establish global unavailability or the site's automation policy. Search results did not establish canonical terms for the exact site or a supported public API/RSS contract.
+
+Decision: retain homepage-only. Do not route around the 451 or regional access restrictions. No Worker scraping or post extraction is approved.
+
+### Batch outcome
+
+- 4 forum candidates received source-specific decisions.
+- No candidate met the evidence threshold for a Worker Provider.
+- Cool18's community RSSHub implementation was recorded as a technical reference only, not adopted as permission or code.
+- HTTP 403, 451, and transient busy responses were not misrepresented as global site outages.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue with OurSogo, Sex8.cc, SexInSex, and SIS001, then finish the remaining forum candidates.
