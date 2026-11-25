@@ -147,6 +147,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 ## 补充跨分类来源
 
 - DMHY：官方 FAQ 明确提供关键词 RSS；Provider 已实现，仍需 Cloudflare Hosted 可达性、请求节奏及内容合规复核，保持禁用。
+- Mikan Project：官方站内关键词搜索页已验证，加入动漫外部搜索目录；RSS/Search 仅有第三方客户端使用证据，个人 MyBangumi Token Feed 不作为共享数据源，暂不做 Worker 抓取。
 - Nyaa：动漫 BT 索引入口，仅提供用户主动访问的首页链接；未完成精确域名的自动化访问政策、robots 与 Worker 可达性审查，不实现抓取。
 - Shana Project：官网帮助页公开说明其站点 RSS 只包含最近 50 条发布；个人私有 RSS 是账户持有人的安全订阅，不得作为共享数据源。由于公开 RSS 不是关键词检索接口，暂只提供原站入口。
 
