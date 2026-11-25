@@ -46,6 +46,9 @@ export async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
         ...adapter,
         mechanism: implementation?.mechanism ?? adapter.mechanism ?? "api",
         contentCategories: [...(implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"])],
+        version: implementation?.version ?? adapter.version,
+        categories: [...(implementation?.categories ?? adapter.categories)],
+        capabilities: [...(implementation?.capabilities ?? adapter.capabilities)],
         implemented,
         enabled: Boolean(adapter.enabled && implemented),
       };
