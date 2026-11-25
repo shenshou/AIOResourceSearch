@@ -212,10 +212,11 @@ async function searchOneSource(
   const abortFromRequest = () => controller.abort(requestSignal?.reason);
   requestSignal?.addEventListener("abort", abortFromRequest, { once: true });
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let rejectOnAbort: (() => void) | undefined;
   try {
     const cancelled = new Promise<never>((_, reject) => {
       if (!requestSignal) return;
-      const rejectOnAbort = () => reject(requestSignal.reason ?? new DOMException("Search request was cancelled.", "AbortError"));
+      rejectOnAbort = () => reject(requestSignal.reason ?? new DOMException("Search request was cancelled.", "AbortError"));
       if (requestSignal.aborted) rejectOnAbort();
       else requestSignal.addEventListener("abort", rejectOnAbort, { once: true });
     });
@@ -265,6 +266,7 @@ async function searchOneSource(
     };
   } finally {
     if (timeoutId !== undefined) clearTimeout(timeoutId);
+    if (rejectOnAbort) requestSignal?.removeEventListener("abort", rejectOnAbort);
     requestSignal?.removeEventListener("abort", abortFromRequest);
   }
 }
