@@ -2606,3 +2606,16 @@ This section records official API candidates reviewed while expanding beyond the
   - First-party DMCA / site description: https://www.javdatabase.com/dmca-takedown-request/
   - Third-party Stash scraper (implementation evidence only): https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/JavDatabase.yml
   - Third-party javinfo provider (paid API; not used): https://docs.javinfo.dev/docs
+
+
+## 85Tube / 85RO candidate follow-up — 2026-11-26
+
+- The first-party `85ro.com/terms/` page redirects to the English Terms page and explicitly defines the 85PO website as including content available through `85ro.com`. The terms restrict use to personal purposes, prohibit unauthorized framing/linking and non-personal exploitation, and permit links to site materials only for personal, non-commercial purposes.
+- Third-party domain scans report that `85tube.com` redirects to `85ro.com`, but this review did not obtain a first-party redirect response or an operator statement establishing that `85tube.com` is an official canonical alias. The first-party 85ro.com terms must not be treated as proof of the old 85Tube domain relationship.
+- The terms do not establish an API/feed contract or permission for automated metadata aggregation. They also do not authorize bypassing access restrictions.
+- **Decision: keep the 85Tube catalog record name-only.** Do not substitute `85ro.com` for `85tube.com`, scrape the site, or build a Worker Provider. Reconsider only after a first-party source confirms the canonical relationship and publishes an applicable public integration interface/policy.
+- References:
+  - First-party 85ro.com Terms: https://www.85ro.com/terms/
+  - First-party 85po.com Terms (separate domain scope): https://www.85po.com/vi/terms/
+  - Third-party redirect observation only: https://scanner.pcrisk.com/scan-results/85tube.com
+  - Third-party redirect observation only: https://gridinsoft.com/online-virus-scanner/url/85tube-com
