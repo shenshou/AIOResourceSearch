@@ -81,6 +81,7 @@ test("uses the documented GET /manga query contract and maps metadata", async ()
     contentCategory: "manga",
     title: "Dorohedoro",
     url: "https://mangadex.org/title/" + mangaId,
+    externalLinks: [{ label: "MangaDex attribution", url: "https://mangadex.org" }],
     description: "A manga about a mysterious city.",
     metadata: {
       status: "completed",
