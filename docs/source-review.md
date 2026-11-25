@@ -173,3 +173,64 @@ Implementation rules for this group:
 - Add source-specific attribution in result cards when required; the generic source badge alone may not satisfy a provider's logo or placement requirements.
 - Treat an API's free tier as conditional on its own terms, quotas, and use case; do not infer unrestricted redistribution rights.
 - For each candidate, verify live Cloudflare connectivity separately from API documentation and policy eligibility.
+
+
+## Atlas current seed-file comparison — 2026-11-25
+
+The upstream `main` branch was checked directly. Its current README describes five search categories (JAV, anime, movies, comics, novels) and documents these principal source groups:
+
+- JAV: DMM/FANZA metadata; JavBus/JavDB magnet/resource lookup; JavBus actress search.
+- Anime: Bangumi, Mikan, DMHY; Nyaa is noted as disabled due to deployment-environment restrictions.
+- Movies: TMDB, YTS, EZTV, TPB.
+- Comics: MangaDex, MangaUpdates, and 13 additional search sources.
+- Novels: Anna's Archive metadata and Qishu TXT links.
+
+The current repository's README also describes substantial functionality outside AIOResourceSearch's scope (D1-backed local collection and persistence, accounts, community/source sharing, follows, notifications, playback, and library management). Do not port these features merely because they exist upstream.
+
+A direct parse of `database/seeds/003_search_sources.sql` on Atlas `main` found 119 SQL seed records across the following legacy source groups:
+
+| Atlas seed group | Records |
+|---|---:|
+| JAV database | 4 |
+| JAV streaming | 21 |
+| JAV torrent | 15 |
+| JAV community | 16 |
+| Anime metadata | 8 |
+| Anime torrent | 6 |
+| Anime streaming | 8 |
+| Anime/manga cross-listing | 1 |
+| Movie metadata | 8 |
+| Movie torrent | 3 |
+| Movie streaming | 8 |
+| Manga metadata | 5 |
+| Manga resources | 8 |
+| Novel sources | 8 |
+| **Total** | **119** |
+
+This is a count of rows in the seed SQL, not 119 verified, live, permitted, or current providers. It is also not necessarily the same as the production source configuration: the SQL header explicitly says it is not run during normal deployment and production names/order/enabled state may differ.
+
+Comparing exact seed IDs with AIOResourceSearch's current 91-entry `sourceCatalog.ts` gives 54 exact ID matches. The 65 remaining Atlas IDs are listed below as not yet represented by the same ID in the catalog. This is an ID comparison only: some entries may be semantically represented under a different AIOResourceSearch ID/name (for example `javguru` vs `jav-guru`), so these are not automatically 65 genuinely new websites.
+
+- JAV: `jable`, `javguru`.
+- Anime metadata: `bangumi`, `myanimelist`, `anilist`, `douban_anime`, `kitsu`, `livechart`, `anidb`, `notifyanime`.
+- Anime resources: `nyaa_si`, `mikan_project`, `dmhy`, `animebytes`, `sukebei_nyaa`, `shana_project`, `bilibili`, `dilidili`, `crunchyroll`, `funimation`, `hidive`, `aniwatch`, `gogoanime`, `9anime`, `bilibili_comic`.
+- Movie metadata/resources: `tmdb`, `douban_movie`, `imdb`, `trakt`, `letterboxd`, `rottentomatoes`, `metacritic`, `themoviedb_cn`, `pirate_bay`, `eztv`, `mejortorrent`, `netflix_info`, `youtube_movies`, `justwatch`, `reelgood`, `playpilot`, `putlocker`, `fmovies`, `solarmovie`.
+- Manga metadata/resources: `mangadex`, `anilist_manga`, `kitsu_manga`, `mal_manga`, `mangaupdates`, `manganelo`, `mangakakalot`, `bilibili_manga`, `dmzj`, `manhuagui`, `mangafire`, `mangasee`, `comicwalker`.
+- Novel sources: `zlibrary`, `annas_archive`, `zxcs`, `xqishuta`, `sobooks`, `lunarora`, `pdfs`, `dushupai`.
+
+The next catalog reconciliation must compare normalized hostnames and aliases, not only IDs. It must also keep content categories separate from source kinds, and must not invent homepage/search URLs for seed entries whose canonical URL is absent or unverified.
+
+### Atlas source review decisions
+
+- **Metadata APIs** (for example Bangumi, TMDB, MangaDex) are reviewed independently from resource-index sites. API access does not imply permission to mirror, bulk harvest, or redistribute the full catalogue.
+- **Anime RSS/index sources** (Mikan, DMHY, Nyaa, Shana Project) need individual endpoint, terms, rate-limit, and response-format checks. Nyaa and Sukebei are separate work-safe/non-work-safe services and must not be conflated.
+- **Streaming/subscription services** (Netflix, Crunchyroll, HIDIVE, Funimation, YouTube Movies) are not automatically metadata or resource Providers. Without a documented public search API and permission, treat them as user-facing external discovery links only; do not scrape playback pages or protected media.
+- **Movie/comic/novel resource indexes** (TPB, EZTV, MangaFire, Z-Library, Anna's Archive, etc.) require individual access, copyright, and terms review. Their presence in Atlas seed SQL is not evidence of lawful redistribution rights or Worker access permission.
+- **Social/community sources** and user-generated content are not equivalent to structured catalogue APIs. Keep external-search-only unless an official API and intended-use permission are established.
+- Atlas's MIT license covers the Atlas code under its license; it does not grant rights to third-party websites, metadata, images, torrents, or media linked by Atlas.
+
+## Corrected upstream scope notes
+
+- The current Atlas README reviewed here describes five principal categories, not a verified seven-category catalog. AIOResourceSearch retains its independently chosen eight-category model; game and music support must be sourced separately.
+- FetchJAV's current public README advertises 30+ site adapters, but the displayed supported-sites table is not a complete machine-readable inventory of every implementation. The metadata enrichment file is a separate HTML-based pipeline, not an official API directory.
+- Lustpress's discontinued hosted API/Playground is not an upstream dependency. Self-hosting its source code does not establish permission to access or republish the third-party sites it parses.
