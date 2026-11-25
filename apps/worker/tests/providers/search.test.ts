@@ -1511,7 +1511,28 @@ test("The RarBg searches only the requested content category and validates torre
   assert.equal(resources[0]?.id, hash);
   assert.equal(resources[0]?.magnetUri, "magnet:?xt=urn:btih:" + hash + "&dn=Example");
   assert.equal(resources[0]?.metadata?.qualityScore, "88");
-  assert.equal(resources[0]?.releaseDate, new Date(1_700_000_000 * 1000).toISOString());
+  assert.equal(resources[0]?.metadata?.addedAt, new Date(1_700_000_000 * 1000).toISOString());
+  assert.equal(resources[0]?.releaseDate, undefined);
+});
+
+
+test("The RarBg maps each supported content category to its documented API category", async () => {
+  const cases = [["jav", "XXX"], ["anime", "Anime"], ["film-tv", "Movies,TV"], ["game", "Games"], ["music", "Music"]] as const;
+  for (const [contentCategory, expectedCategory] of cases) {
+    let requestedCategory = "";
+    await theRarBgProvider.search(
+      { query: "category check", mode: "keyword" },
+      {
+        source: source({ id: "rarbg-" + contentCategory, name: "The RarBg " + contentCategory, category: "torrent", contentCategory, adapterId: "the-rarbg-json" }),
+        signal: new AbortController().signal,
+        fetch: async (input) => {
+          requestedCategory = new URL(String(input)).searchParams.get("category") ?? "";
+          return Response.json({ results: [] });
+        },
+      },
+    );
+    assert.equal(requestedCategory, expectedCategory);
+  }
 });
 
 test("The RarBg rejects mismatched hashes, untrusted detail URLs, and unsupported categories", async () => {

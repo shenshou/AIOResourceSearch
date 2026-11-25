@@ -50,6 +50,25 @@ const emptyForm = (): AdapterDefinition => ({
 });
 const form = reactive<AdapterDefinition>(emptyForm());
 const isEditing = computed(() => editingId.value !== null);
+const theRarBgPreset: AdapterDefinition = {
+  id: "the-rarbg-json",
+  name: "The RarBg JSON API",
+  description: "官方免费只读 JSON 搜索 API；只消费 torrent search endpoint，不使用图片或 TMDB 数据。",
+  mechanism: "api",
+  contentCategories: ["jav", "anime", "film-tv", "game", "music"],
+  version: "1.0.0",
+  enabled: true,
+  categories: ["torrent"],
+  capabilities: ["metadata", "magnet"],
+  implemented: true,
+  notes: "共享 therarbg Durable Object 限流通道（至少 2.1 秒/次）和 120 秒缓存。启用适配器只表示可被数据源引用；五条来源仍需分别登记且默认禁用。须先部署含此实现的 Worker。",
+};
+const theRarBgAdapter = computed(() => manager.adapters.value.find((adapter) => adapter.id === theRarBgPreset.id));
+
+async function registerOrEnableTheRarBgAdapter() {
+  const existing = theRarBgAdapter.value;
+  await manager.save(existing ? { ...existing, enabled: true } : { ...theRarBgPreset }, !existing);
+}
 
 onMounted(() => {
   if (manager.authenticated.value) void manager.reload();
@@ -154,6 +173,11 @@ async function deleteAdapter(adapter: AdapterDefinition) {
         </div>
       </div>
 
+      <details v-if="!theRarBgAdapter?.enabled" class="source-catalog-panel">
+        <summary>预置适配器 · The RarBg JSON API</summary>
+        <p class="form-hint">Worker 代码中已有 the-rarbg-json 实现。登记并启用此适配器只会让它可被数据源引用，不会自动发起搜索；后续 5 条分类数据源仍需单独登记并保持禁用。请先部署包含该 Provider 的 Worker，再执行此操作。</p>
+        <button class="primary-button small" type="button" :disabled="manager.saving.value" @click="registerOrEnableTheRarBgAdapter">{{ theRarBgAdapter ? "启用已登记适配器" : "登记并启用适配器" }}</button>
+      </details>
       <div v-if="manager.loading.value" class="empty-state">正在读取适配器配置…</div>
       <div v-else-if="!manager.adapters.value.length" class="empty-state">
         <strong>还没有注册适配器</strong>

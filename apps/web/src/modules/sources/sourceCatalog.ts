@@ -1,4 +1,4 @@
-import type { ContentCategory, SearchMode, SourceCategory } from "@aio-resource-search/shared";
+import type { ContentCategory, SearchMode, SourceCapability, SourceCategory, SourceType } from "@aio-resource-search/shared";
 
 export interface SourceCatalogEntry {
   id: string;
@@ -6,6 +6,11 @@ export interface SourceCatalogEntry {
   category: SourceCategory;
   /** User-facing category; omitted legacy candidates default to JAV. */
   contentCategory?: ContentCategory;
+  /** Optional runtime acquisition type for reviewed, built-in Provider entries. */
+  type?: SourceType;
+  /** Category-specific entries may intentionally share one compiled implementation. */
+  adapterId?: string;
+  capabilities?: SourceCapability[];
   searchModes: SearchMode[];
   projects: string[];
   baseUrl?: string;
@@ -118,4 +123,11 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
   { id: "dmhy", name: "動漫花園 (DMHY)", category: "torrent", contentCategory: "anime", searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://share.dmhy.org", searchUrlTemplate: "https://share.dmhy.org/topics/list?keyword={query}", note: "官方 FAQ 明确支持按 keyword 参数订阅公开 RSS，Worker Provider dmhy-rss 已实现；当前仍需 Cloudflare Hosted 可达性、请求节奏和内容合规复核，登记后保持禁用。" },
   { id: "mikan-project", name: "Mikan Project", category: "torrent", contentCategory: "anime", searchModes: ["keyword"], projects: ["Atlas", "AIOResourceSearch"], baseUrl: "https://mikanani.me", searchUrlTemplate: "https://mikanani.me/Home/Search?searchstr={query}", note: "官方站内关键词搜索页面已验证，当前仅作为用户主动打开的外部搜索入口。RSS/Search 关键词 Feed 尚无官方接口文档或明确自动化授权；MyBangumi token Feed 属于个人订阅，不作为共享搜索源。登录仅用于站点自身功能，不向 Worker 提交账号密码或个人订阅 Token。" },
   { id: "anibt", name: "AniBT", category: "torrent", contentCategory: "anime", searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://anibt.net", searchUrlTemplate: "https://anibt.net/magnets?q={query}", note: "官方公开 Torznab API，无需账号或 API Key，官方文档明确支持 Sonarr/Radarr/Prowlarr 集成。Provider 已实现但默认禁用；遵守每 IP 每分钟 60 次限制，使用共享 1.1 秒限流通道，不缓存 Torznab 响应。仍需测试环境实测和最终内容政策审核。" },
+
+  // Five independently configurable records; all resolve to the same compiled Provider.
+  { id: "the-rarbg-jav", name: "The RarBg · JAV", category: "torrent", contentCategory: "jav", type: "provider", adapterId: "the-rarbg-json", capabilities: ["metadata", "magnet"], searchModes: ["number", "keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://therarbg.com", note: "官方免费只读 JSON 搜索 API，JAV 映射到 XXX。共用 the-rarbg-json Provider；来源默认禁用，无图片、无 TMDB 数据。须先部署包含该 Provider 的 Worker，再登记并启用适配器；完成 Hosted Cloudflare 验证和内容政策复核前不得启用来源。" },
+  { id: "the-rarbg-anime", name: "The RarBg · Anime", category: "torrent", contentCategory: "anime", type: "provider", adapterId: "the-rarbg-json", capabilities: ["metadata", "magnet"], searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://therarbg.com", note: "官方免费只读 JSON 搜索 API，分类为 Anime。与其他四条来源共用 the-rarbg-json Provider；来源默认禁用，无图片、无 TMDB 数据。须先部署包含该 Provider 的 Worker，再登记并启用适配器；完成 Hosted Cloudflare 验证和内容政策复核前不得启用来源。" },
+  { id: "the-rarbg-film-tv", name: "The RarBg · Film / TV", category: "torrent", contentCategory: "film-tv", type: "provider", adapterId: "the-rarbg-json", capabilities: ["metadata", "magnet"], searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://therarbg.com", note: "官方免费只读 JSON 搜索 API，Film/TV 映射到 Movies,TV。与其他四条来源共用 the-rarbg-json Provider；来源默认禁用，无图片、无 TMDB 数据。须先部署包含该 Provider 的 Worker，再登记并启用适配器；完成 Hosted Cloudflare 验证和内容政策复核前不得启用来源。" },
+  { id: "the-rarbg-game", name: "The RarBg · Games", category: "torrent", contentCategory: "game", type: "provider", adapterId: "the-rarbg-json", capabilities: ["metadata", "magnet"], searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://therarbg.com", note: "官方免费只读 JSON 搜索 API，分类为 Games。与其他四条来源共用 the-rarbg-json Provider；来源默认禁用，无图片、无 TMDB 数据。须先部署包含该 Provider 的 Worker，再登记并启用适配器；完成 Hosted Cloudflare 验证和内容政策复核前不得启用来源。" },
+  { id: "the-rarbg-music", name: "The RarBg · Music", category: "torrent", contentCategory: "music", type: "provider", adapterId: "the-rarbg-json", capabilities: ["metadata", "magnet"], searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://therarbg.com", note: "官方免费只读 JSON 搜索 API，分类为 Music。与其他四条来源共用 the-rarbg-json Provider；来源默认禁用，无图片、无 TMDB 数据。须先部署包含该 Provider 的 Worker，再登记并启用适配器；完成 Hosted Cloudflare 验证和内容政策复核前不得启用来源。" },
 ];

@@ -2,7 +2,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 97 个去重候选</badge>
+<badge>共 102 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -18,15 +18,15 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 97; the 63 reviewed Atlas rows remain unimported.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 102; the 63 reviewed Atlas rows remain unimported.
 
 
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 97 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 8；标签存在交叉，不能将标签数直接相加当作来源总数。
+- 102 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 13；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。它们都只是用户主动打开的外部入口；DMHY 和 AniBT 另外有独立 Provider 实现。
-- 当前 8 个具体 Provider：Sukebei RSS、DMHY RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab。DMHY、MangaDex、MusicBrainz、AniBT 已注册在 Worker 代码中，但尚未写入 KV、未启用，仍需完成 Hosted Cloudflare 验证和来源政策检查；另有可配置的通用 HTML adapter。
+- 当前 9 个具体 Provider：Sukebei RSS、DMHY RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 
@@ -63,7 +63,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | r/JAV | Atlas | 有上游搜索模板，需复核 |
 | SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-## BT / Torrent（24）
+## BT / Torrent（29）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -91,6 +91,12 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | Tokyo Toshokan | AIOResourceSearch | 动漫分类；仅官方首页外部入口，当前 RSS/自动化许可未核实 |
 | Mikan Project | Atlas / AIOResourceSearch | 动漫分类；官方关键词搜索外部入口，私有 RSS 不接入 |
 | AniBT | AIOResourceSearch | 动漫分类；官方公开 Torznab Provider 已实现，待 Hosted 验证 |
+
+| The RarBg · JAV | AIOResourceSearch | 共用 the-rarbg-json Provider；目录候选，默认禁用 |
+| The RarBg · Anime | AIOResourceSearch | 共用 the-rarbg-json Provider；目录候选，默认禁用 |
+| The RarBg · Film / TV | AIOResourceSearch | 共用 the-rarbg-json Provider；目录候选，默认禁用 |
+| The RarBg · Games | AIOResourceSearch | 共用 the-rarbg-json Provider；目录候选，默认禁用 |
+| The RarBg · Music | AIOResourceSearch | 共用 the-rarbg-json Provider；目录候选，默认禁用 |
 
 ## 论坛（16）
 

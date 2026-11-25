@@ -85,6 +85,12 @@ const unregisteredCatalogEntries = computed(() => {
   const registeredIds = new Set(manager.sources.value.map((source) => source.id));
   return SOURCE_CATALOG.filter((entry) => !registeredIds.has(entry.id));
 });
+const unregisteredExternalCatalogEntries = computed(() =>
+  unregisteredCatalogEntries.value.filter((entry) => (entry.type ?? "external-search") === "external-search"),
+);
+const unregisteredProviderCatalogEntries = computed(() =>
+  unregisteredCatalogEntries.value.filter((entry) => entry.type === "provider"),
+);
 const visibleCatalogEntries = computed(() => {
   const query = catalogQuery.value.trim().toLowerCase();
   return unregisteredCatalogEntries.value.filter((entry) =>
@@ -108,7 +114,7 @@ onMounted(async () => {
 });
 
 async function importAllCatalogSources() {
-  const candidates: SourceDefinition[] = unregisteredCatalogEntries.value.map((entry) => ({
+  const candidates: SourceDefinition[] = unregisteredExternalCatalogEntries.value.map((entry) => ({
     id: entry.id,
     name: entry.name,
     category: entry.category,
@@ -123,11 +129,15 @@ async function importAllCatalogSources() {
     notes: `候选来源：${entry.projects.join("、")}。 ${entry.note} 尚未核验搜索 URL、访问规则和 Workers 可用性。`,
   }));
   if (!candidates.length) return;
-  if (!window.confirm(`将一次性登记全部 ${candidates.length} 个候选来源。它们都会保持禁用，不会参与搜索。确认继续吗？`)) return;
+  if (!window.confirm(`将一次性登记全部 ${candidates.length} 个外部搜索候选。它们都会保持禁用，不会参与搜索。Provider 类型来源需先启用对应适配器，再逐条登记。确认继续吗？`)) return;
   await manager.importExternalSources(candidates);
 }
 
 function beginCatalogCreate(entry: SourceCatalogEntry) {
+  if (entry.type === "provider" && !availableAdapters.value.some((adapter) => adapter.id === entry.adapterId)) {
+    manager.error.value = `请先在“适配器管理”中登记并启用已部署的 ${entry.adapterId} 适配器，再登记该 Provider 数据源。`;
+    return;
+  }
   htmlFieldsJson.value = "{}";
   Object.assign(form, {
     ...emptyForm(),
@@ -135,14 +145,14 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     name: entry.name,
     category: entry.category,
     contentCategory: entry.contentCategory ?? "jav",
-    type: "external-search" as const,
-    adapterId: "",
+    type: entry.type ?? "external-search",
+    adapterId: entry.adapterId ?? "",
     searchUrlTemplate: entry.searchUrlTemplate ?? "",
     baseUrl: entry.baseUrl ?? "",
     enabled: false,
     searchModes: [...entry.searchModes],
-    capabilities: [],
-    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note} 尚未核验搜索 URL、访问规则和 Workers 可用性。`,
+    capabilities: [...(entry.capabilities ?? [])],
+    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note}`,
   });
   editingId.value = null;
   showEditor.value = true;
@@ -308,11 +318,12 @@ async function deleteSource(source: SourceDefinition) {
     <template v-else>
       <details class="source-catalog-panel">
         <summary>预置来源目录 · {{ unregisteredCatalogEntries.length }} 个尚未登记</summary>
-        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 及本项目补充的 {{ SOURCE_CATALOG.length }} 个候选来源。登记时默认创建禁用的外部入口，并保留各来源的内容分类；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 及本项目补充的 {{ SOURCE_CATALOG.length }} 个候选来源。外部入口可批量登记且默认禁用；内置 Provider 候选必须先有已部署、已启用的适配器，再逐条登记并保持禁用。目录不代表来源已获授权或已完成线上验证。</p>
+        <p v-if="unregisteredProviderCatalogEntries.length" class="form-hint">其中 {{ unregisteredProviderCatalogEntries.length }} 条为 Provider 来源，不会混入外部入口的批量登记。The RarBg 的 5 条分类记录共用同一个 the-rarbg-json 适配器。</p>
         <div class="source-catalog-toolbar">
           <input v-model="catalogQuery" class="catalog-search" type="search" placeholder="搜索来源名称、项目或分类…" aria-label="搜索预置来源目录">
-          <button class="primary-button small" type="button" :disabled="manager.saving.value || !unregisteredCatalogEntries.length" @click="importAllCatalogSources">
-            批量登记全部未登记候选（{{ unregisteredCatalogEntries.length }}）
+          <button class="primary-button small" type="button" :disabled="manager.saving.value || !unregisteredExternalCatalogEntries.length" @click="importAllCatalogSources">
+            批量登记外部候选（{{ unregisteredExternalCatalogEntries.length }}）
           </button>
         </div>
         <div class="source-catalog-list">

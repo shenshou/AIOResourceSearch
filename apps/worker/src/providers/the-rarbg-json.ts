@@ -135,10 +135,10 @@ function parseResults(payload: unknown, sourceId: string, sourceName: string) {
     }
     if (typeof item.imdb === "string" && /^tt\d{5,12}$/.test(item.imdb)) metadata.imdbId = item.imdb;
 
-    const releaseDate = typeof item.added === "number" && Number.isSafeInteger(item.added) &&
-      item.added > 0 && item.added < 4_102_444_800
-      ? new Date(item.added * 1000).toISOString()
-      : undefined;
+    if (typeof item.added === "number" && Number.isSafeInteger(item.added) &&
+        item.added > 0 && item.added < 4_102_444_800) {
+      metadata.addedAt = new Date(item.added * 1000).toISOString();
+    }
 
     return [{
       id: infoHash,
@@ -148,7 +148,6 @@ function parseResults(payload: unknown, sourceId: string, sourceName: string) {
       title,
       url: detailUrl,
       magnetUri,
-      ...(releaseDate ? { releaseDate } : {}),
       ...(stats.length ? { description: stats.join(" · ") } : {}),
       metadata,
     }];
