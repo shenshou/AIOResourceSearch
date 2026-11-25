@@ -181,12 +181,12 @@ Current branch implementation snapshot:
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
 | Site-specific Providers | Eight implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
-| Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex Provider declares the lane but no enabled KV source invokes it; real Cloudflare concurrency/quota verification pending |
+| Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex and AniBT declare lanes but no enabled KV source invokes them; hosted concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
 | Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
-| Local Workers / Durable Object runtime integration tests | Implemented and passing in CI; hosted Cloudflare verification remains pending |
+| Local Workers / Durable Object runtime integration tests | Implemented; the prior suite passed CI, but the new AniBT lane extension still awaits a current verification run |
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |\n| Real Cloudflare integration testing | Not started |
 | Production release | Not started |
