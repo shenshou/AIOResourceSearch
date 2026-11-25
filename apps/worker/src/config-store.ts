@@ -74,6 +74,7 @@ export async function readConfig(env: Env): Promise<SourcesConfig> {
     typeof parsed !== "object" ||
     parsed === null ||
     !("version" in parsed) ||
+    typeof parsed.version !== "number" ||
     !Number.isSafeInteger(parsed.version) ||
     parsed.version < 0 ||
     !("sources" in parsed) ||
