@@ -2460,3 +2460,32 @@ This section records official API candidates reviewed while expanding beyond the
 - Open Library Search API status: https://openlibrary.org/dev/docs/api/search
 - Kitsu API documentation: https://api-docs.kitsu.cloud/
 
+
+
+## Additional anime metadata API review — 2026-11-25
+
+### AniDB HTTP API — deferred; not a keyword-search Provider
+
+- AniDB's published policy distinguishes supported API access from HTML scraping and database copying. The policy text surfaced during this review states that automated clients must use supported API channels; it does not grant permission to scrape the website or mirror the database.
+- The documented HTTP API requires a registered client name/version and exposes a narrow read-only set of operations (for example, anime detail and hot-anime data). The current material reviewed does not establish a stable, supported arbitrary keyword-search contract suitable for this product's search box.
+- The published endpoint examples use `http://api.anidb.net:9001/httpapi`; an HTTPS API endpoint was not verified. This project does not weaken its HTTPS-only upstream policy to accommodate an unverified transport.
+- Secondary implementation references consistently report strict pacing (approximately one request every two seconds) and a requirement to cache identical requests. This would need to be confirmed against current official documentation before any implementation.
+- The official API wiki and policy pages returned HTTP 403 to the research fetcher in this review. That is an evidence limitation, not proof that the service blocks all clients or that a bypass is required. Do not probe alternate hosts or attempt to work around the response.
+- **Decision: deferred.** Reconsider only if AniDB's official docs become verifiable and provide a supported HTTPS keyword-search interface, current quota/cache rules, and terms compatible with metadata display. Do not implement HTML scraping, UDP client automation, bulk title-dump ingestion, or a proxy dependency.
+- References:
+  - Official API overview: https://wiki.anidb.net/API
+  - Official HTTP API definition: https://wiki.anidb.net/HTTP_API_Definition
+  - Official policy: https://anidb.net/policy
+  - Secondary rate-limit implementation reference: https://docs.shokoanime.com/shoko-server/understanding-anidb-bans
+
+### Notify.moe — public API exists; deferred pending stable search contract and data-use clarification
+
+- The site's API page explicitly publishes a REST API at `https://notify.moe/api` and documents an `Anime` object with title, summary, status, genres, start/end dates, episode information, studios, producers, licensors, and related fields.
+- Its help guide says the API is an ongoing effort and is subject to change. The currently published type page documents individual Anime records (for example, `/anime/{id}`), but this review did not establish a stable public keyword-search endpoint or a versioned search contract.
+- The Terms of Service prohibit HTML scraping and explicitly direct clients to use the public API. The same terms state that images displayed on the site are for personal, non-commercial use. This project would omit images, but the terms do not clearly settle redistribution/display of API-sourced text metadata in a third-party multi-source aggregator.
+- **Decision: deferred, not external-search registered and not implemented.** Reconsider if the operator documents a stable keyword-search endpoint and clarifies that third-party metadata display/linking in this product is permitted. Do not scrape HTML or depend on undocumented internal search routes.
+- References:
+  - Public API index: https://notify.moe/api
+  - Anime type contract: https://notify.moe/api/anime
+  - Beginner guide (API described as ongoing and subject to change): https://notify.moe/thread/I3MMiOtzR
+  - Terms of Service: https://notify.moe/terms
