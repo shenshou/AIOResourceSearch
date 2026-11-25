@@ -5,6 +5,12 @@ const ALLOWED_HOSTS = new Set(["www.torlock.com", "torlock2.com"]);
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const CACHE_TTL_SECONDS = 60;
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException("Provider request was cancelled.", "AbortError");
+  }
+}
+
 function decodeXml(value: string): string {
   return value
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
@@ -113,9 +119,15 @@ export const torlockProvider: ProviderAdapter = {
     url.searchParams.set("q", input.query);
     url.searchParams.set("cat", "6000");
     url.searchParams.set("limit", "50");
+    throwIfAborted(context.signal);
     const cacheKey = new Request(url.toString(), { method: "GET" });
     const cached = await context.cache?.match(cacheKey);
-    if (cached) return parseItems(await readLimitedText(cached));
+    throwIfAborted(context.signal);
+    if (cached) {
+      const cachedXml = await readLimitedText(cached);
+      throwIfAborted(context.signal);
+      return parseItems(cachedXml);
+    }
 
     const response = await context.fetch(url.toString(), {
       method: "GET",
@@ -123,6 +135,7 @@ export const torlockProvider: ProviderAdapter = {
       redirect: "manual",
       signal: context.signal,
     });
+    throwIfAborted(context.signal);
     if (!response.ok) throw new Error("Torlock Torznab returned HTTP " + response.status + ".");
     if (response.url) {
       const finalUrl = new URL(response.url);
@@ -132,7 +145,9 @@ export const torlockProvider: ProviderAdapter = {
     if (Number.isFinite(length) && length > MAX_RESPONSE_BYTES) throw new Error("Torlock response exceeded the size limit.");
     if (!/xml|rss/i.test(response.headers.get("Content-Type") ?? "")) throw new Error("Torlock returned an unexpected feed content type.");
     const xml = await readLimitedText(response);
+    throwIfAborted(context.signal);
     const results = parseItems(xml);
+    throwIfAborted(context.signal);
     if (context.cache) {
       await context.cache.put(cacheKey, new Response(xml, {
         status: 200,
