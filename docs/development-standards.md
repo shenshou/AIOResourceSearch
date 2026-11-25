@@ -84,6 +84,9 @@ This document defines the implementation and review standards for AIOResourceSea
 - Use HTTPS for external source and result URLs where required by the source contract.
 - Bound network work: timeouts, concurrency, response sizes, result counts, and cache lifetime must be explicit and justified.
 - Treat source visibility as distinct from permission to automate access, republish metadata, or display images. Record unresolved policy or technical questions and keep uncertain sources disabled.
+- Free-account authentication is eligible when the source permits the intended automation. Use only credentials legitimately issued to the operator; never automate CAPTCHA/anti-bot challenges, bypass paywalls, evade geo/IP/rate restrictions, forge sessions, or defeat other access controls.
+- Any source that requires bypassing an access control is **deferred**, not implemented or enabled. Record it in [deferred-source-backlog.md](./deferred-source-backlog.md) with the specific blocker and the condition required for reconsideration.
+- Source credentials must use Worker Secret bindings. Never store credential values in KV, source catalog entries, repository files, browser storage, public API responses, or logs. Missing configured credentials must fail closed before an upstream request.
 
 ## 8. Testing and verification
 
