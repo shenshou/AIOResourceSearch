@@ -11,5 +11,19 @@
       "binding": "SOURCES_KV",
       "id": "REPLACE_WITH_KV_NAMESPACE_ID"
     }
-  ]
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RATE_LIMIT_COORDINATOR",
+        "class_name": "RateLimitCoordinator"
+      }
+    ]
+  },
+  "exports": {
+    "RateLimitCoordinator": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  }
 }
