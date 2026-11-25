@@ -14,6 +14,8 @@ export function useAdapterManager() {
   const saving = ref(false);
   const error = ref("");
   const notice = ref("");
+  let operationGeneration = 0;
+  let reloadSequence = 0;
 
   const enabledCount = computed(() => adapters.value.filter((adapter) => adapter.enabled && adapter.implemented).length);
   const implementedCount = computed(() => adapters.value.filter((adapter) => adapter.implemented).length);
@@ -24,30 +26,42 @@ export function useAdapterManager() {
   }
 
   async function reload() {
-    if (!token.value) return false;
+    const requestToken = token.value;
+    if (!requestToken) return false;
+    const generation = operationGeneration;
+    const sequence = ++reloadSequence;
     loading.value = true;
     clearMessages();
     try {
-      const result = await adapterApi.getAdminAdapters(token.value);
+      const result = await adapterApi.getAdminAdapters(requestToken);
+      if (generation !== operationGeneration || sequence !== reloadSequence || token.value !== requestToken) return false;
       adapters.value = result.config.adapters;
       revision.value = result.config.version;
       etag.value = result.etag;
       authenticated.value = true;
       return true;
     } catch (cause) {
+      if (generation !== operationGeneration || sequence !== reloadSequence || token.value !== requestToken) return false;
       if (cause instanceof AdapterApiError && cause.status === 401) {
+        operationGeneration += 1;
+        reloadSequence += 1;
         session.clear();
+        adapters.value = [];
+        etag.value = "";
+        revision.value = 0;
         error.value = "管理员令牌无效，请重新输入。";
       } else {
         error.value = cause instanceof Error ? cause.message : "读取适配器失败。";
       }
       return false;
     } finally {
-      loading.value = false;
+      if (generation === operationGeneration && sequence === reloadSequence) loading.value = false;
     }
   }
 
   async function login(value: string) {
+    operationGeneration += 1;
+    reloadSequence += 1;
     token.value = value.trim();
     if (!token.value) {
       error.value = "请输入管理员令牌。";
@@ -60,7 +74,11 @@ export function useAdapterManager() {
   }
 
   function logout() {
+    operationGeneration += 1;
+    reloadSequence += 1;
     session.clear();
+    loading.value = false;
+    saving.value = false;
     adapters.value = [];
     etag.value = "";
     revision.value = 0;
@@ -71,16 +89,21 @@ export function useAdapterManager() {
     action: () => Promise<{ data: { version: number; adapters: AdapterDefinition[] }; etag: string | null }>,
     successMessage: string,
   ) {
+    if (saving.value || !token.value) return false;
+    const generation = operationGeneration;
+    const requestToken = token.value;
     saving.value = true;
     clearMessages();
     try {
       const result = await action();
+      if (generation !== operationGeneration || token.value !== requestToken) return false;
       adapters.value = result.data.adapters;
       revision.value = result.data.version;
       if (result.etag) etag.value = result.etag;
       notice.value = successMessage;
       return true;
     } catch (cause) {
+      if (generation !== operationGeneration || token.value !== requestToken) return false;
       if (cause instanceof AdapterApiError && cause.status === 409) {
         const conflictMessage = cause.message;
         await reload();
@@ -90,7 +113,7 @@ export function useAdapterManager() {
       }
       return false;
     } finally {
-      saving.value = false;
+      if (generation === operationGeneration) saving.value = false;
     }
   }
 
