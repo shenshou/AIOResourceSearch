@@ -1290,3 +1290,32 @@ Decision: retain only the user-initiated homepage link. Do not implement Worker 
 - The 26 explicitly listed FetchJAV sites have now all been reviewed individually; this does not mean every FetchJAV-tagged catalog record is a distinct site or a working Provider.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next step: reconcile the full FetchJAV tag set against its 26 README-listed sites, identify duplicates/extra records, then continue the remaining Atlas/other-index candidates.
+
+
+## FetchJAV catalog reconciliation (2026-11-25)
+
+The current FetchJAV README says the application supports 30+ sites, but its explicit Supported Sites table lists 26 names. The AIOResourceSearch catalog has 28 entries carrying the FetchJAV project tag. A name-by-name comparison shows that all 26 README-listed sites are represented in the catalog, with no missing entries. The two additional FetchJAV-tagged records are metadata-enrichment sources, not additional site adapters:
+
+| Catalog entry | FetchJAV role | Classification |
+|---|---|---|
+| JAV.guru | Native discovery and actress/catalog metadata feature mentioned in README; also used by the metadata pipeline | Metadata/discovery source, not one of the 26 Supported Sites table entries |
+| JAVDatabase | Listed in `metadata_fetcher.py` cross-site metadata enrichment pipeline | Metadata enrichment source, not one of the 26 Supported Sites table entries |
+
+### Explicit 26-site inventory
+
+The 26 entries in the README's Supported Sites table are: JableTV, MissAV, SupJav, Hanime1, HanimeTV, TnaFlix, 91Porn, JavDB, Jable.org, ThisAV, PigAV, Porn5F, 85Tube, PornBest, HAnime XYZ, PornTW, PornJP, PornHK, PornHoHo, PornNVR, Video01, PornLuLu, MIEN321, AApp11, Seselah, and XJISHI.
+
+Each of these 26 has now received an individual source review in this document or in the earlier source-review batches. This means only that the candidate identity and available policy/interface evidence were reviewed; it does not mean the sites are authorized, working, integrated, or production-enabled. Several are explicitly disallowed for automation, several remain name-only or stale-domain records, and others are external-only pending canonical policy verification.
+
+### Reconciliation result
+
+- README explicit website adapter list: 26.
+- FetchJAV-tagged catalog entries: 28.
+- Missing README-listed sites in catalog: 0.
+- Extra FetchJAV-tagged metadata records: 2 (JAV.guru and JAVDatabase).
+- The README's broader phrase “30+ sites” is a project-level claim; this audit does not infer 30+ individually listed or verified site adapters from it.
+- No new Provider, search template, KV configuration, source enablement, or deployment was added by this reconciliation.
+
+## Next source-review scope
+
+With the explicitly listed FetchJAV sites reconciled, the next review pass returns to the remaining Atlas-tagged `other-index` and torrent/forum candidates. Prioritize entries with first-party APIs/RSS or stable public metadata interfaces; treat any site-specific FetchJAV/Atlas scraper code only as technical evidence, never as permission to reuse it.
