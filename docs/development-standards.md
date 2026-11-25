@@ -63,7 +63,7 @@ This document defines the implementation and review standards for AIOResourceSea
 - Do not introduce Pinia merely to move every `ref` into a global store.
 - Separate API transport from page presentation. API clients own HTTP details; composables may own reusable stateful workflows when there is a real reuse or isolation benefit.
 - Avoid splitting a page into many tiny components solely to reduce its line count. Extract repeated UI or a coherent interaction with a stable interface.
-- Reusable components should document their purpose, props, emitted events, slots (if any), and a concise usage example. One-off components do not need ceremonial documentation.
+- Reusable components should document their purpose, props, emitted events, slots (if any), and a concise usage example in [frontend-components.md](./frontend-components.md). One-off components do not need ceremonial documentation.
 - Preserve the existing custom CSS and design-token approach. Avoid introducing a styling framework without a concrete need.
 
 ## 7. Error handling and security
