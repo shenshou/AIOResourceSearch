@@ -1,3 +1,4 @@
+export { RateLimitCoordinator } from "./rate-limit-coordinator";
 import { executeSearch } from "./providers/search";
 import { CONTENT_CATEGORIES } from "@aio-resource-search/shared";
 import type { Env } from "./env";
