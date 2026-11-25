@@ -910,3 +910,52 @@ Decision: keep the existing .org entry as an unverified external reference. Do n
 - SeHuaTang's Telegram announcements were treated as domain-discovery evidence only; no mirror substitution was made.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - The initial forum candidate list is now fully reviewed; remaining directory entries should be checked for duplicates, stale domains, and whether any have a genuine first-party API/RSS before being considered for integration.
+
+
+## Individual source audit — thirteenth batch (2026-11-25)
+
+This batch reviewed four Lustpress-listed video-index candidates: Eporner, XNXX, XVideos, and XHamster. The review distinguishes canonical policy text from third-party policy indexes and does not infer that a public search page or unofficial scraper grants reuse rights.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Eporner | Canonical Terms URL could not be retrieved; a third-party policy review quotes restrictions on automated/manual extraction, scraping, harvesting, downloading, or reproduction for AI-model/system purposes without prior written consent | **Policy scope unresolved; automation not approved** | External-only pending canonical Terms review and written clarification |
+| XNXX | Official legal Terms and robots.txt exist; third-party review reports two disallowed paths and no clear public data-sharing API | **No third-party aggregation permission verified** | External-only; respect robots.txt; do not use unofficial scraper wrappers |
+| XVideos | Third-party Terms index records a clause prohibiting spidering, crawling, or automated access; canonical Terms page was not independently retrieved | **Automated access treated as prohibited pending contrary written authorization** | External-only; no Worker crawling |
+| XHamster | Current xHamster-related Terms at my.xhsocial.com prohibit scraping, redistribution, and automatic/manual monitoring or reproduction; defined scope is centered on my.xhsocial.com and company-operated related domains | **Strong restriction; exact xhamster.com scope requires clarification** | External-only; no automated access pending written clarification |
+
+### Source-specific findings
+
+#### Eporner
+
+The catalog entry originates from the Lustpress provider list. The canonical Terms URL at https://www.eporner.com/terms/ was blocked to the research fetcher, so the full current first-party text could not be reviewed directly. A third-party policy review quotes a clause restricting automated or manual extraction, scraping, harvesting, downloading, or reproduction of content/data for the purposes of developing, training, or operating AI models or systems without prior written consent. That quoted scope is not identical to ordinary metadata aggregation, so this review does not overstate it as a blanket prohibition on every kind of automated access. However, no public API or authorization for this project's intended reuse was established.
+
+Decision: keep Eporner external-only. Do not implement a Worker Provider or HTML scraper unless the canonical Terms are reviewed and the operator confirms in writing that the intended metadata aggregation is permitted.
+
+#### XNXX
+
+The official legal Terms are published under info.xnxx.com/legal/tos, and the site publishes robots.txt. A third-party policy review reports two disallowed paths and notes that the Terms address delegated/agent activity, but it did not establish a public data-sharing API or an affirmative grant for third-party metadata aggregation. Unofficial Python/API wrappers and hosted scraper products are not official authorization and are not adopted as implementation references.
+
+Decision: retain external-only. Do not implement scraping or use unofficial wrappers. Any future review must inspect the exact current Terms and robots.txt path-by-path, identify an official supported interface, and obtain any required permission.
+
+#### XVideos
+
+A third-party Terms index for XVideos records an approved clause stating that spidering, crawling, or accessing the site through automated means is not allowed. The canonical Terms page was not independently retrieved in this review, so the finding is recorded as a strong policy signal rather than a direct first-party quotation from a fetched page. No official public API or written permission for this aggregator was found.
+
+Decision: treat automated access as prohibited unless the operator provides contrary written authorization. Keep the source as a user-initiated external destination only; do not implement Worker fetching or HTML parsing.
+
+#### XHamster
+
+The current Terms & Conditions at my.xhsocial.com/info/terms were last modified 2026-10-09. They prohibit redistribution or scraping of the Site/Materials and also prohibit using automatic devices or manual processes to monitor or reproduce the Site or Materials. The defined scope explicitly centers on my.xhsocial.com and related domains operated by the company, and the text references xHamster.com in its Community User provisions. However, the scope definition does not unambiguously establish that every xhamster.com domain/path is covered by this exact page, so this review records that caveat rather than extending the terms beyond their stated scope.
+
+Decision: do not automate access to xhamster.com pending written clarification of the policy's scope and permission. Keep external-only; no scraper, metadata extraction, or redistribution.
+
+### Batch outcome
+
+- 4 Lustpress-listed sources received source-specific decisions.
+- No source received approval for a Worker Provider.
+- Third-party policy summaries were labeled as such and not misrepresented as canonical fetched Terms.
+- No unofficial scraper/API wrapper was adopted.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review the remaining Lustpress-listed sources PornHub, RedTube, YouPorn, and TXXX, then move to the FetchJAV-listed other-index candidates.
