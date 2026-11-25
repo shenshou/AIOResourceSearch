@@ -13,10 +13,9 @@ import {
   type SourceCategory,
 } from "@aio-resource-search/shared";
 import { useAdapterManager } from "../composables/useAdapterManager";
+import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
 
 const manager = useAdapterManager();
-const loginToken = ref("");
-const showToken = ref(false);
 const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 
@@ -119,10 +118,6 @@ async function deleteAdapter(adapter: AdapterDefinition) {
   await manager.remove(adapter.id);
 }
 
-async function submitLogin() {
-  await manager.login(loginToken.value);
-  if (manager.authenticated.value) loginToken.value = "";
-}
 </script>
 
 <template>
@@ -136,20 +131,13 @@ async function submitLogin() {
       <span v-if="manager.authenticated.value" class="auth-state">管理员已验证</span>
     </div>
 
-    <div v-if="!manager.authenticated.value" class="login-panel">
-      <div class="login-icon" aria-hidden="true">⌘</div>
-      <h2>管理员验证</h2>
-      <p>请输入 Worker 管理令牌。令牌仅保存在当前页面内存中。</p>
-      <form class="login-form" @submit.prevent="submitLogin">
-        <div class="token-field">
-          <input v-model="loginToken" :type="showToken ? 'text' : 'password'" autocomplete="off" placeholder="ADMIN_API_TOKEN" aria-label="管理员令牌" />
-          <button type="button" class="visibility-button" @click="showToken = !showToken">{{ showToken ? "隐藏" : "显示" }}</button>
-        </div>
-        <button class="primary-button" type="submit" :disabled="manager.loading.value || !loginToken.trim()">
-          {{ manager.loading.value ? "验证中…" : "验证并进入管理" }}
-        </button>
-      </form>
-    </div>
+    <AdminLoginPanel
+      v-if="!manager.authenticated.value"
+      :loading="manager.loading.value"
+      :authenticated="manager.authenticated.value"
+      description="请输入 Worker 管理令牌。令牌仅保存在当前页面内存中。"
+      @submit="manager.login"
+    />
 
     <template v-else>
       <div class="manager-toolbar">
