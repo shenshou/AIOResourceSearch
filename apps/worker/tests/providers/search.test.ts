@@ -783,6 +783,12 @@ function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache) {
   };
 }
 
+test("site Providers declare metadata when they emit metadata fields", () => {
+  assert.ok(sukebeiRssProvider.capabilities.includes("metadata"));
+  assert.ok(torlockProvider.capabilities.includes("metadata"));
+  assert.ok(yourBittorrentProvider.capabilities.includes("metadata"));
+});
+
 test("YourBittorrent declares both Magnet and torrent-file capabilities", () => {
   assert.deepEqual(yourBittorrentProvider.capabilities, ["magnet", "torrent"]);
 });
