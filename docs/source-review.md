@@ -1883,3 +1883,117 @@ Decision: treat as a duplicate/alias of the TMDB entry, not an independent sourc
 - The “TMDB Chinese Forum” seed is a duplicate of TMDB, not an independent provider.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review Atlas movie streaming and torrent candidates (Netflix, YouTube Movies, JustWatch, Reelgood, PlayPilot, Putlocker, FMovies, SolarMovie, The Pirate Bay, EZTV, and MejorTorrent).
+
+
+## Individual source audit — twenty-eighth batch (2026-11-25)
+
+This batch reviews the remaining Atlas movie/TV streaming and torrent candidates: Netflix, YouTube Movies, JustWatch, Reelgood, PlayPilot, Putlocker, FMovies, The Pirate Bay, EZTV, and MejorTorrent.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Netflix | No public metadata/search API for third-party catalog aggregation was verified; consumer streaming access is governed by service terms and licensed territory | **External-only** | No scraping, account access, or catalog extraction |
+| YouTube Movies | YouTube Data API can search public videos, but developer policies restrict aggregation of API data and prohibit facilitating copyright infringement; YouTube Terms also restrict automated site access | **Not suitable for current product context** | No API or scraping integration |
+| JustWatch | Official Content Partner API requires a concluded partner contract, partner token, and branded links/attribution | **Contract-gated; not approved** | No API until a suitable no-cost contract is confirmed and signed |
+| Reelgood | Official business API supports real-time title lookups/search but requires issued API keys; commercial terms/pricing for this project were not verified | **Commercial terms unresolved** | No API key or S3 export; no implementation pending free-use confirmation and contract review |
+| PlayPilot | No official public developer API or third-party data-use permission was verified | **External-only** | No scraping or unofficial API |
+| Putlocker | The historic Putlocker operation was reported as no longer functioning in the U.S. Government's 2017 Notorious Markets report; the Atlas `.name` host was not verified as an official successor | **Historical / successor unverified** | Remove active destination; keep historical name only |
+| FMovies | U.S. Government's 2025 Special 301 Report confirms Vietnamese authorities shut down FMovies and associated piracy sites in 2024 | **Retired operation** | Remove active destination; do not substitute current lookalike domains |
+| The Pirate Bay | No current first-party API/RSS contract or automated metadata-use permission was verified in this pass | **External-only** | No Worker scraping or undocumented endpoint use |
+| EZTV | No current first-party API/RSS contract or automated metadata-use permission was verified for the Atlas `eztv.re` domain | **External-only / policy unresolved** | No Worker scraping or undocumented endpoint use |
+| MejorTorrent | Atlas `mejortorrent.com` is reported by current third-party research as an old domain that redirects/advertises changing numbered domains; no first-party canonical successor/policy was verified | **Unverified / unstable domain** | Remove old destination; do not follow third-party mirror lists or Cloudflare challenge flows |
+
+### Source-specific findings
+
+#### Netflix
+
+The Atlas seed includes Netflix as a movie/TV streaming destination. This pass did not identify a public third-party title-search or catalog API intended for arbitrary aggregator use. A consumer streaming service and its subscription access do not imply permission to collect the service catalog or automate account access.
+
+Decision: external link only. Do not scrape the catalog, use account cookies, or attempt to access internal APIs.
+
+#### YouTube Movies
+
+The official YouTube Data API supports public video search and can filter search results using `videoType=movie`. However, the YouTube API Developer Policies prohibit aggregating API Data except for narrowly defined same-content-owner cases, and prohibit using API services to facilitate or promote copyright infringement. The YouTube Terms also restrict automated access to the service except for public search engines following robots.txt, prior written permission, or applicable law.
+
+Because AIOResourceSearch aggregates torrent sources in the same product, it cannot assume that a YouTube metadata integration would be isolated from the prohibited product use. The API's ability to search videos is not sufficient permission for this integration.
+
+Decision: no YouTube Data API Provider and no website scraping.
+
+References:
+- https://developers.google.com/youtube/data/reference/rest/v3/search/list
+- https://developers.google.com/youtube/terms/developer-policies
+- https://www.youtube.com/t/terms
+
+#### JustWatch
+
+JustWatch documents a Content Partner API for VOD availability. The documentation states that a partner token is issued after a contract is concluded, and requires branded JustWatch links next to each integration/widget and on relevant pages. This is not an unrestricted public API. No free/no-cost contract for AIOResourceSearch has been established.
+
+Decision: do not integrate or assume a free API. Revisit only if JustWatch confirms a suitable no-cost agreement and the UI can satisfy all required attribution and linking obligations.
+
+References:
+- https://apis.justwatch.com/docs/content_partner/
+- https://apis.justwatch.com/docs/api/
+
+#### Reelgood
+
+Reelgood for Business documents a real-time consumer-facing API for title lookups/search and streaming availability, with API-key authentication issued per integration and data endpoints/rate-limit tiers. It separately offers S3 exports for historical/bulk data. The public documentation reviewed here does not establish that an appropriate API plan is free or that this product is eligible without a commercial agreement.
+
+Decision: no integration while pricing/contract terms remain unknown. Do not use bulk S3 exports: the current project has no database or bulk-catalog persistence requirement.
+
+References:
+- https://data.reelgood.com/api-docs/api-documentation/
+- https://data.reelgood.com/technology/
+
+#### PlayPilot
+
+This pass did not verify a first-party public developer API, data license, or third-party metadata aggregation program. A consumer-facing search page does not create an authorized API.
+
+Decision: external-only. No scraping or unofficial endpoint.
+
+#### Putlocker
+
+The U.S. Trade Representative's 2017 Notorious Markets report stated that the previously listed Putlocker operation was no longer functioning, while warning that third-party phishing scams could still use the name. The Atlas seed points to `putlockers.name`, which was not verified as an official operator-controlled successor.
+
+Decision: remove the active destination and retain a historical name-only record. Do not substitute a similarly named mirror.
+
+Reference:
+- https://ustr.gov/sites/default/files/files/Press/Reports/2017%20Notorious%20Markets%20List%201.11.18-%20JG%20SPV%20FINAL%20clean.pdf
+
+#### FMovies
+
+The U.S. Government's 2025 Special 301 Report states that Vietnamese authorities worked with U.S. authorities and stakeholders to shut down FMovies and associated piracy sites in 2024. Current domains using the FMovies name cannot be presumed to be the original operator's continuation.
+
+Decision: remove the active Atlas destination. Do not substitute new FMovies-branded domains or mirrors.
+
+Reference:
+- https://ustr.gov/sites/default/files/files/Issue_Areas/Enforcement/2025%20Special%20301%20Report%20%28final%29.pdf
+
+#### The Pirate Bay
+
+The Atlas seed points to `thepiratebay.org`. This pass did not verify a current first-party public API/RSS specification, current automation policy, or permission for third-party metadata collection. Third-party indexer integrations and undocumented routes are not treated as operator authorization.
+
+Decision: external-only. Do not implement Worker HTML parsing or undocumented API routes.
+
+#### EZTV
+
+The Atlas seed points to `eztv.re`. This pass did not verify a current first-party public API/RSS contract or applicable automation policy for this exact domain. Search results and third-party client support are not enough to establish permission.
+
+Decision: external-only pending canonical operator documentation. Do not scrape or use undocumented endpoints.
+
+#### MejorTorrent
+
+The Atlas seed points to `mejortorrent.com`. Recent third-party domain research reports that the old domain is no longer the active endpoint and that the service changes numbered domains; it also reports Cloudflare verification on a current numbered host. This is not first-party evidence sufficient to establish a canonical successor, a stable public API, or permission for automated access.
+
+Decision: remove the old .com destination. Do not follow third-party mirror lists, use rotating domains, or attempt Cloudflare challenge workarounds. Revisit only if the operator publishes a stable canonical domain and supported public interface with applicable terms.
+
+### Batch outcome
+
+- 10 Atlas movie/TV streaming and torrent candidates received individual decisions.
+- JustWatch and Reelgood have business/partner APIs, but their access terms do not currently meet the project's verified no-cost/no-contract requirements.
+- YouTube API access is not suitable for this product context under its data aggregation and anti-infringement policies.
+- FMovies and Putlocker are historical/retired operations; no mirrors were substituted.
+- Netflix, PlayPilot, The Pirate Bay, and EZTV remain external-only.
+- MejorTorrent's rotating-domain model is not adopted.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review Atlas manga metadata/resources and novel sources, starting with MangaDex, AniList Manga, Kitsu Manga, MyAnimeList Manga, MangaUpdates, and the listed manga resource sites.
