@@ -278,8 +278,12 @@ test("isolates provider failures so healthy sources still return results", async
   assert.equal(result.results.length, 1);
 });
 
-test("enforces per-source timeouts even when a provider ignores AbortSignal", async () => {
-  const hangingProvider = provider(() => new Promise<NormalizedResource[]>(() => {}));
+test("enforces per-source timeouts and aborts the Provider signal", async () => {
+  let observedSignal: AbortSignal | undefined;
+  const hangingProvider = provider((_input, context) => {
+    observedSignal = context.signal;
+    return new Promise<NormalizedResource[]>(() => {});
+  });
   const result = await executeSearch(
     request,
     sourceConfig(source({ timeoutMs: 10 })),
@@ -290,6 +294,7 @@ test("enforces per-source timeouts even when a provider ignores AbortSignal", as
   assert.equal(result.sources[0]?.status, "timeout");
   assert.equal(result.sources[0]?.errorCode, "provider_timeout");
   assert.equal(result.meta.failedSources, 1);
+  assert.equal(observedSignal?.aborted, true);
 });
 
 test("aborts in-flight providers and stops scheduling when the client cancels", async () => {
