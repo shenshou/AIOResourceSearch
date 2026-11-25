@@ -9,6 +9,8 @@ interface TestEnv {
   };
   ADMIN_API_TOKEN?: string;
   ALLOWED_ORIGINS?: string;
+  __store: Map<string, string>;
+  __writes: string[];
 }
 
 function createEnv(values: Record<string, unknown> = {}, options: {
@@ -18,13 +20,17 @@ function createEnv(values: Record<string, unknown> = {}, options: {
   const store = new Map<string, string>(
     Object.entries(values).map(([key, value]) => [key, JSON.stringify(value)]),
   );
+  const writes: string[] = [];
 
   return {
+    __store: store,
+    __writes: writes,
     SOURCES_KV: {
       async get(key) {
         return store.get(key) ?? null;
       },
       async put(key, value) {
+        writes.push(key);
         store.set(key, value);
       },
     },
@@ -412,4 +418,201 @@ test("an adapter with enabled linked sources cannot be disabled", async () => {
 
   assert.equal(response.status, 409);
   assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "adapter_has_enabled_sources");
+});
+
+
+const adminTestSource = {
+  id: "perverzija-source",
+  name: "Perverzija DB",
+  category: "other-index",
+  contentCategory: "jav",
+  type: "provider",
+  adapterId: "perverzija-db",
+  enabled: true,
+  searchModes: ["number", "keyword"],
+  capabilities: ["metadata"],
+  timeoutMs: 5000,
+};
+const adminTestAdapter = {
+  id: "perverzija-db",
+  name: "Perverzija DB",
+  description: "Metadata provider",
+  version: "1.0.0",
+  enabled: true,
+  categories: ["other-index"],
+  contentCategories: ["jav"],
+  capabilities: ["metadata"],
+};
+
+function adminTestValues(source = adminTestSource, adapter = adminTestAdapter) {
+  return {
+    "sources:config:v1": { version: 7, updatedAt: null, sources: [source] },
+    "adapters:config:v1": { version: 3, updatedAt: null, adapters: [adapter] },
+  };
+}
+
+function adminTestRequest(path: string, body?: unknown, signal?: AbortSignal) {
+  return new Request(`https://worker.example/api/admin/sources/${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer test-secret",
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    ...(signal ? { signal } : {}),
+  });
+}
+
+test("admin source test endpoints require administrator authorization", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/admin/sources/perverzija-source/test-connection", { method: "POST" }),
+    createEnv(adminTestValues()),
+  );
+  assert.equal(response.status, 401);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "unauthorized");
+});
+
+test("external-search test requests are rejected without fetching the destination", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = async () => {
+    fetched = true;
+    throw new Error("External destination must not be fetched.");
+  };
+  try {
+    const externalSource = {
+      id: "external-entry", name: "External entry", category: "other-index",
+      type: "external-search", enabled: true, baseUrl: "https://example.com",
+      searchModes: ["keyword"], capabilities: [], timeoutMs: 5000,
+    };
+    const env = createEnv({ "sources:config:v1": { version: 1, updatedAt: null, sources: [externalSource] } }, { adminToken: "test-secret" });
+    const response = await worker.fetch(adminTestRequest("external-entry/test-connection"), env);
+    assert.equal(response.status, 422);
+    assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "external_search_not_testable");
+    assert.equal(fetched, false);
+    assert.equal(env.__writes.length, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("disabled sources and disabled or unimplemented adapters are rejected before upstream fetch", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = async () => {
+    fetched = true;
+    throw new Error("No upstream request expected.");
+  };
+  try {
+    const disabledSource = { ...adminTestSource, enabled: false };
+    const disabledEnv = createEnv(adminTestValues(disabledSource), { adminToken: "test-secret" });
+    const disabledResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), disabledEnv);
+    assert.equal(disabledResponse.status, 409);
+    assert.equal(((await readJson(disabledResponse)).error as Record<string, unknown>).code, "source_disabled");
+
+    const disabledAdapterEnv = createEnv(adminTestValues(adminTestSource, { ...adminTestAdapter, enabled: false }), { adminToken: "test-secret" });
+    const disabledAdapterResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), disabledAdapterEnv);
+    assert.equal(disabledAdapterResponse.status, 409);
+    assert.equal(((await readJson(disabledAdapterResponse)).error as Record<string, unknown>).code, "adapter_unavailable");
+
+    const unimplementedAdapterEnv = createEnv(adminTestValues(
+      { ...adminTestSource, adapterId: "future-adapter" },
+      { ...adminTestAdapter, id: "future-adapter" },
+    ), { adminToken: "test-secret" });
+    const unimplementedResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), unimplementedAdapterEnv);
+    assert.equal(unimplementedResponse.status, 409);
+    assert.equal(((await readJson(unimplementedResponse)).error as Record<string, unknown>).code, "adapter_unavailable");
+    assert.equal(fetched, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("connection test executes one bounded Provider smoke search and returns at most three samples without KV writes", async () => {
+  const originalFetch = globalThis.fetch;
+  const requested: string[] = [];
+  globalThis.fetch = async (input) => {
+    requested.push(String(input));
+    return new Response(JSON.stringify({
+      data: [1, 2, 3, 4].map((id) => ({
+        id,
+        title: `Scene ${id}`,
+        urls: {
+          page: `https://db.perverzija.com/scene/${id}`,
+          watch: `https://tube.perverzija.com/${id}`,
+        },
+      })),
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
+  };
+  try {
+    const env = createEnv(adminTestValues(), { adminToken: "test-secret" });
+    const sourceConfigBefore = env.__store.get("sources:config:v1");
+    const adapterConfigBefore = env.__store.get("adapters:config:v1");
+    const response = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), env);
+    assert.equal(response.status, 200);
+    const body = await readJson(response);
+    assert.equal(body.status, "success");
+    assert.equal(body.kind, "test-connection");
+    assert.equal(body.resultCount, 4);
+    assert.equal((body.sampleResults as unknown[]).length, 3);
+    assert.equal(typeof body.elapsedMs, "number");
+    assert.equal(requested.length, 1);
+    assert.match(requested[0], /api\.perverzija\.com\/v1\/scenes\?q=/);
+    assert.equal(env.__writes.length, 0);
+    assert.equal(env.__store.get("sources:config:v1"), sourceConfigBefore);
+    assert.equal(env.__store.get("adapters:config:v1"), adapterConfigBefore);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("test search validates the query and selected mode before calling the Provider", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = async () => {
+    fetched = true;
+    return new Response(JSON.stringify({ data: [] }), { status: 200, headers: { "Content-Type": "application/json" } });
+  };
+  try {
+    const env = createEnv(adminTestValues(), { adminToken: "test-secret" });
+    const invalidQuery = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: " ", mode: "keyword" }), env);
+    assert.equal(invalidQuery.status, 422);
+    assert.equal(((await readJson(invalidQuery)).error as Record<string, unknown>).code, "invalid_query");
+
+    const unsupportedMode = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "invalid" }), env);
+    assert.equal(unsupportedMode.status, 422);
+    assert.equal(((await readJson(unsupportedMode)).error as Record<string, unknown>).code, "invalid_search_mode");
+    assert.equal(fetched, false);
+
+    const valid = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
+    assert.equal(valid.status, 200);
+    const body = await readJson(valid);
+    assert.equal(body.kind, "test-search");
+    assert.equal(body.status, "success");
+    assert.equal(body.resultCount, 0);
+    assert.equal(fetched, true);
+    assert.equal(env.__writes.length, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("Provider test reports upstream failure and cancellation without persisting configuration", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response("unavailable", { status: 503, headers: { "Content-Type": "text/plain" } });
+  try {
+    const env = createEnv(adminTestValues(), { adminToken: "test-secret" });
+    const failed = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
+    assert.equal(failed.status, 502);
+    assert.equal(((await readJson(failed)).error as Record<string, unknown>).code, "provider_failed");
+    assert.equal(env.__writes.length, 0);
+
+    const controller = new AbortController();
+    controller.abort(new DOMException("Cancelled by test.", "AbortError"));
+    const cancelled = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }, controller.signal), env);
+    assert.equal(cancelled.status, 499);
+    assert.equal(env.__writes.length, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
