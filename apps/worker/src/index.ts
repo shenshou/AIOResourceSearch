@@ -22,7 +22,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     if (typeof value.query !== "string" || !value.query.trim() || value.query.trim().length > 120) {
       return json({ error: { code: "invalid_query", message: "Query must contain 1 to 120 characters." } }, 422);
     }
-    if (value.contentCategory !== undefined && value.contentCategory !== "all" && (typeof value.contentCategory !== "string" || !contentCategories.includes(value.contentCategory as (typeof CONTENT_CATEGORIES)[number]))) {
+    if (value.contentCategory !== undefined && value.contentCategory !== "all" && (typeof value.contentCategory !== "string" || !CONTENT_CATEGORIES.includes(value.contentCategory as (typeof CONTENT_CATEGORIES)[number]))) {
       return json({ error: { code: "invalid_content_category", message: "Content category is not supported." } }, 422);
     }
     if (value.mode !== "number" && value.mode !== "keyword") {
