@@ -2591,3 +2591,18 @@ This section records official API candidates reviewed while expanding beyond the
 - OneJAV first-party feed page (403 in this review): https://onejav.com/feeds/
 - RSSHub route documentation (third-party implementation evidence only): https://rsshub-doc.pages.dev/multimedia
 - 141PPV first-party homepage/feed (not verified in this review): https://141ppv.com/ and https://141ppv.com/feeds/
+
+
+
+## JAVDatabase candidate follow-up — 2026-11-26
+
+- The first-party site identifies itself as a database for Japanese adult-video movie releases and performers, for tracking releases and collections. Its DMCA page says it does not provide access to or links to full pirated movies and describes the service as a database that promotes lawful purchases.
+- The first-party site update dated 2026-03-12 describes its movie data as manually edited and sourced directly from Japanese sites. This is a description of its editorial workflow, not an API contract or permission for third-party automated extraction.
+- A third-party open-source Stash scraper documents an HTML search URL and XPath selectors for JAVDatabase. This is implementation evidence only; it is not a first-party interface or authorization. FetchJAV's metadata enrichment implementation is likewise an HTML parser, not an official API.
+- The third-party javinfo service documents JAVDatabase as one of its own providers and requires an API key; it is not a free first-party JAVDatabase API and is excluded under the project's no-paid-services rule.
+- **Decision: homepage-only external entry.** The catalog now uses the verified first-party homepage `https://www.javdatabase.com`. Do not add a search template based on third-party scraper selectors, do not reuse FetchJAV/Stash scraping code, and do not implement Worker metadata extraction. Reconsider only if JAVDatabase publishes a supported public API/feed and applicable automation/data-use terms.
+- References:
+  - First-party site update: https://www.javdatabase.com/2026/03/12/site-update-data-improvements-improved-homepage-better-image-galleries-international-blocking/
+  - First-party DMCA / site description: https://www.javdatabase.com/dmca-takedown-request/
+  - Third-party Stash scraper (implementation evidence only): https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/JavDatabase.yml
+  - Third-party javinfo provider (paid API; not used): https://docs.javinfo.dev/docs
