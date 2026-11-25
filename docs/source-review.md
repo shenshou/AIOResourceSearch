@@ -2249,3 +2249,71 @@ Reference:
 - 读书派 remains external-only despite its public catalog.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: reconcile the remaining 63 Atlas seed rows outside the original 57-candidate scope and decide which anime/movie/manga/novel candidates can be safely added to the multi-category source catalog without duplicating already-reviewed entries.
+
+
+## Atlas 119-row seed — complete multi-category reconciliation (2026-11-25)
+
+This section closes the 63-row multi-category review backlog identified after the original 57 Atlas-tagged catalog candidates. It also records the one missed SolarMovie row from the twenty-eighth batch.
+
+### Final category accounting
+
+The Atlas seed contains 119 rows. The original catalog import covered 56 JAV/torrent/community rows; the Atlas README contributed one additional DMM/FANZA metadata candidate, giving 57 Atlas-tagged catalog records. The remaining 63 seed rows are now all reviewed:
+
+| Category | Seed rows | Review coverage |
+|---|---:|---|
+| Anime database | 8 | 8/8 |
+| Anime torrent | 6 | 6/6 |
+| Anime streaming | 8 | 8/8 |
+| Anime/manga crossover | 1 | 1/1 (Bilibili Manga; same platform as Bilibili) |
+| Movie/TV database | 8 | 8/8 |
+| Movie/TV torrent | 3 | 3/3 |
+| Movie/TV streaming | 8 | 8/8, including SolarMovie addendum |
+| Manga database | 5 | 5/5 |
+| Manga resources | 8 | 8/8 |
+| Novel/e-book database | 8 | 8/8 |
+| **Total** | **63** | **63/63** |
+
+### Cross-category and duplicate identity resolution
+
+The 63 rows are not 63 independent services. The following entries share one platform/operator identity and should be modeled as one multi-category source if ever approved:
+
+- MyAnimeList + MyAnimeList Manga
+- AniList + AniList Manga
+- Douban Anime + Douban Movie
+- Kitsu Anime + Kitsu Manga
+- Bilibili Anime + Bilibili Comic + Bilibili Manga
+- TMDB + “TMDB Chinese Forum” (the latter points to the same TMDB host and is not a separate forum/API)
+
+Nyaa.si and Sukebei Nyaa share the Nyaa domain family but are distinct service surfaces and must not be merged. Sukebei is adult-oriented and remains in the JAV/adult scope, not Anime.
+
+The Atlas 119-row seed therefore contains historical seed rows, duplicates, category aliases, and sources outside the initial catalog import. Counts must not be interpreted as unique services, approved integrations, or runnable Providers.
+
+### Integration disposition after all 63 reviews
+
+Conditional candidates worth a separate implementation-readiness review:
+
+- Bangumi: public subject metadata only; use maintained `/v0/` API, meaningful User-Agent, conservative pacing, and no access to auth-gated data.
+- MangaDex: public manga metadata only; visible attribution, no ads/paid services, no chapter content/images, and shared global rate limiting.
+- MangaUpdates: public series metadata only; attribution, caching, reasonable request spacing, and no illegal-action or user/forum endpoints.
+- DMHY: documented public RSS; verify current terms, HTTPS response, category filtering, and content rules before implementation.
+- Shana Project: site-wide public RSS only; never use user-specific/private feeds.
+- MusicBrainz: public metadata API remains conditional on the previously documented strict shared 1 request/second coordinator.
+- AniDB and Notify.moe: technical API leads only; verify current official rate/policy details before implementation.
+
+Not approved or external-only under current evidence:
+
+- AniList: competing-service restriction unresolved; written clarification required.
+- TMDB, Trakt, YouTube API: restrictions conflict with the integrated AIOResourceSearch product context.
+- Bilibili: written authorization required for automated data acquisition.
+- MAL, Kitsu, LiveChart, Douban, HIDIVE, Crunchyroll, Netflix, JustWatch, Reelgood, Letterboxd, IMDb, Rotten Tomatoes, Metacritic, and other streaming/resource sites: no current permission/API scope meeting the project's constraints was established.
+- Private/account-bound feeds or trackers (Mikan personal RSS, AnimeBytes) are not shared Worker sources.
+- Shadow-library/bulk-download services (Anna's Archive) are not integrated into this no-database search architecture.
+- Unverified mirrors, retired services, and unstable rotating domains are not substituted.
+
+### Final status
+
+- Original Atlas catalog subset: 56 seed rows + 1 README metadata candidate = 57 Atlas-tagged catalog candidates.
+- Additional Atlas multi-category rows: 63/63 reviewed, not imported into `sourceCatalog.ts`.
+- Atlas SQL: 119/119 rows accounted for across the original subset and the multi-category review.
+- Current source catalog remains 91 unique candidate records; no automatic expansion was made from the 63 reviewed rows.
+- No new Provider implementation, KV configuration, source enablement, or Cloudflare deployment was performed.
