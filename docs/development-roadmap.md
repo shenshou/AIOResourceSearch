@@ -43,13 +43,13 @@ Acceptance:
 **Status: Implemented; live deployment verification remains open**
 
 Deliverables:
-- [x] Source configuration CRUD, enable/disable, validation, and ETag/revision preconditions.
+- [x] Source configuration CRUD, enable/disable, validation, ETag/revision preconditions, and administrator-only Provider test actions.
 - [x] Adapter metadata CRUD and implementation-registry checks.
 - [x] Protected administration endpoints using the Worker secret.
 - [x] Public source and adapter listings with private fields filtered.
 - [x] Search orchestration, per-source timeout/failure isolation, normalization, deduplication, and result caps.
 - [x] Frontend source and adapter management screens.
-- [ ] Add administrator-only source connection checks and query-based Provider test searches with clear timeout, error, and result-count feedback.
+- [x] Add administrator-only source connection smoke checks and query-based Provider test searches with timeout, error, elapsed-time, result-count, and capped-sample feedback; external-search destinations are never fetched. See [source-testing.md](./source-testing.md).
 - [x] External-search URL generation without fetching the destination.
 - [ ] Verify KV propagation and management flows in a non-production Cloudflare environment.
 
@@ -100,7 +100,7 @@ Acceptance:
 - [x] Add this project-level roadmap and link it from the README.
 - [x] Add a dedicated development standards document and link it from the README.
 - [ ] Keep implementation status and phase acceptance criteria current as work lands.
-- [ ] Document new adapter contracts and operational behavior alongside code changes.
+- [x] Document new adapter contracts and operational behavior alongside code changes, including administrator source diagnostics.
 
 ## Phase 3 — Source coverage and adapter ecosystem
 
@@ -193,6 +193,7 @@ Current branch implementation snapshot:
 - [Source catalog](./source-catalog.md) — candidate source inventory and registration rules.
 - [Source review log](./source-review.md) — evidence and decisions for individual sources.
 - [Provider documentation](./providers/) — implementation details for site-specific adapters.
+- [Source testing](./source-testing.md) — authenticated Provider connection smoke checks and query-based diagnostics.
 
 ## Change control
 
