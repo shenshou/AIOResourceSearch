@@ -1,4 +1,4 @@
-import type { AdapterDefinition, SourceDefinition } from "@aio-resource-search/shared";
+import type { SourceDefinition } from "@aio-resource-search/shared";
 import type { Env } from "./env";
 import { expectedVersion, json, readJsonBody, withEtag } from "./http";
 import {
