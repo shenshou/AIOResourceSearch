@@ -603,8 +603,10 @@ test("Provider test reports upstream failure and cancellation without persisting
   try {
     const env = createEnv(adminTestValues(), { adminToken: "test-secret" });
     const failed = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
-    assert.equal(failed.status, 502);
-    assert.equal(((await readJson(failed)).error as Record<string, unknown>).code, "provider_failed");
+    assert.equal(failed.status, 200);
+    const failureBody = await readJson(failed);
+    assert.equal(failureBody.status, "error");
+    assert.equal(failureBody.errorCode, "provider_failed");
     assert.equal(env.__writes.length, 0);
 
     const controller = new AbortController();
