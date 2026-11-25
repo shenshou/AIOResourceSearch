@@ -2062,3 +2062,97 @@ Reference:
 - AniList remains deferred; MAL and Kitsu remain unverified for this use case.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review Atlas manga resource sites MangaNelo, MangaKakalot, Bilibili Manga, DMZJ, Manhuagui, MangaFire, MangaSee, and ComicWalker.
+
+
+## Individual source audit — thirtieth batch (2026-11-25)
+
+This batch reviews the eight Atlas manga-resource entries: MangaNelo, MangaKakalot, Bilibili Manga, DMZJ, Manhuagui, MangaFire, MangaSee, and ComicWalker/Kadocomi.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| MangaNelo | No first-party API documentation, current automation policy, or metadata-reuse permission was verified | **External-only / unverified** | No Worker scraping or undocumented API |
+| MangaKakalot | No first-party API documentation, current automation policy, or metadata-reuse permission was verified | **External-only / unverified** | No Worker scraping or undocumented API |
+| Bilibili Manga | Same Bilibili Open Platform and Terms restrictions as the Bilibili anime entry; automated data acquisition requires authorized interface and written permission | **Permission-gated; not approved** | No scraping or unofficial app API |
+| DMZJ | Public manga pages exist, but no first-party public API contract or permission for third-party metadata aggregation was verified | **External-only** | No use of undocumented app/mobile API or scraping |
+| Manhuagui | Official About page describes user-uploaded material, copyright-holder removal requests, and says downloads are prohibited; no API permission was verified | **External-only; no downloads** | No chapter scraping, image fetching, or download links |
+| MangaFire | A status page reports “API Operational,” but no first-party API specification or acceptable-use terms for third-party integrations were verified | **API existence/permission unresolved** | Do not infer API access from status monitoring; no Provider |
+| MangaSee | No first-party API documentation, current automation policy, or metadata-reuse permission was verified | **External-only / unverified** | No Worker scraping or undocumented API |
+| ComicWalker / Kadocomi | Official KADOKAWA Terms govern the content service; no public third-party metadata API or automation permission was verified | **External-only** | Link to official title pages only; no scraping, chapter retrieval, or account access |
+
+### Source-specific findings
+
+#### MangaNelo
+
+The Atlas seed points to `manganelo.com`. This review did not find first-party API documentation, an official developer program, or a current policy granting third-party automated metadata extraction. Third-party scraper libraries and public search pages are not authorization.
+
+Decision: retain as external-only if the destination is separately confirmed; no Worker fetching, HTML parsing, or unofficial endpoint use.
+
+#### MangaKakalot
+
+The Atlas seed points to `mangakakalot.com`. No first-party API specification or permission for third-party metadata aggregation was verified. Third-party status monitors only establish that a site responded, not that automated collection is allowed.
+
+Decision: external-only; no scraping or unofficial API.
+
+#### Bilibili Manga
+
+Bilibili Manga is a Bilibili service surface, not an independent operator. The Bilibili Open Platform agreement and general Terms reviewed in the twenty-sixth batch remain applicable. Automated acquisition requires an expressly authorized API/interface and prior written permission; the public Open Platform catalog does not grant general-purpose manga catalog search access.
+
+Decision: no scraping, no undocumented app/mobile API, and no Provider without written authorization for the exact metadata use.
+
+References:
+- https://open.bilibili.com/agreement/developer-service
+- https://www.bilibili.com/blackboard/era/termsofservice.html
+
+#### DMZJ
+
+The Atlas seed points to `dmzj.com`. Public manga listings and author pages are visible, but this review did not establish a first-party open API contract or terms authorizing third-party metadata aggregation. Community-maintained mobile clients and reverse-engineered app endpoints are not official permission.
+
+Decision: external-only. Do not reuse undocumented app/mobile APIs, session tokens, or HTML scraping.
+
+#### Manhuagui
+
+The official About page describes the site as a user-sharing manga platform, states that works are shared by users, directs rights holders to request removal, and says downloads are prohibited. The review did not identify a supported API or a license for third-party chapter/image distribution.
+
+Decision: if retained, provide only a user-opened external page link. Do not scrape chapter lists, fetch images, proxy content, or generate download links.
+
+References:
+- https://www.manhuagui.com/contact.html
+- https://www.manhuagui.com/
+
+#### MangaFire
+
+MangaFire's status page reports an “API Operational” component. A status component is not an API specification: this review did not verify the endpoint contract, authentication model, rate limits, acceptable-use policy, or permission for third-party metadata aggregation.
+
+Decision: do not reverse-engineer the service API based on the status page. Keep external-only until first-party API documentation and usage terms are available.
+
+Reference:
+- https://mangafire.statuspage.io/
+
+#### MangaSee
+
+The Atlas seed points to `mangasee123.com`. This review did not verify a current first-party API, acceptable-use policy, or metadata-reuse permission. Third-party clients and scraper repositories are not operator authorization.
+
+Decision: external-only; no scraping or undocumented API.
+
+#### ComicWalker / Kadocomi
+
+ComicWalker now operates under the Kadocomi service name. The official KADOKAWA Terms apply to the content distribution service and define content broadly to include text, information, images, audio, and video. The service requires an account for normal use except where otherwise permitted, and the review found no public third-party API or automated metadata permission. The app terms also prohibit bots or other technical means used to manipulate the app improperly.
+
+Decision: keep user-initiated links to official title pages only. Do not scrape the catalog, retrieve chapters/images, use account credentials, or call private app endpoints.
+
+References:
+- https://comic-walker.com/terms
+- https://comic-walker.com/terms/app
+
+### Batch outcome
+
+- 8 Atlas manga-resource candidates received individual decisions.
+- Bilibili Manga remains permission-gated under the Bilibili platform agreement.
+- MangaFire's status page is not treated as API documentation or authorization.
+- Manhuagui's own page says downloads are prohibited; no chapter/image acquisition is allowed.
+- ComicWalker/Kadocomi remains official-link-only.
+- MangaNelo, MangaKakalot, DMZJ, and MangaSee remain external-only pending first-party API and policy evidence.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review the eight Atlas novel sources: Z-Library, Anna's Archive, 知轩藏书, 奇书网, SoBooks, Lunarora, PDFs.top, and 读书派.
