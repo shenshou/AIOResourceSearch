@@ -122,7 +122,7 @@ export const yourBittorrentProvider: ProviderAdapter = {
   mechanism: "api",
   contentCategories: ["jav"],
   categories: ["torrent"],
-  capabilities: ["magnet", "torrent"],
+  capabilities: ["metadata", "magnet", "torrent"],
   searchModes: ["number", "keyword"],
   async search(input, context) {
     const url = new URL(API_ENDPOINT);
