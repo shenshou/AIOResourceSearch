@@ -39,6 +39,17 @@ test("validateSource preserves compatibility with legacy sources without content
   assert.equal(result.id, "example-source");
 });
 
+test("validateSource rejects sources without a search mode or Provider capability", () => {
+  assert.equal(validateSource(source({ searchModes: [] })), null);
+  assert.equal(validateSource(source({ capabilities: [] })), null);
+  assert.ok(validateSource(source({
+    type: "external-search",
+    adapterId: undefined,
+    capabilities: [],
+    searchUrlTemplate: "https://source.example/search?q={query}",
+  })));
+});
+
 test("validateSource rejects invalid source IDs", () => {
   assert.equal(validateSource(source({ id: "Invalid ID" })), null);
 });
