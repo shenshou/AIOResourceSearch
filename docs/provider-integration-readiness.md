@@ -194,3 +194,16 @@ The Worker has a source-scoped credential injection path:
 - On the Workers Free plan, environment variables and secrets share a per-Worker limit of 64 bindings and 5 KB per value. Keep one small secret per credential binding; reassess the storage design before approaching the binding limit.
 
 This is a generic transport boundary, not a universal login automation engine. Provider-specific authentication (Bearer token, API key, Cookie, or OAuth) still requires a documented contract and a narrow implementation. Interactive login, CAPTCHA solving, anti-bot bypass, paywall bypass, and evasion of geo/IP/rate restrictions remain out of scope.
+
+
+## AniBT public Torznab — implemented, disabled pending hosted verification
+
+- Official API: `GET https://anibt.net/torznab/api`; anonymous, no account or API key.
+- The official integration guide explicitly supports Sonarr, Radarr, and Prowlarr as third-party Torznab clients.
+- Query: `t=search`, `q`, `cat=5070` (Anime), `limit=50`. Keyword is limited to 160 UTF-8 bytes. The API returns newest-first results and supports bounded offset through item 300.
+- Official rate limit: 60 requests / 60 seconds / IP. The Provider uses the shared `anibt` Durable Object lane at 1,100 ms spacing to leave headroom.
+- Official caching policy marks Torznab `no-store`; the Provider does not use Cache API reads/writes. It does not retry; 429/503 cooldowns are handled by the shared coordinator.
+- Provider: `anibt-torznab` v1.0.0, API mechanism, torrent source category, anime content category, metadata + torrent capabilities, keyword-only.
+- Maps only safe same-host release details (when supplied), the official torrent download URL, publication date, size, seeders, and peers. No magnet URI is inferred.
+- Public Torznab integration is explicitly documented for third-party indexer clients, but broad republication terms are not separately stated. Keep disabled until project content-policy review and non-production Cloudflare connectivity verification pass.
+- No private RSS token, group API key, account session, publishing endpoint, KV config, source enablement, or deployment is included.
