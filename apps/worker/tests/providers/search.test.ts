@@ -784,6 +784,10 @@ function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache) {
   };
 }
 
+test("YourBittorrent declares both Magnet and torrent-file capabilities", () => {
+  assert.deepEqual(yourBittorrentProvider.capabilities, ["magnet", "torrent"]);
+});
+
 test("searches YourBittorrent's documented JSON API using the Adult category and maps links", async () => {
   let requestedUrl = "";
   let cacheTtl = "";
