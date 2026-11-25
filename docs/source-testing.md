@@ -55,7 +55,7 @@ The frontend exposes separate **测试连接** and **测试搜索** actions for 
 
 ## Authenticated source diagnostics
 
-- If a source declares `credentialBinding`, the Worker resolves that exact named Worker Secret binding and passes the value only to the selected Provider through `ProviderContext.credential`.
+- If a source declares a `SOURCE_CREDENTIAL_*` `credentialBinding`, the Worker resolves that exact named Worker Secret binding and passes the value only to the selected Provider through `ProviderContext.credential`.
 - If the binding is missing or empty, the diagnostic fails closed with `credential_unavailable`; no upstream request is made.
 - The credential value is never included in the diagnostic response, source API response, KV configuration, or sample results.
 - Configure deployed credentials as Worker Secrets, not plaintext `vars`. For local development, use an ignored `.dev.vars` file beside the Wrangler configuration. Never commit it.
