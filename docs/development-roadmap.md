@@ -72,6 +72,7 @@ Acceptance:
 - [x] Propagate client cancellation to active Provider requests and retain per-source timeout isolation.
 - [x] Enforce declared capabilities during result normalization, not only during adapter resolution.
 - [x] Preserve source attribution and merge missing metadata/resource links when canonical URLs deduplicate.
+- [x] Validate persisted KV configuration envelopes and individual records when reading them; reject malformed records and duplicate IDs.
 
 Acceptance:
 - Existing API paths, HTTP methods, status codes, response shapes, ETag behavior, CORS behavior, authentication, KV keys, and validation rules remain unchanged.
