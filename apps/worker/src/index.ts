@@ -11,6 +11,8 @@ import type {
 import type { Env } from "./env";
 import { expectedVersion, getCorsHeaders, json, readJsonBody, withEtag } from "./http";
 import {
+  publicAdapter,
+  publicSource,
   readAdaptersConfig,
   readConfig,
   saveAdaptersConfig,
