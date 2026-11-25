@@ -106,7 +106,8 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
   });
 
   it("persists a real upstream 429 cooldown through the coordinated fetch path", async () => {
-    const id = coordinator.idFromName("mangadex-integration-" + crypto.randomUUID());
+    // The coordinated fetch resolves the canonical production lane ID via idFromName("mangadex").
+    const id = coordinator.idFromName("mangadex");
     const stub = coordinator.get(id);
     const namespace = {
       idFromName: (name: string) => coordinator.idFromName(name),
