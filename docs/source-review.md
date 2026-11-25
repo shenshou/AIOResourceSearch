@@ -340,3 +340,54 @@ This review separates API reachability from permission to use the data in this s
 - **Do not integrate under current product scope:** TMDB.
 - **Technically promising but defer until credentials and shared throttling are designed:** IGDB.
 - None of these APIs has been added to `sourceCatalog.ts`, registered in KV, enabled, or deployed by this review.
+
+
+## Individual source audit — first batch (2026-11-25)
+
+This batch checks a small set of existing catalog entries with search URL templates. A URL template is only a navigation hint; it is not evidence of permission to automate requests, a stable HTML contract, or a working Provider. No source in this batch is enabled or added to the Worker runtime.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JavDB | Canonical terms page: https://javdb.com/terms | **Hold — written permission required before operating an integration** | No API/HTML requests; do not enable the catalog entry as a Provider or automated external-search integration pending permission |
+| JavLibrary | A terms page was found through a third-party mirror, not verified on the canonical site; community scraper code is not authoritative | **Unverified — do not automate** | No Worker requests; do not copy age-verification cookies or scraper behavior. Revisit only after canonical terms and ordinary public access are verified |
+| JavBus | Current third-party observations report an age-verification gate on the homepage; canonical terms and the catalog search route were not verified | **Access gate observed — no bypass** | No Worker requests or challenge/cookie handling. Keep disabled pending official policy and normal unauthenticated access review |
+| Reddit r/JAV | Reddit User Agreement and Developer/Data API Terms: https://redditinc.com/policies/user-agreement and https://redditinc.com/policies/developer-terms | **External-search only** | A user-initiated link to Reddit's own search may remain a navigation option; no HTML scraping or API integration without authorized API access and a separate terms review |
+
+### Source-specific findings
+
+#### JavDB
+
+The current canonical terms page includes a restriction against using the site or its services to promote or operate a service without the operator's prior written consent. It also reserves rights not expressly granted. An automated search aggregator integration would create a material terms risk; the public search URL alone does not grant permission.
+
+Decision: do not fetch JavDB from Workers, parse its pages, or represent it as an implemented Provider. Do not enable the catalog entry pending written permission that covers this product and its intended use. This is a conservative engineering eligibility decision, not a legal opinion.
+
+#### JavLibrary
+
+Search surfaced a terms page describing itself as the terms for javlibrary.com, but the page was hosted on a third-party domain rather than a canonical JavLibrary domain. That is insufficient provenance to make a reliable policy determination. A community scraper example also uses an over-18 cookie; community code is neither authorization nor evidence of permitted access.
+
+Decision: no Worker access and no copied cookie, browser session, or scraper logic. First obtain the canonical current terms and verify the ordinary public search/detail flow without supplying access-control cookies.
+
+#### JavBus
+
+Third-party site observations currently report that the homepage resolves to an age-verification page. This is a technical observation only; it does not establish the site's terms or authorize any alternate access path. The catalog's existing search template has not been verified as a normal public endpoint.
+
+Decision: do not implement HTML/API access, reuse verification cookies, or attempt to evade the gate. Reconsider only if official terms and an ordinary unauthenticated public search flow are confirmed.
+
+#### Reddit r/JAV
+
+Reddit's User Agreement prohibits scraping without prior written consent, while the Developer Terms and Data API Terms require authorized access credentials and impose additional usage conditions. The Developer Terms also restrict monetized use unless separately permitted or approved. The project currently has no approved Reddit API credentials or written permission.
+
+Decision: keep this source as a plain external-search destination only. Do not fetch Reddit HTML, use undocumented endpoints, or add a Reddit API Provider. If API use is later proposed, obtain authorized access and review the current Data API Terms, attribution, retention/deletion, rate limits, and non-commercial restrictions first.
+
+### Not yet decided in this batch
+
+JableTV and SupJAV remain candidates, but the search results available in this review did not establish a canonical, current terms page with sufficient provenance. A third-party-hosted terms page that names these services is not treated as conclusive evidence. Both remain disabled and must not be automated until their canonical policies and normal public access paths are verified.
+
+### Batch outcome
+
+- 4 sources received a source-specific decision: JavDB, JavLibrary, JavBus, and Reddit r/JAV.
+- 2 further candidates (JableTV and SupJAV) remain explicitly unresolved.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- The next audit batch should prioritize the remaining catalog entries that already have search URL templates, then proceed to homepage-only candidates. Each review must record evidence provenance separately from technical reachability.
