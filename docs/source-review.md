@@ -2542,3 +2542,16 @@ This section records official API candidates reviewed while expanding beyond the
 - **Decision: keep external-search only; do not implement or configure a Worker Provider yet.** Reconsider after (1) the site publishes accessible terms or written clarification permitting third-party metadata display/linking, and (2) a sustainable quota model is confirmed. Do not evade quota, rotate IPs, or use undocumented endpoints. No login, scraping, or API call was used to bypass an access control.
 - First-party reference: https://bitsearch.eu/api
 - First-party policy pages linked from API docs but currently unavailable to this review: https://bitsearch.eu/about and https://bitsearch.eu/privacy-policy
+
+
+## BTSOW — current canonical domain and automation contract unverified — 2026-11-25
+
+- The existing catalog entry points to `https://btsow.com`, but current search results surfaced a redirect/directory path and multiple similarly branded hosts (`btsow.live`, `btsow.icu`, `btsow.vip`). No first-party announcement, canonical-domain list, operator-controlled API/RSS documentation, or terms linking these domains was verified.
+- Search results from community-maintained scraper/rule repositories contain historical BTSOW HTML paths and selectors, but these are technical implementation traces, not current first-party documentation or permission to automate access. They must not be copied into a Worker Provider.
+- The search engine's public UI description does not establish a stable API, RSS contract, request quota, or permission to republish indexed metadata. A current live result from `btsow.live` describes both torrent and magnet search, but the review did not establish that this host is controlled by the same operator as `btsow.com`.
+- **Decision: unverified / external-only reference.** Keep the catalog note as an unverified directory reference; do not redirect to `btsow.live`, `btsow.icu`, or other mirror candidates; do not scrape HTML, copy third-party XPath selectors, or probe undocumented endpoints. Reconsider only after the operator publishes a canonical domain and a documented API/RSS/automation policy.
+- References:
+  - Existing catalog destination: https://btsow.com/
+  - Current branded host surfaced by search (ownership unverified): https://btsow.live/
+  - Another similarly branded host (ownership unverified): https://btsow.icu/
+  - Third-party legacy selector example (implementation evidence only): https://github.com/xiandanin/magnetW/blob/master/rule.json
