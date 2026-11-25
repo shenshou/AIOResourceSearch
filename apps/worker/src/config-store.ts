@@ -31,6 +31,7 @@ export async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
     typeof parsed !== "object" ||
     parsed === null ||
     !("version" in parsed) ||
+    typeof parsed.version !== "number" ||
     !Number.isSafeInteger(parsed.version) ||
     parsed.version < 0 ||
     !("adapters" in parsed) ||
