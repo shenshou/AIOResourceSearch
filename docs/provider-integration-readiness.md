@@ -185,7 +185,7 @@ This readiness review does not add Provider code, source catalog records, KV con
 
 The Worker has a source-scoped credential injection path:
 
-- A source's `credentialBinding` is a Worker Secret binding name, not a credential value.
+- A source's `credentialBinding` is a dedicated Worker Secret binding name prefixed with `SOURCE_CREDENTIAL_`, not a credential value. The prefix prevents source configuration from referencing reserved bindings such as `ADMIN_API_TOKEN` or `SOURCES_KV`.
 - At request time the Worker resolves only the binding named by that source and passes the value to that source's Provider through `ProviderContext.credential`.
 - If a source declares a binding but the secret is missing or empty, the source is marked unavailable with `credential_unavailable`; the Provider is not called.
 - The credential is not written to KV, included in public source responses, or returned in search/test results.
