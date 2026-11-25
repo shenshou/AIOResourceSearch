@@ -57,6 +57,8 @@ export interface ProviderContext {
 
 export interface ProviderAdapter {
   readonly id: string;
+  /** Shared upstream pacing lane; missing coordinator must fail closed. */
+  readonly rateLimitLane?: "musicbrainz" | "mangadex";
   readonly version: string;
   readonly mechanism?: FetchMechanism;
   readonly contentCategories?: readonly ContentCategory[];
