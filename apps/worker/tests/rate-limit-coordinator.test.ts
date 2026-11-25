@@ -289,3 +289,32 @@ test("persists an upstream cooldown even if the client cancels after the respons
   assert.equal(response.status, 429);
   assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
 });
+
+test("caps an upstream Retry-After value at the coordinator's maximum cooldown", async () => {
+  const startedAt = Date.now();
+  let cooldownUntil = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { until: number };
+    cooldownUntil = body.until;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "999999999" },
+    }),
+  );
+
+  await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.ok(cooldownUntil <= startedAt + 86_400_000 + 1_000);
+  assert.ok(cooldownUntil >= startedAt + 86_400_000 - 1_000);
+});
