@@ -213,7 +213,7 @@ export async function handleAdmin(
           ? "Provider request timed out."
           : "Provider request failed. Check the source endpoint and upstream availability.",
       } : {}),
-    }, successful ? 200 : 502);
+    }, 200);
   }
 
   if (path === "" && request.method === "GET") {
