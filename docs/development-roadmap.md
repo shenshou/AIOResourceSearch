@@ -75,8 +75,8 @@ Acceptance:
 
 ### 2.2 Frontend boundaries
 - [x] Audit SearchPage.vue and extract the search request lifecycle/state into a focused composable; keep page-specific presentation and interactions in the page component.
-- [ ] Review current navigation and view switching; introduce Vue Router if route depth, direct linking, refresh behavior, or navigation complexity justifies it.
-- [ ] Review state ownership before considering Pinia. Do not move local component state into a global store without a cross-view sharing requirement.
+- [x] Review current navigation and view switching. Keep the existing three-view switch for now: there are no nested routes, deep-link requirements, or route-driven refresh needs that justify Vue Router.
+- [x] Review state ownership before considering Pinia. Keep search and management data local to their views; the administrator token remains in the existing module-scoped shared session. No cross-view state requirement currently justifies Pinia.
 - [ ] Establish a small reusable UI foundation for repeated primitives and interaction patterns; avoid creating abstractions for one-off elements.
 - [ ] Evaluate Lucide Vue Next, ESLint, and Prettier against existing dependencies and code style before adding them. Adopt incrementally and avoid broad formatting churn.
 
