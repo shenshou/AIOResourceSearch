@@ -47,6 +47,8 @@ npm install
 npm run dev:web
 ```
 
+Run the static code checks with `npm run lint`. To format the frontend and shared TypeScript sources, use `npm run format` after reviewing the scope of the changes.
+
 In a second terminal:
 
 ```bash
