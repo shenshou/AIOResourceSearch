@@ -179,3 +179,18 @@ This readiness review does not add Provider code, source catalog records, KV con
 - The official FAQ describes the site as free and its focus as anime/tokusatsu/Japanese drama; its publishing rules prohibit real-person pornography. This is not classified as a JAV source.
 - No numeric request quota was identified in the reviewed FAQ. Keep disabled until Cloudflare Hosted access, conservative request pacing, current terms/robots and content legality are reviewed.
 - No KV configuration or source enablement is included.
+
+
+## Authenticated Provider credential injection
+
+The Worker has a source-scoped credential injection path:
+
+- A source's `credentialBinding` is a Worker Secret binding name, not a credential value.
+- At request time the Worker resolves only the binding named by that source and passes the value to that source's Provider through `ProviderContext.credential`.
+- If a source declares a binding but the secret is missing or empty, the source is marked unavailable with `credential_unavailable`; the Provider is not called.
+- The credential is not written to KV, included in public source responses, or returned in search/test results.
+- Provider implementations remain responsible for sending credentials only to the reviewed canonical HTTPS host, refusing unsafe redirects, and never logging the credential.
+- Local development uses an ignored `.dev.vars` file. Deployed credentials are provisioned separately as Worker Secrets; Wrangler's `secret put` creates a new Worker version and deploys it immediately, so secret provisioning is a release operation, not an admin CRUD action.
+- On the Workers Free plan, environment variables and secrets share a per-Worker limit of 64 bindings and 5 KB per value. Keep one small secret per credential binding; reassess the storage design before approaching the binding limit.
+
+This is a generic transport boundary, not a universal login automation engine. Provider-specific authentication (Bearer token, API key, Cookie, or OAuth) still requires a documented contract and a narrow implementation. Interactive login, CAPTCHA solving, anti-bot bypass, paywall bypass, and evasion of geo/IP/rate restrictions remain out of scope.
