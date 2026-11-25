@@ -13,22 +13,22 @@ function throwIfAborted(signal: AbortSignal): void {
 
 function decodeXml(value: string): string {
   return value
-    .replace(new RegExp("<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>", "g"), "$1")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
-    .replace(new RegExp("&#(\\d+);", "g"), (_match, raw: string) => {
+    .replace(/&#(\d+);/g, (_match, raw: string) => {
       const codePoint = Number.parseInt(raw, 10);
       return Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff &&
         !(codePoint >= 0xd800 && codePoint <= 0xdfff)
         ? String.fromCodePoint(codePoint)
-        : String.fromCodePoint(0xfffd);
+        : "\uFFFD";
     })
-    .replace(new RegExp("&#x([\\da-f]+);", "gi"), (_match, raw: string) => {
+    .replace(/&#x([\da-f]+);/gi, (_match, raw: string) => {
       const codePoint = Number.parseInt(raw, 16);
       return Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff &&
         !(codePoint >= 0xd800 && codePoint <= 0xdfff)
         ? String.fromCodePoint(codePoint)
-        : String.fromCodePoint(0xfffd);
+        : "\uFFFD";
     })
     .trim();
 }
@@ -50,7 +50,7 @@ function safeTorrentUrl(value: string): { url: string; releaseId: string } | nul
   if (!value || value.length > 2048) return null;
   try {
     const url = new URL(value, API_ENDPOINT);
-    const match = new RegExp("^/api/torrent/(rel_[A-Za-z0-9_-]{5,100})[.]torrent$").exec(url.pathname);
+    const match = /^\/api\/torrent\/(rel_[A-Za-z0-9_-]{5,100})\.torrent$/.exec(url.pathname);
     if (url.protocol !== "https:" || url.hostname !== ALLOWED_HOST || url.port ||
         url.username || url.password || !match || url.search || url.hash) return null;
     return { url: url.toString(), releaseId: match[1] };
@@ -96,8 +96,8 @@ async function readLimitedText(response: Response): Promise<string> {
 }
 
 function parseItems(xml: string) {
-  if (new RegExp("<(?:[\\w.-]+:)?error\\b", "i").test(xml)) {
-    const errorTag = new RegExp("<(?:[\\w.-]+:)?error\\b[^>]*>", "i").exec(xml)?.[0] ?? "";
+  if (/<(?:[\w.-]+:)?error\b/i.test(xml)) {
+    const errorTag = /<(?:[\w.-]+:)?error\b[^>]*>/i.exec(xml)?.[0] ?? "";
     const code = readAttribute(errorTag, "code");
     throw new Error("AniBT Torznab protocol error" + (code ? " " + code : "") + ".");
   }
@@ -106,18 +106,18 @@ function parseItems(xml: string) {
     throw new Error("AniBT returned an invalid Torznab RSS document.");
   }
 
-  const items = xml.match(new RegExp("<item\\b[\\s\\S]*?</item>", "gi")) ?? [];
+  const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
   return items.flatMap((item) => {
     const title = readTag(item, "title");
     const guid = readTag(item, "guid");
     const link = readTag(item, "link");
-    const enclosureTag = new RegExp("<enclosure\\b[^>]*>", "i").exec(item)?.[0] ?? "";
+    const enclosureTag = /<enclosure\b[^>]*>/i.exec(item)?.[0] ?? "";
     const torrent = safeTorrentUrl(readAttribute(enclosureTag, "url")) ??
       safeTorrentUrl(link);
     if (!title || !torrent) return [];
 
     const detailUrl = safeDetailUrl(guid, torrent.releaseId);
-    const attrTags = item.match(new RegExp("<(?:[\\w.-]+:)?attr\\b[^>]*>", "gi")) ?? [];
+    const attrTags = item.match(/<(?:[\w.-]+:)?attr\b[^>]*>/gi) ?? [];
     const readAttrValue = (key: string) => {
       const tag = attrTags.find((candidate) => readAttribute(candidate, "name").toLowerCase() === key);
       return tag ? readAttribute(tag, "value") : "";
@@ -128,9 +128,9 @@ function parseItems(xml: string) {
     const pubDate = readTag(item, "pubDate");
     const timestamp = pubDate ? Date.parse(pubDate) : Number.NaN;
     const metadata: Record<string, string> = {};
-    if (new RegExp("^\\d+$").test(seeders)) metadata.seeders = seeders;
-    if (new RegExp("^\\d+$").test(peers)) metadata.peers = peers;
-    if (new RegExp("^\\d+$").test(size)) metadata.sizeBytes = size;
+    if (/^\d+$/.test(seeders)) metadata.seeders = seeders;
+    if (/^\d+$/.test(peers)) metadata.peers = peers;
+    if (/^\d+$/.test(size)) metadata.sizeBytes = size;
 
     return [{
       id: torrent.releaseId,
@@ -138,6 +138,8 @@ function parseItems(xml: string) {
       sourceName: "AniBT",
       category: "torrent" as const,
       title: title.slice(0, 500),
+      // Prefer a canonical detail link supplied by the feed. If absent or
+      // malformed, keep the official torrent endpoint as the actionable URL.
       url: detailUrl ?? torrent.url,
       torrentUrl: torrent.url,
       ...(Number.isFinite(timestamp) ? { releaseDate: new Date(timestamp).toISOString() } : {}),
