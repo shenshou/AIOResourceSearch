@@ -94,13 +94,24 @@ This document defines the implementation and review standards for AIOResourceSea
   - Shared-contract tests where a contract has non-trivial runtime behavior.
 - Prefer deterministic fixtures and mocked network/KV boundaries for unit tests. Tests using mocks do not prove real Cloudflare runtime behavior or live source connectivity.
 - For behavior changes, add regression coverage for the affected success and failure paths.
-- Before a change is considered ready, CI must pass:
+- Before a change is considered ready, the complete CI suite must pass:
   1. ESLint for frontend, Worker, tests, and shared TypeScript.
   2. Worker unit tests.
   3. Frontend production build.
   4. Worker TypeScript type-check.
 - Prettier provides the repository formatting configuration and the `npm run format` convenience command. Do not reformat unrelated files; format only the files in the current change when making focused edits. Prettier is not yet a CI gate because the existing codebase has not undergone a deliberate baseline formatting pass.
 - Real Cloudflare integration, HTMLRewriter runtime behavior, KV propagation, and live Provider connectivity are separate verification gates and must be tested in a non-production environment when needed.
+
+### CI scheduling and efficiency
+
+- **Run the complete CI suite once per coherent task or module, not once per file or small edit.** Group related implementation, tests, and documentation changes; perform focused local checks during development, then create a coherent commit/branch update and let the complete CI suite validate that completed unit of work.
+- Do not trigger a full CI run for every intermediate edit, comment-only adjustment, or isolated documentation tweak when it belongs to an in-progress task. Keep related changes together and avoid unnecessary branch pushes.
+- If complete CI fails, first inspect the failing job and perform targeted diagnosis and local verification. After correcting the cause, run the complete CI suite again to validate the fix; do not repeatedly rerun it without a code or configuration change.
+- The latest commit on the PR branch must have a successful complete CI run before the PR is considered ready to merge.
+- GitHub Actions must use concurrency groups that isolate each PR (and branch push) and cancel superseded in-progress runs. This prevents stale runs from consuming CI time when a newer commit has already been pushed.
+- Keep the current single comprehensive CI workflow unless project scale demonstrates a concrete need to split it. Do not add path filters merely to reduce runs while shared dependencies and cross-package effects could cause required checks to be skipped.
+- Use dependency caching and `npm ci` only after the repository has a committed, maintained npm lockfile. Until then, retain the currently valid install command rather than introducing a cache configuration or clean-install command that assumes a missing lockfile.
+- Set a reasonable job timeout so a stalled workflow cannot consume runner time indefinitely.
 
 ## 9. Change and review workflow
 
@@ -110,7 +121,7 @@ For each implementation task:
 2. Identify the responsibility boundary and expected behavior; avoid unrelated refactors.
 3. Implement the smallest coherent change and update focused tests.
 4. Update architecture/provider/operational documentation when behavior or contracts change.
-5. Run the relevant local checks where available and confirm CI on the exact latest branch head.
+5. Run relevant focused local checks during implementation; after the coherent task is complete, run and confirm complete CI on the exact latest branch head.
 6. Review the diff for duplicated logic, accidental contract changes, secret exposure, dead code, and scope creep.
 7. Report what changed, files/modules affected, verification results, known limitations, and whether deployment is required.
 
