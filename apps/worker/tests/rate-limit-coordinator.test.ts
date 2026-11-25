@@ -12,7 +12,7 @@ function namespace(
 ): RateLimitCoordinatorNamespace {
   return {
     idFromName: (name) => name,
-    get: (id) => ({
+    get: (_id) => ({
       fetch: async (request) => {
         calls.push(new URL(request.url).pathname);
         return handler(request);
@@ -122,6 +122,38 @@ test("extends the lane cooldown after a 429 response", async () => {
   const response = await coordinatedFetch("https://api.mangadex.org/manga");
   assert.equal(response.status, 429);
   assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+
+test("revalidates a queued slot when a cooldown was extended after reservation", async () => {
+  let validations = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      validations += 1;
+      return Response.json({
+        scheduledAt: validations === 1 ? Date.now() + 5 : body.scheduledAt,
+      });
+    }
+    return Response.json({ accepted: true });
+  });
+  let upstreamCalls = 0;
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => {
+      upstreamCalls += 1;
+      return new Response("ok");
+    },
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 200);
+  assert.equal(validations, 2);
+  assert.equal(upstreamCalls, 1);
 });
 
 test("uses one atomic SQLite UPSERT for reservation and rejects unknown lanes", async () => {
