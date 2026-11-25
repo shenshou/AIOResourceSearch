@@ -70,7 +70,8 @@ test("requests from an unlisted origin are rejected", async () => {
   );
 
   assert.equal(response.status, 403);
-  assert.equal((await readJson(response)).error && ((await readJson(response)).error as Record<string, unknown>).code, "origin_not_allowed");
+  const body = await readJson(response);
+  assert.equal((body.error as Record<string, unknown>).code, "origin_not_allowed");
 });
 
 test("POST /api/search rejects malformed JSON", async () => {
