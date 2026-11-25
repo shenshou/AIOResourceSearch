@@ -138,7 +138,14 @@ export const yourBittorrentProvider: ProviderAdapter = {
 
     throwIfAborted(context.signal);
     const cacheKey = new Request(url.toString(), { method: "GET" });
-    const cached = await context.cache?.match(cacheKey);
+    let cached: Response | undefined;
+    if (context.cache) {
+      try {
+        cached = await context.cache.match(cacheKey);
+      } catch {
+        // Cache is an optimization; an unavailable cache must not fail a live search.
+      }
+    }
     throwIfAborted(context.signal);
     if (cached) {
       const cachedText = await readLimitedText(cached);
@@ -186,13 +193,17 @@ export const yourBittorrentProvider: ProviderAdapter = {
     const results = parseResults(payload);
     throwIfAborted(context.signal);
     if (context.cache) {
-      await context.cache.put(cacheKey, new Response(JSON.stringify(payload), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=" + CACHE_TTL_SECONDS,
-        },
-      }));
+      try {
+        await context.cache.put(cacheKey, new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "public, max-age=" + CACHE_TTL_SECONDS,
+          },
+        }));
+      } catch {
+        // A cache write failure must not discard valid upstream results.
+      }
     }
     return results;
   },
