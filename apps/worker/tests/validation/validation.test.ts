@@ -92,7 +92,6 @@ test("validateSource accepts a valid generic HTML source and bounded metadata se
       fields: { releaseDate: ".date", author: ".author" },
     },
     capabilities: ["metadata", "image"],
-    },
   }));
 
   assert.ok(result);
