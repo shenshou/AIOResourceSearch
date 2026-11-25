@@ -111,6 +111,6 @@ The shared coordinator tests cover fail-closed behavior, cancellation, reservati
 ## Official references
 
 - API docs: https://api.mangadex.org/docs/
-- OpenAPI document: https://api.mangadex.org/docs/static/api.yaml
+- Official OpenAPI 5.13.1: https://gitlab.com/mangadex-pub/mangadex-api-docs/-/raw/main/static/api.yaml
 - Acceptable Usage Policy: https://gitlab.com/mangadex-pub/mangadex-api-docs/-/blob/main/index.md
 - Rate limits: https://gitlab.com/mangadex-pub/mangadex-api-docs/-/blob/main/rate-limits.md
