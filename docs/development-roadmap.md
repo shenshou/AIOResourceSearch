@@ -64,8 +64,8 @@ Acceptance:
 
 ### 2.1 Worker boundaries
 - [x] Add HTTP route-level tests for health, CORS, malformed search requests, public filtering, and admin authorization/configuration.
-- [ ] Split the Worker entry point along real responsibility boundaries: HTTP response/CORS utilities, configuration access/validation, public/search routes, and source/adapter administration.
-- [ ] Keep the entry point as a thin composition layer.
+- [x] Split the Worker entry point along real responsibility boundaries: HTTP response/CORS utilities, configuration access, validation, and source/adapter administration.
+- [x] Keep the entry point as a thin composition layer.
 - [ ] Add focused tests around configuration validation and critical management invariants where extraction makes them independently testable.
 
 Acceptance:
@@ -88,6 +88,7 @@ Acceptance:
 
 ### 2.3 Documentation and delivery hygiene
 - [x] Add this project-level roadmap and link it from the README.
+- [x] Add a dedicated development standards document and link it from the README.
 - [ ] Keep implementation status and phase acceptance criteria current as work lands.
 - [ ] Document new adapter contracts and operational behavior alongside code changes.
 
@@ -161,7 +162,7 @@ As of the roadmap introduction:
 | Site-specific Providers | Four implemented; live verification pending |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
-| Worker entry-point modularization | In progress |
+| Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
 | Frontend maintainability improvements | Planned after audit |
 | Non-JAV category source coverage | Requires source discovery and review |
 | Real Cloudflare integration testing | Not started |
@@ -171,6 +172,7 @@ As of the roadmap introduction:
 
 - [README](../README.md) — project overview, local development, and concise status.
 - [Architecture](./architecture.md) — system boundaries, data flow, and technical constraints.
+- [Development standards](./development-standards.md) — coding, module, frontend, testing, security, and review standards.
 - [Source catalog](./source-catalog.md) — candidate source inventory and registration rules.
 - [Source review log](./source-review.md) — evidence and decisions for individual sources.
 - [Provider documentation](./providers/) — implementation details for site-specific adapters.
