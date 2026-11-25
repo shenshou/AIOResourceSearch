@@ -74,7 +74,7 @@ Acceptance:
 - No duplicate validation or parallel configuration implementation is introduced.
 
 ### 2.2 Frontend boundaries
-- [ ] Audit SearchPage.vue and separate request orchestration/state from result presentation only where responsibilities are genuinely mixed.
+- [x] Audit SearchPage.vue and extract the search request lifecycle/state into a focused composable; keep page-specific presentation and interactions in the page component.
 - [ ] Review current navigation and view switching; introduce Vue Router if route depth, direct linking, refresh behavior, or navigation complexity justifies it.
 - [ ] Review state ownership before considering Pinia. Do not move local component state into a global store without a cross-view sharing requirement.
 - [ ] Establish a small reusable UI foundation for repeated primitives and interaction patterns; avoid creating abstractions for one-off elements.
