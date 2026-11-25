@@ -179,7 +179,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Six implemented; MangaDex and MusicBrainz registered but disabled; live verification pending |
+| Site-specific Providers | Seven implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex Provider declares the lane but no enabled KV source invokes it; real Cloudflare concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
