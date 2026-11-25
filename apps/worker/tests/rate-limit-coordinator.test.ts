@@ -125,6 +125,39 @@ test("extends the lane cooldown after a 429 response", async () => {
 });
 
 
+
+test("honors an exhausted MangaDex quota on a successful response", async () => {
+  const calls: string[] = [];
+  const until = Math.floor((Date.now() + 3_000) / 1_000);
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { until: number };
+    assert.ok(body.until >= until * 1_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => new Response("ok", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Retry-After": String(until),
+      },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
 test("revalidates a queued slot when a cooldown was extended after reservation", async () => {
   let validations = 0;
   const coordinator = namespace(async (request) => {
