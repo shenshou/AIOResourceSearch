@@ -1255,3 +1255,38 @@ Decision: keep as a name-only unverified candidate. Do not substitute video01.co
 - Seselah's third-party redirect to Papalah was recorded as an unconfirmed lead only.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review the remaining FetchJAV candidates Jable.org and TnaFlix, then perform a full reconciliation of the 26 named sites against the 28 FetchJAV-tagged catalog records.
+
+
+## Individual source audit — twentieth batch (2026-11-25)
+
+This batch reviewed the remaining two FetchJAV-listed candidates, Jable.org and TnaFlix. It keeps Jable.org separate from JableTV and uses TnaFlix's own current Terms rather than relying on scraper projects or third-party site profiles.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Jable.org | Canonical homepage and robots.txt could not be retrieved; third-party site report says robots.txt disallows the entire site, but this was not independently confirmed | **Unverified; crawler restriction signal** | Keep name-only; no Worker crawling |
+| TnaFlix | First-party Terms require personal, non-commercial use and prohibit copying/distributing any part of the website or exploiting its content without prior written authorization | **External homepage only; automated aggregation not authorized** | Keep user-initiated homepage link; no Worker scraping or metadata extraction |
+
+### Source-specific findings
+
+#### Jable.org
+
+The FetchJAV list names Jable.org, which is a separate exact domain from JableTV (jable.tv). The research fetcher could not retrieve either https://jable.org/ or https://jable.org/robots.txt. A third-party site-information service reports that the site's robots.txt disallows the entire site, but that report could not be independently confirmed from the first-party file. No canonical current Terms, official API/RSS, or stable public search route was verified.
+
+Decision: keep Jable.org as a name-only unverified candidate. Do not treat it as JableTV, do not infer permission from FetchJAV's adapter, and do not crawl the site while the robots restriction remains unresolved.
+
+#### TnaFlix
+
+The canonical www.tnaflix.com homepage is reachable and exposes a public search field. Its first-party Terms of Service at /terms state that access is for personal, non-commercial purposes and that users may not copy or distribute any part of the website without prior written authorization. The Terms also reserve copyright and other intellectual-property rights in site content and prohibit use, copying, reproduction, distribution, broadcast, display, sale, licensing, or other exploitation of that content without prior written consent from the respective owners. No public metadata API or permission for third-party aggregation was found. The site has a separate legal/regulatory history and a 2022 data breach; neither creates permission to automate access or handle user credentials.
+
+Decision: retain only the user-initiated homepage link. Do not implement Worker fetching, HTML parsing, metadata extraction, or reuse of account credentials/cookies absent written authorization. Do not adopt FetchJAV's scraping logic as proof of permission.
+
+### Batch outcome
+
+- 2 remaining FetchJAV candidates received source-specific decisions.
+- Jable.org remains separate from JableTV and has an unresolved first-party robots/terms status.
+- TnaFlix's first-party Terms do not authorize the intended public metadata aggregation.
+- The 26 explicitly listed FetchJAV sites have now all been reviewed individually; this does not mean every FetchJAV-tagged catalog record is a distinct site or a working Provider.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next step: reconcile the full FetchJAV tag set against its 26 README-listed sites, identify duplicates/extra records, then continue the remaining Atlas/other-index candidates.
