@@ -67,6 +67,8 @@ Acceptance:
 - [x] Split the Worker entry point along real responsibility boundaries: HTTP response/CORS utilities, configuration access, validation, and source/adapter administration.
 - [x] Keep the entry point as a thin composition layer.
 - [x] Add focused tests for source/adapter validation, ETag preconditions, and adapter-reference/enablement invariants.
+- [x] Make registered Provider mechanism/version/categories/capabilities authoritative over editable KV metadata.
+- [x] Bind generic HTML image and Magnet extraction to each source's declared capabilities and configured selectors.
 
 Acceptance:
 - Existing API paths, HTTP methods, status codes, response shapes, ETag behavior, CORS behavior, authentication, KV keys, and validation rules remain unchanged.
