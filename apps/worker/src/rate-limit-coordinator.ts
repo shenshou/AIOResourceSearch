@@ -107,6 +107,27 @@ export class RateLimitCoordinator {
       return json({ scheduledAt: row.scheduled_at });
     }
 
+    if (path === "/validate") {
+      if (!("scheduledAt" in body) || typeof body.scheduledAt !== "number" ||
+          !Number.isFinite(body.scheduledAt) || body.scheduledAt < 0) {
+        return json({ error: "invalid_reservation" }, 400);
+      }
+
+      // Re-queue a slot if a 429 cooldown was extended after it was reserved.
+      const row = this.ctx.storage.sql.exec<{ scheduled_at: number }>(
+        `UPDATE rate_limit_state
+         SET next_allowed_at = MAX(next_allowed_at, cooldown_until, ?) + ?
+         WHERE singleton = 1 AND ? < cooldown_until
+         RETURNING next_allowed_at - ? AS scheduled_at`,
+        now,
+        LANE_INTERVAL_MS[lane],
+        body.scheduledAt,
+        LANE_INTERVAL_MS[lane],
+      ).one();
+
+      return json({ scheduledAt: row?.scheduled_at ?? body.scheduledAt });
+    }
+
     if (path === "/cooldown") {
       if (!("until" in body) || typeof body.until !== "number" ||
           !Number.isFinite(body.until) || body.until <= now || body.until > now + 86_400_000) {
@@ -143,23 +164,28 @@ function throwIfAborted(signal?: AbortSignal): void {
 
 async function coordinatorRequest(
   namespace: RateLimitCoordinatorNamespace,
-  path: "reserve" | "cooldown",
+  path: "reserve" | "validate" | "cooldown",
   lane: RateLimitLane,
   signal?: AbortSignal,
   until?: number,
+  scheduledAt?: number,
 ): Promise<{ scheduledAt?: number }> {
   throwIfAborted(signal);
   const stub = namespace.get(namespace.idFromName(lane));
   const response = await stub.fetch(new Request("https://rate-limit-coordinator/" + path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(path === "reserve" ? { lane } : { lane, until }),
+    body: JSON.stringify(
+      path === "reserve" ? { lane }
+        : path === "validate" ? { lane, scheduledAt }
+          : { lane, until },
+    ),
     signal,
   }));
   if (!response.ok) throw new Error("Rate-limit coordinator unavailable (HTTP " + response.status + ").");
   const payload: unknown = await response.json();
   if (!payload || typeof payload !== "object") throw new Error("Invalid rate-limit coordinator response.");
-  if (path === "reserve") {
+  if (path === "reserve" || path === "validate") {
     const scheduledAt = "scheduledAt" in payload ? payload.scheduledAt : undefined;
     if (typeof scheduledAt !== "number" || !Number.isFinite(scheduledAt)) {
       throw new Error("Invalid rate-limit reservation.");
@@ -200,7 +226,21 @@ export function createCoordinatedFetch(
   return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const requestSignal = init?.signal ?? signal;
     const reservation = await coordinatorRequest(namespace, "reserve", lane, requestSignal);
-    await waitUntil(reservation.scheduledAt!, requestSignal);
+    let scheduledAt = reservation.scheduledAt!;
+    while (true) {
+      await waitUntil(scheduledAt, requestSignal);
+      throwIfAborted(requestSignal);
+      const checked = await coordinatorRequest(
+        namespace,
+        "validate",
+        lane,
+        requestSignal,
+        undefined,
+        scheduledAt,
+      );
+      if (checked.scheduledAt! <= scheduledAt) break;
+      scheduledAt = checked.scheduledAt!;
+    }
     throwIfAborted(requestSignal);
 
     const response = await fetchImpl(input, init);
