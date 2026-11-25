@@ -176,7 +176,7 @@ The scheduler limits outbound concurrency, applies per-source timeouts, isolates
 
 ## Tests
 
-Worker unit tests live under `apps/worker/tests`, grouped by responsibility (currently `providers/` and `routes/`). They cover scheduler behavior, validation, deduplication, failure isolation, timeouts, concurrency, adapter-specific parsing, and HTTP route behavior using fixtures/mocks. Tests do not prove live Cloudflare connectivity or source permission.
+Worker unit tests live under `apps/worker/tests`, grouped by responsibility (currently `providers/`, `routes/`, and `validation/`). They cover scheduler behavior, source/adapter validation, ETag and adapter-management invariants, deduplication, failure isolation, timeouts, concurrency, adapter-specific parsing, and HTTP route behavior using fixtures/mocks. Tests do not prove live Cloudflare connectivity or source permission.
 
 Run from the repository root:
 
