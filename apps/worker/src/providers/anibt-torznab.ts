@@ -50,7 +50,7 @@ function safeTorrentUrl(value: string): { url: string; releaseId: string } | nul
   if (!value || value.length > 2048) return null;
   try {
     const url = new URL(value, API_ENDPOINT);
-    const match = new RegExp("^/api/torrent/(rel_[A-Za-z0-9_-]{5,100})\\\\.torrent$").exec(url.pathname);
+    const match = new RegExp("^/api/torrent/(rel_[A-Za-z0-9_-]{5,100})[.]torrent$").exec(url.pathname);
     if (url.protocol !== "https:" || url.hostname !== ALLOWED_HOST || url.port ||
         url.username || url.password || !match || url.search || url.hash) return null;
     return { url: url.toString(), releaseId: match[1] };
