@@ -2726,8 +2726,8 @@ This pass rechecked the previously deferred JavJunkies, LoveTorrent, NextJAV, Ma
 - Current third-party status evidence still does not verify an operator-controlled .com service or establish `magnetdl.io` / `magnetdl.co` as official successors.
 - **Decision: retain historical name-only record.** Do not substitute a mirror or build a Provider without first-party canonical-domain and interface evidence.
 - References:
-  - https://torrentfreak.com/magnetdl-shuts-down-190520/
-  - https://www.torrentdownloads.pro/
+  - https://torrentfreak.com/torrent-site-magnetdl-shuts-down-190520/
+  - https://torrentfreak.com/magnetdl-makes-comeback-days-after-it-shut-itself-down-190529/\n  - Current third-party status snapshot (checked 2026-11-19): https://sitetrends.org/site/magnetdl.com/
   - Existing source-review evidence remains the basis for the historical shutdown/return distinction.
 
 ### RedTube
