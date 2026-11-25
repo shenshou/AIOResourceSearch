@@ -77,7 +77,7 @@ function resource(overrides: Partial<NormalizedResource> = {}): NormalizedResour
 }
 
 const request = { query: "ABP-123", mode: "number" as const };
-const resolve = (item: ProviderAdapter) => (_adapterId: string) => item;
+const resolve = (item: ProviderAdapter) => () => item;
 
 test("ignores disabled sources and returns an empty successful response", async () => {
   const result = await executeSearch(
