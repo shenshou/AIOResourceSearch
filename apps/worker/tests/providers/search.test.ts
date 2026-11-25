@@ -626,7 +626,7 @@ const torlockFixture = `<?xml version="1.0" encoding="UTF-8"?>
   </channel>
 </rss>`;
 
-function torlockContext(fetchImpl: typeof fetch, cache?: Cache) {
+function torlockContext(fetchImpl: typeof fetch, cache?: Cache, signal?: AbortSignal) {
   return {
     source: source({
       id: "torlock",
@@ -635,7 +635,7 @@ function torlockContext(fetchImpl: typeof fetch, cache?: Cache) {
       adapterId: "torlock-torznab",
       capabilities: ["magnet"],
     }),
-    signal: new AbortController().signal,
+    signal: signal ?? new AbortController().signal,
     fetch: fetchImpl,
     ...(cache ? { cache } : {}),
   };
@@ -702,6 +702,56 @@ test("uses a cached Torlock response without making another upstream request", a
 
   assert.equal(fetchCount, 0);
   assert.equal(resources.length, 1);
+});
+
+test("does not fetch or write cache when cancellation occurs during cache lookup", async () => {
+  const controller = new AbortController();
+  let fetchCount = 0;
+  let putCount = 0;
+  const cache = {
+    match: async () => {
+      controller.abort(new DOMException("Cancelled during cache lookup.", "AbortError"));
+      return null;
+    },
+    put: async () => { putCount += 1; },
+  } as unknown as Cache;
+
+  await assert.rejects(
+    torlockProvider.search(
+      { query: "ABP-123", mode: "number" },
+      torlockContext(async () => {
+        fetchCount += 1;
+        throw new Error("Cancelled search must not fetch upstream.");
+      }, cache, controller.signal),
+    ),
+    /Cancelled during cache lookup/,
+  );
+  assert.equal(fetchCount, 0);
+  assert.equal(putCount, 0);
+});
+
+test("does not write a Torlock cache entry when cancellation occurs during upstream fetch", async () => {
+  const controller = new AbortController();
+  let putCount = 0;
+  const cache = {
+    match: async () => null,
+    put: async () => { putCount += 1; },
+  } as unknown as Cache;
+
+  await assert.rejects(
+    torlockProvider.search(
+      { query: "ABP-123", mode: "number" },
+      torlockContext(async () => {
+        controller.abort(new DOMException("Cancelled during fetch.", "AbortError"));
+        return new Response(torlockFixture, {
+          status: 200,
+          headers: { "Content-Type": "application/rss+xml" },
+        });
+      }, cache, controller.signal),
+    ),
+    /Cancelled during fetch/,
+  );
+  assert.equal(putCount, 0);
 });
 
 test("rejects malformed Torlock RSS and drops untrusted detail links", async () => {
@@ -773,7 +823,7 @@ const yourBittorrentFixture = {
   }],
 };
 
-function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache) {
+function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache, signal?: AbortSignal) {
   return {
     source: source({
       id: "yourbittorrent",
@@ -782,7 +832,7 @@ function yourBittorrentContext(fetchImpl: typeof fetch, cache?: Cache) {
       adapterId: "yourbittorrent-json",
       capabilities: ["magnet"],
     }),
-    signal: new AbortController().signal,
+    signal: signal ?? new AbortController().signal,
     fetch: fetchImpl,
     ...(cache ? { cache } : {}),
   };
@@ -859,6 +909,56 @@ test("uses cached YourBittorrent JSON without another upstream request", async (
 
   assert.equal(fetchCount, 0);
   assert.equal(resources.length, 1);
+});
+
+test("does not fetch or write YourBittorrent cache when cancellation occurs during cache lookup", async () => {
+  const controller = new AbortController();
+  let fetchCount = 0;
+  let putCount = 0;
+  const cache = {
+    match: async () => {
+      controller.abort(new DOMException("Cancelled during cache lookup.", "AbortError"));
+      return null;
+    },
+    put: async () => { putCount += 1; },
+  } as unknown as Cache;
+
+  await assert.rejects(
+    yourBittorrentProvider.search(
+      { query: "ABP-123", mode: "number" },
+      yourBittorrentContext(async () => {
+        fetchCount += 1;
+        throw new Error("Cancelled search must not fetch upstream.");
+      }, cache, controller.signal),
+    ),
+    /Cancelled during cache lookup/,
+  );
+  assert.equal(fetchCount, 0);
+  assert.equal(putCount, 0);
+});
+
+test("does not write YourBittorrent cache when cancellation occurs during upstream fetch", async () => {
+  const controller = new AbortController();
+  let putCount = 0;
+  const cache = {
+    match: async () => null,
+    put: async () => { putCount += 1; },
+  } as unknown as Cache;
+
+  await assert.rejects(
+    yourBittorrentProvider.search(
+      { query: "ABP-123", mode: "number" },
+      yourBittorrentContext(async () => {
+        controller.abort(new DOMException("Cancelled during fetch.", "AbortError"));
+        return new Response(JSON.stringify(yourBittorrentFixture), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }, cache, controller.signal),
+    ),
+    /Cancelled during fetch/,
+  );
+  assert.equal(putCount, 0);
 });
 
 test("drops YourBittorrent records with untrusted detail or torrent URLs", async () => {
