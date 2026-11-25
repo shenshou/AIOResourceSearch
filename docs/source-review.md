@@ -2405,3 +2405,17 @@ References:
 - No personal subscription RSS token, group API key, login session, publish/delete endpoint, or other authenticated API is used.
 - The `robots.txt` URL could not be independently retrieved in this review; the implementation is restricted to the documented public Torznab endpoint. Do not probe alternate paths if it later becomes unavailable.
 - No KV source/adapter configuration, enablement, production changes, or deployment is included.
+
+
+## AniBT — public Torznab API, Provider implemented but disabled — 2026-11-25
+
+- Official Torznab docs: `https://wiki.anibt.net/en/docs/open-api/torznab` and protocol reference `https://wiki.anibt.net/en/docs/open-api/torznab-api`.
+- The operator explicitly documents `GET https://anibt.net/torznab/api`, says no account or API key is needed, and gives instructions to add AniBT as a Torznab indexer in Sonarr, Radarr, and Prowlarr. This is a supported public read interface, not a challenge-bypass route.
+- Search uses `t=search`, `q`, anime category `5070`, and `limit=50`. The documented keyword limit is 160 UTF-8 bytes; results are newest-first and the offset is bounded to item 300.
+- Official quota: 60 Torznab requests / 60 seconds / IP. The project uses a shared Durable Object lane at 1,100 ms between upstream requests (about 54.5 requests/minute) to leave headroom and coordinate across Worker instances.
+- Official caching documentation marks Torznab as `no-store`; the Provider deliberately bypasses Cache API reads and writes. It does not retry 429/503 responses; the shared coordinator records cooldowns and honors `Retry-After` when supplied.
+- The documented Torznab result contains title and a public `.torrent` download. The Provider accepts only HTTPS `anibt.net/api/torrent/rel_*.torrent` URLs, maps the release ID, safe same-origin `/release/{id}` GUID when supplied, publication date, size, seeders, and peers. It does not infer or fabricate magnet links.
+- The official API docs explicitly authorize anonymous query use by third-party indexer clients, but do not state a broad metadata-republication license. Keep the Provider disabled pending final project content-policy review and non-production Cloudflare verification.
+- No personal subscription RSS token, group API key, login session, publish/delete endpoint, or other authenticated API is used.
+- The `robots.txt` URL could not be independently retrieved in this review; the implementation is restricted to the documented public Torznab endpoint. Do not probe alternate paths if it later becomes unavailable.
+- No KV source/adapter configuration, enablement, production changes, or deployment is included.
