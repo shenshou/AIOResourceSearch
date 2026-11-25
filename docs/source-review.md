@@ -2379,7 +2379,7 @@ References:
 - A source is not excluded merely because it requires a free account. Candidate review may include public search/API endpoints that require ordinary account authentication, provided the source's own terms permit the intended automated use and no access control is bypassed.
 - Record the exact authentication model separately: official API key, OAuth, account session/Cookie, or a user-specific/private feed. These are not interchangeable.
 - A personal subscription/export/feed token is not automatically a general-purpose search credential. Do not place one user's private feed into a shared source configuration or treat it as a public keyword-search API.
-- **Current runtime limitation:** the shared source contract has a `credentialBinding` metadata field, but the current Worker `Env` and `ProviderContext` do not yet expose a generic credential store to Provider implementations. Therefore, authenticated sources can be researched and cataloged, but must not be implemented as runnable Providers until a secure credential-injection path is designed and reviewed.
+- **Current runtime capability:** Worker now resolves source-scoped `SOURCE_CREDENTIAL_*` bindings and passes the value only to the matching Provider through `ProviderContext.credential`. Missing or empty bindings fail closed before any upstream request. Provider-specific auth behavior still requires its own documented, host-restricted implementation.
 - Never put passwords, session cookies, API keys, or OAuth client secrets in source catalog entries, ordinary KV source records, public API responses, browser storage, or logs. The eventual implementation must use Worker-side secrets, scope credentials to the intended source/host, and define rotation/expiry and failure behavior.
 - Do not automate interactive login flows, defeat CAPTCHA/anti-bot checks, reuse stolen/shared sessions, bypass paywalls, or evade account/region/rate restrictions.
 
@@ -2391,3 +2391,17 @@ References:
 - This is not a blanket ban on login. Ordinary free-account authentication is eligible where the source's rules permit automated use and the account holder legitimately controls the credential.
 - Do not reuse private personal feeds as shared search APIs. Do not automate interactive login or CAPTCHA solving.
 - The current Worker now supports source-scoped credential injection through a named Worker Secret binding. A configured but missing secret fails closed before the Provider makes an upstream request. Provider-specific auth headers/cookies still require a reviewed implementation and must be restricted to the source's canonical host.
+
+
+## AniBT — public Torznab API, Provider implemented but disabled — 2026-11-25
+
+- Official Torznab docs: `https://wiki.anibt.net/en/docs/open-api/torznab` and protocol reference `https://wiki.anibt.net/en/docs/open-api/torznab-api`.
+- The operator explicitly documents `GET https://anibt.net/torznab/api`, says no account or API key is needed, and gives instructions to add AniBT as a Torznab indexer in Sonarr, Radarr, and Prowlarr. This is a supported public read interface, not a challenge-bypass route.
+- Search uses `t=search`, `q`, anime category `5070`, and `limit=50`. The documented keyword limit is 160 UTF-8 bytes; results are newest-first and the offset is bounded to item 300.
+- Official quota: 60 Torznab requests / 60 seconds / IP. The project uses a shared Durable Object lane at 1,100 ms between upstream requests (about 54.5 requests/minute) to leave headroom and coordinate across Worker instances.
+- Official caching documentation marks Torznab as `no-store`; the Provider deliberately bypasses Cache API reads and writes. It does not retry 429/503 responses; the shared coordinator records cooldowns from 429/503 and honors `Retry-After` when supplied.
+- The documented Torznab result contains title and a public `.torrent` download. The Provider accepts only HTTPS `anibt.net/api/torrent/rel_*.torrent` URLs, maps the release ID, safe same-origin `/release/{id}` GUID when supplied, publication date, size, seeders, and peers. It does not infer or fabricate magnet links.
+- The official API docs explicitly authorize anonymous query use by third-party indexer clients, but do not state a broad metadata-republication license. Keep the Provider disabled pending a final project content/policy review and non-production Cloudflare verification.
+- No personal subscription RSS token, group API key, login session, publish/delete endpoint, or other authenticated API is used.
+- The `robots.txt` URL could not be independently retrieved in this review; the implementation is restricted to the documented public Torznab endpoint. Do not probe alternate paths if it later becomes unavailable.
+- No KV source/adapter configuration, enablement, production changes, or deployment is included.
