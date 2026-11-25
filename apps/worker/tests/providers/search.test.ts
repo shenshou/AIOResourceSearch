@@ -172,6 +172,27 @@ test("reports adapter incompatibility when required capabilities are missing", a
   assert.equal(result.sources[0]?.errorCode, "adapter_incompatible");
 });
 
+
+test("rate-limited Providers fail closed when the shared coordinator is missing", async () => {
+  let upstreamFetchCalls = 0;
+  const rateLimited = provider(async (_input, context) => {
+    await context.fetch("https://api.mangadex.org/manga", { signal: context.signal });
+    upstreamFetchCalls += 1;
+    return [];
+  }, { rateLimitLane: "mangadex" });
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(source()),
+    adapters,
+    resolve(rateLimited),
+  );
+
+  assert.equal(result.sources[0]?.status, "error");
+  assert.equal(result.sources[0]?.errorCode, "provider_failed");
+  assert.equal(upstreamFetchCalls, 0);
+});
+
 test("normalizes provider-owned fields and validates optional resource links", async () => {
   const magnet = "magnet:?dn=example&xt=urn:btih:01234567890123456789012345678901";
   const result = await executeSearch(
