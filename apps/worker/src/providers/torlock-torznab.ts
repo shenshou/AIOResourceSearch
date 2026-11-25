@@ -103,7 +103,7 @@ function parseItems(xml: string) {
 
 /** Uses the documented Torznab endpoint and edge cache; never scrapes HTML. */
 export const torlockProvider: ProviderAdapter = {
-  id: "torlock-torznab", version: "1.0.0", categories: ["torrent"], capabilities: ["magnet"],
+  id: "torlock-torznab", version: "1.0.0", categories: ["torrent"], capabilities: ["metadata", "magnet"],
   searchModes: ["number", "keyword"],
   mechanism: "api",
   contentCategories: ["jav"],
