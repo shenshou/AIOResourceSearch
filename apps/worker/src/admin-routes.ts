@@ -8,6 +8,7 @@ import {
   saveConfig,
 } from "./config-store";
 import { validateAdapter, validateSource } from "./validation";
+import { executeSourceTest } from "./providers/search";
 
 async function authorize(request: Request, env: Env): Promise<boolean> {
   if (!env.ADMIN_API_TOKEN) return false;
@@ -137,6 +138,83 @@ export async function handleAdmin(
 
   const current = await readConfig(env);
   const path = url.pathname.replace(/^\/api\/admin\/sources/, "").replace(/\/$/, "");
+
+  const testMatch = path.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(test-connection|test-search)$/);
+  if (testMatch && request.method === "POST") {
+    const source = current.sources.find((item) => item.id === testMatch[1]);
+    if (!source) return json({ error: { code: "source_not_found", message: "Source not found." } }, 404);
+    if ((source.type ?? "provider") === "external-search") {
+      return json({ error: { code: "external_search_not_testable", message: "External-search entries are browser-opened links and are never fetched by the Worker." } }, 422);
+    }
+    if (!source.enabled) {
+      return json({ error: { code: "source_disabled", message: "Enable the source before running a Provider test." } }, 409);
+    }
+
+    const kind = testMatch[2];
+    let query = "AIOResourceSearch connection check";
+    let mode = source.searchModes.includes("keyword") ? "keyword" as const : "number" as const;
+    if (kind === "test-search") {
+      let body: unknown;
+      try {
+        body = await readJsonBody(request);
+      } catch {
+        return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
+      }
+      const value = body as { query?: unknown; mode?: unknown } | null;
+      if (!value || typeof value.query !== "string" || !value.query.trim() || value.query.trim().length > 120) {
+        return json({ error: { code: "invalid_query", message: "Query must contain 1 to 120 characters." } }, 422);
+      }
+      if (value.mode !== "number" && value.mode !== "keyword") {
+        return json({ error: { code: "invalid_search_mode", message: "Mode must be number or keyword." } }, 422);
+      }
+      query = value.query.trim();
+      mode = value.mode;
+    }
+    if (!source.searchModes.includes(mode)) {
+      return json({ error: { code: "unsupported_search_mode", message: "This source does not support the selected search mode." } }, 422);
+    }
+
+    const adapters = await readAdaptersConfig(env);
+    const adapter = adapters.adapters.find((item) => item.id === source.adapterId);
+    if (!adapter || !adapter.enabled || !adapter.implemented) {
+      return json({ error: { code: "adapter_unavailable", message: "The source adapter is disabled or has no Worker implementation." } }, 409);
+    }
+
+    const startedAt = Date.now();
+    const result = await executeSourceTest(
+      source,
+      { query, mode },
+      adapters,
+      (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default,
+      request.signal,
+      env.RATE_LIMIT_COORDINATOR,
+    );
+    const elapsedMs = Math.max(0, Date.now() - startedAt);
+    if (result.status.status === "unavailable") {
+      return json({ error: { code: result.status.errorCode ?? "adapter_unavailable", message: "The source and adapter configuration are incompatible." } }, 409);
+    }
+    const sampleResults = result.results.slice(0, 3).map((item) => ({
+      title: item.title,
+      url: item.url,
+      ...(item.catalogNumber ? { catalogNumber: item.catalogNumber } : {}),
+      ...(item.releaseDate ? { releaseDate: item.releaseDate } : {}),
+    }));
+    const successful = result.status.status === "ok";
+    return json({
+      sourceId: source.id,
+      kind,
+      status: successful ? "success" : result.status.status,
+      elapsedMs,
+      resultCount: result.status.resultCount,
+      sampleResults,
+      ...(!successful ? {
+        errorCode: result.status.errorCode,
+        message: result.status.status === "timeout"
+          ? "Provider request timed out."
+          : "Provider request failed. Check the source endpoint and upstream availability.",
+      } : {}),
+    }, successful ? 200 : 502);
+  }
 
   if (path === "" && request.method === "GET") {
     return withEtag(json(current), current.version);
