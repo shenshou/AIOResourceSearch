@@ -43,3 +43,35 @@ For each newly discovered candidate:
 - Worker credentials use source-scoped Secret bindings; they are never stored in KV or browser storage.
 - Personal subscription feeds/tokens are not shared search APIs.
 - No CAPTCHA solving, anti-bot challenge bypass, paywall bypass, geo/IP evasion, rate-limit evasion, forged sessions, or unauthorized credential reuse.
+
+
+## Named candidates currently deferred
+
+The following names are intentionally retained in the source catalog and review log. This index is a navigation aid; the source-specific evidence and reconsideration conditions remain in `docs/source-review.md`. **No item below is an enabled Provider.** Where the catalog has no safe, verified destination, it remains name-only rather than receiving a guessed mirror URL.
+
+| Candidate | Current disposition | Reconsider only when |
+|---|---|---|
+| Bitsearch | External-search only; official anonymous API exists, but third-party metadata display terms are unverified and the shared egress quota is restrictive | First-party terms or written permission clarify metadata display, and a sustainable quota is available |
+| BTSOW | Unverified directory reference; canonical operator/domain and API/RSS contract unresolved | Operator confirms canonical domain and publishes a supported interface and automation policy |
+| iJavTorrent | External-only; human search UI is not an automation contract | First-party API/RSS or explicit automation permission is published |
+| JAVBEE | Unverified homepage reference | Canonical site becomes verifiable and publishes a supported interface/policy |
+| My JAV Bay | Homepage-only; no official feed/API or metadata-republication permission; third-party scraper is paid and excluded | Official free API/feed and applicable metadata-use rules are published |
+| OneJAV | External-only; official feed does not provide the required BT search, while third-party RSSHub route is a scraper; observed 403 is not to be bypassed | Operator publishes a BT-capable feed/API and permits the intended automation |
+| 141PPV | External-only; official feed's BT-search capability is not established; third-party RSSHub route is not authorization | Operator publishes a supported BT search feed/API and metadata-use rules |
+| Project JAV | External-only; public search UI and magnets do not establish automated-access permission | First-party automation policy and stable public API/feed are published |
+| TorrentKitty | External-only; search contract and cross-domain Terms applicability are unresolved | Operator confirms canonical domain, current terms, and supported search interface |
+| XXXClub | External-only; homepage returned 403 and third-party indexer routes do not establish permission | Normal public access and first-party API/feed or explicit automation permission become verifiable |
+| Tokyo Toshokan | Homepage-only; historical RSS support is not enough to establish a current feed contract or permission | Current official feed URL, query behavior, and automation policy are verified |
+| EZTV | Deferred; documented API does not provide the required free-text keyword search | Official stable keyword-search endpoint is documented, or a clearly permitted narrow enrichment use is established |
+| YTS | Deferred; current canonical API host and contract are not verified | YTS publishes the current API specification and canonical API host on an official domain |
+| AniDB | Deferred; available official API material does not establish a stable keyword-search Provider contract for this use | Current official search endpoint, HTTPS behavior, and permitted use are documented |
+| Notify.moe | Deferred; API is described as evolving and stable public keyword search/data-use terms remain unclear | Stable documented search contract and metadata-use terms are published |
+| South-Plus | Homepage-only; canonical policy/interface could not be verified; regional blocking is not a reason to proxy around it | Canonical terms and a supported public search/API/RSS interface are published |
+| T66Y / 草榴社区 | User-initiated external link only; first-party visitor notice explicitly says not to use scripts and warns against abnormal access | First-party notice/policy changes and an expressly permitted integration interface is published |
+| 夯鸭论坛 | Homepage-only; 18+ age gate is not an automation permission or API contract | Current terms and a supported public interface are published; no age-gate bypass |
+| 色花堂98堂 | Unverified external reference; listed domains do not currently establish a canonical, functioning site or API | Operator confirms canonical domain and publishes current terms plus a supported interface |
+| Empornium | External link only; private tracker with account/invite access | A genuinely public, operator-authorized interface becomes available; no account-cookie automation |
+| JAVDB / JAVLibrary / JAV.guru | External-search candidates only; no verified public API contract and/or automation permission for this aggregator | First-party API/feed or explicit written authorization permits the intended metadata use |
+| javinfo / Datawebot scraper services | Not eligible under the project's no-paid-services rule | A free official interface becomes available; paid third-party scraping remains excluded |
+
+This named list is not exhaustive of every catalog entry. It covers the reviewed candidates whose current status is especially likely to be mistaken for an implemented source. For the complete source inventory, use `sourceCatalog.ts`; for the full evidence trail, use `source-review.md`.
