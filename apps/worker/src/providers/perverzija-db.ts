@@ -6,6 +6,12 @@ const DATABASE_HOST = "db.perverzija.com";
 const WATCH_HOST = "tube.perverzija.com";
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException("Provider request was cancelled.", "AbortError");
+  }
+}
+
 interface SceneRecord {
   id?: unknown;
   title?: unknown;
@@ -181,7 +187,9 @@ export const perverzijaDbProvider: ProviderAdapter = {
 
     let payload: unknown;
     try {
-      payload = JSON.parse(await readLimitedText(response));
+      const responseText = await readLimitedText(response);
+      throwIfAborted(context.signal);
+      payload = JSON.parse(responseText);
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error("Perverzija DB returned malformed JSON.", { cause: error });
