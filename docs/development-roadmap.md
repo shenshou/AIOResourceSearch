@@ -113,7 +113,8 @@ Deliverables:
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
-- [ ] Decide whether to add the shared Durable Object rate-limit coordinator described in [provider-rate-limiting.md](./provider-rate-limiting.md); do not implement MusicBrainz or MangaDex Providers until coordinated quotas, cost limits, and fail-closed behavior are in place.
+- [x] Implement the SQLite-backed Durable Object rate-limit coordinator, Worker binding contract, per-Provider lane opt-in, cancellation-aware wait, cooldown handling, and fail-closed fetch wrapper. Keep it dormant until a Provider opts in; see [provider-rate-limiting.md](./provider-rate-limiting.md).
+- [ ] Verify real SQLite concurrency, cooldown revalidation, object restart, and Free-plan quota behavior in a non-production Cloudflare environment before implementing/enabling MangaDex or MusicBrainz.
 - [x] Prepare API integration readiness analysis for Bangumi, MangaDex, and MangaUpdates in [provider-integration-readiness.md](./provider-integration-readiness.md); record the current deferrals and conditions before implementation.
 - [ ] Keep Bangumi keyword search deferred while its public subject-search endpoint remains marked experimental; use only stable public endpoints or external-search.
 - [ ] Add per-source fixtures and tests; keep uncertain sources as disabled candidates or external-search entries.
@@ -131,7 +132,8 @@ Acceptance:
 
 Deliverables:
 - [ ] Create or designate a non-production Cloudflare Pages + Worker test environment.
-- [ ] Bind a test KV namespace and configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
+- [ ] Bind a test KV namespace and the SQLite rate-limit Durable Object; configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
+- [ ] Verify Durable Object slot spacing, cooldown revalidation, restart persistence, cancellation, and Free-plan quota exhaustion; do not switch to a Paid plan to complete verification.
 - [ ] Verify public API, admin CRUD, ETag conflicts, CORS, and KV propagation end to end.
 - [ ] Verify the real Cloudflare HTMLRewriter runtime with representative HTML fixtures and at least one reviewed source configuration.
 - [ ] Test live Provider connectivity individually, recording success, failure, response behavior, and any source-side restrictions.
