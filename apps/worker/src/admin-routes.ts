@@ -188,6 +188,7 @@ export async function handleAdmin(
       (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default,
       request.signal,
       env.RATE_LIMIT_COORDINATOR,
+      env,
     );
     const elapsedMs = Math.max(0, Date.now() - startedAt);
     if (result.status.status === "unavailable") {
