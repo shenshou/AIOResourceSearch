@@ -1997,3 +1997,68 @@ Decision: remove the old .com destination. Do not follow third-party mirror list
 - MejorTorrent's rotating-domain model is not adopted.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review Atlas manga metadata/resources and novel sources, starting with MangaDex, AniList Manga, Kitsu Manga, MyAnimeList Manga, MangaUpdates, and the listed manga resource sites.
+
+
+## Individual source audit — twenty-ninth batch (2026-11-25)
+
+This batch reviews five Atlas manga metadata candidates: MangaDex, AniList Manga, Kitsu Manga, MyAnimeList Manga, and MangaUpdates. Bilibili Comic is covered by the Bilibili policy decision in the twenty-sixth batch because it is the same operator/platform.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| MangaDex | Official public API and Acceptable Usage Policy require MangaDex attribution and prohibit ads/paid services; chapter reading adds scanlation-group credit/removal obligations | **Conditional metadata-only API candidate** | Public title/author/artist/status metadata and MangaDex detail links only; no chapter text/images or reader; add attribution and shared rate limiter |
+| AniList Manga | Same official AniList Terms as anime metadata: prohibits mass collection and competing non-complementary services | **Deferred pending written clarification** | No Provider |
+| Kitsu Manga | Kitsu site pages are reachable, but the API documentation found under the “Kitsu API” name belongs to CGWire's production-management product, not kitsu.io | **Unverified** | No CGWire API substitution; external-only |
+| MyAnimeList Manga | Same MAL API v2 and developer-agreement uncertainty as the anime entry | **Policy / agreement verification required** | No scraping or Provider implementation |
+| MangaUpdates | Official API documentation provides public series search/read functions and an Acceptable Use Policy requiring attribution, reasonable request spacing, caching, and no assistance with illegal actions | **Conditional metadata API candidate** | Restrict to public series metadata and MangaUpdates detail links; no release downloads, chapter content, or user/forum endpoints |
+
+### Source-specific findings
+
+#### MangaDex
+
+The official API documentation provides a public Manga API and an Acceptable Usage Policy. It requires MangaDex attribution and prohibits ads or paid services on the integrating website/app. Scanlation-group attribution and honoring group removal requests are required when the integration allows chapter reading. This project does not need to provide chapter reading.
+
+Decision: a metadata-only integration is conditionally suitable while the project remains ad-free and free of paid services. Limit fields to title, authors/artists, publication status, tags/content rating, and the MangaDex detail URL. Do not request chapter text, chapter images, cover-image proxying, or reader data. Add visible MangaDex attribution and implement the previously documented shared global rate limiter before production use.
+
+References:
+- https://gitlab.com/mangadex-pub/mangadex-api-docs
+- https://api.mangadex.org/
+
+#### AniList Manga
+
+AniList's official Terms expressly include manga list/tracker services in the prohibited competing non-complementary category and prohibit hoarding or mass collection. The existing AIOResourceSearch product is a multi-source resource search platform, so the manga classification does not remove the policy concern.
+
+Decision: keep deferred pending written clarification for the exact integrated product.
+
+Reference:
+- https://docs.anilist.co/guide/terms-of-use
+
+#### Kitsu Manga
+
+The Atlas entry points to `kitsu.io`, and the current site exposes manga/anime database pages. However, the “Kitsu API” documentation located during this review is for CGWire's Kitsu production-management platform, whose API is unrelated to kitsu.io. No matching official Kitsu media metadata API contract and acceptable-use policy was verified.
+
+Decision: external-only until the correct API and policy are established. Do not substitute CGWire's API or scrape the Kitsu website.
+
+#### MyAnimeList Manga
+
+The MAL manga entry has the same unresolved API agreement and permitted third-party aggregation scope as the MyAnimeList anime entry in the twenty-fourth batch. The presence of API v2 references in third-party directories or community client libraries is not a substitute for the current first-party developer agreement.
+
+Decision: no scraping or Provider implementation until the first-party agreement, client registration requirements, data display conditions, and release-notification obligations are verified.
+
+#### MangaUpdates
+
+The official MangaUpdates API documentation lists a public API base at `https://api.mangaupdates.com/v1`, public series search/read endpoints, and an Acceptable Use Policy. The policy requires MangaUpdates credit, reasonable request spacing, and caching; it also prohibits use that deceives or defrauds users, assists or performs illegal actions, creates spam, or damages the database.
+
+Decision: consider a narrowly scoped metadata Provider using public series search/read only, with attribution, caching, conservative pacing, and links to MangaUpdates detail pages. Do not use endpoints for user accounts, private messages, forum activity, or release/download distribution. Before implementation, confirm the endpoint authentication requirements and the exact API fields to be displayed.
+
+Reference:
+- https://mangaupdates.apidocumentation.com/
+
+### Batch outcome
+
+- 5 Atlas manga metadata candidates received individual decisions; Bilibili Comic remains covered by the Bilibili review.
+- MangaDex and MangaUpdates are the strongest conditional API candidates for metadata-only use, with distinct attribution and usage requirements.
+- AniList remains deferred; MAL and Kitsu remain unverified for this use case.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review Atlas manga resource sites MangaNelo, MangaKakalot, Bilibili Manga, DMZJ, Manhuagui, MangaFire, MangaSee, and ComicWalker.
