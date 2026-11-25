@@ -86,9 +86,11 @@ This document defines the implementation and review standards for AIOResourceSea
 - Prefer deterministic fixtures and mocked network/KV boundaries for unit tests. Tests using mocks do not prove real Cloudflare runtime behavior or live source connectivity.
 - For behavior changes, add regression coverage for the affected success and failure paths.
 - Before a change is considered ready, CI must pass:
-  1. Worker unit tests.
-  2. Frontend production build.
-  3. Worker TypeScript type-check.
+  1. ESLint for frontend, Worker, tests, and shared TypeScript.
+  2. Worker unit tests.
+  3. Frontend production build.
+  4. Worker TypeScript type-check.
+- Prettier provides the repository formatting configuration and the `npm run format` convenience command. Do not reformat unrelated files; format only the files in the current change when making focused edits. Prettier is not yet a CI gate because the existing codebase has not undergone a deliberate baseline formatting pass.
 - Real Cloudflare integration, HTMLRewriter runtime behavior, KV propagation, and live Provider connectivity are separate verification gates and must be tested in a non-production environment when needed.
 
 ## 9. Change and review workflow
