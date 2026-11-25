@@ -2,6 +2,7 @@ import type { AdaptersConfig, ContentCategory, SourceDefinition, SourcesConfig }
 import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
+import { createCoordinatedFetch, type RateLimitCoordinatorNamespace } from "../rate-limit-coordinator";
 
 const MAX_RESULTS_PER_SOURCE = 50;
 const MAX_TOTAL_RESULTS = 100;
@@ -185,6 +186,7 @@ async function searchOneSource(
   getAdapter: (adapterId: string) => ProviderAdapter | null,
   cache?: Cache,
   requestSignal?: AbortSignal,
+  rateLimitCoordinator?: RateLimitCoordinatorNamespace,
 ): Promise<{
   status: SourceSearchStatus;
   resources: NormalizedResource[];
@@ -229,9 +231,17 @@ async function searchOneSource(
       }, source.timeoutMs);
     });
 
+    const providerFetch = provider.rateLimitLane
+      ? rateLimitCoordinator
+        ? createCoordinatedFetch(rateLimitCoordinator, provider.rateLimitLane, controller.signal)
+        : (async () => {
+            throw new Error("Required shared rate-limit coordinator is unavailable.");
+          }) as typeof fetch
+      : fetch;
+
     const providerResult = provider.search(
       { query: request.query, mode: request.mode },
-      { source, fetch, signal: controller.signal, cache, parseHtml: parseHtmlResults },
+      { source, fetch: providerFetch, signal: controller.signal, cache, parseHtml: parseHtmlResults },
     );
     const resources = await Promise.race([providerResult, timeout, cancelled]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");
@@ -278,6 +288,7 @@ export async function executeSearch(
   getAdapter: (adapterId: string) => ProviderAdapter | null = getProviderAdapter,
   cache?: Cache,
   signal?: AbortSignal,
+  rateLimitCoordinator?: RateLimitCoordinatorNamespace,
 ): Promise<SearchResponse> {
   const matchesContentCategory = (source: SourceDefinition) =>
     request.contentCategory === undefined ||
@@ -321,7 +332,7 @@ export async function executeSearch(
     while (nextIndex < enabledSources.length) {
       const index = nextIndex++;
       if (signal?.aborted) return;
-      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache, signal);
+      settled[index] = await searchOneSource(enabledSources[index], request, adapterConfig, getAdapter, cache, signal, rateLimitCoordinator);
     }
   }));
 
