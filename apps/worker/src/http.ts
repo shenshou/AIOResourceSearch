@@ -39,18 +39,42 @@ export function withEtag(response: Response, version: number): Response {
 }
 
 export async function readJsonBody(request: Request): Promise<unknown> {
-  const contentLength = Number(request.headers.get("Content-Length") ?? "0");
-  if (contentLength > MAX_CONFIG_BYTES) throw new Error("Request body is too large.");
-  const text = await request.text();
-  if (text.length > MAX_CONFIG_BYTES) throw new Error("Request body is too large.");
-  return JSON.parse(text);
-}
+  const contentLengthHeader = request.headers.get("Content-Length");
+  if (contentLengthHeader !== null) {
+    const contentLength = Number(contentLengthHeader);
+    if (!Number.isSafeInteger(contentLength) || contentLength < 0) {
+      throw new Error("Request body has an invalid Content-Length.");
+    }
+    if (contentLength > MAX_CONFIG_BYTES) throw new Error("Request body is too large.");
+  }
 
-export function expectedVersion(request: Request): number | null {
-  const raw = request.headers.get("If-Match");
-  if (!raw) return null;
-  const value = raw.trim().replace(/^W\//, "").replace(/^"|"$/g, "");
-  if (!/^\d+$/.test(value)) return null;
-  return Number(value);
-}
+  if (!request.body) return JSON.parse("");
 
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_CONFIG_BYTES) {
+        await reader.cancel("Request body is too large.");
+        throw new Error("Request body is too large.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
