@@ -188,7 +188,8 @@ Current branch implementation snapshot:
 | Non-JAV category source coverage | Requires source discovery and review |
 | Local Workers / Durable Object runtime integration tests | Implemented; the prior suite passed CI, but the new AniBT lane extension still awaits a current verification run |
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
-| AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |\n| Real Cloudflare integration testing | Not started |
+| AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
+| Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 
 ## Related documents
