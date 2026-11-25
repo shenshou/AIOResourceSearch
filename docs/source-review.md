@@ -535,3 +535,51 @@ Decision: remove the search template and do not implement automated search, HTML
 - JavGG's canonical Terms explicitly prohibit data extraction; the other 3 remain unverified rather than being labeled offline or blocked.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue auditing the remaining search-template candidates, then move to homepage-only forum and torrent candidates.
+
+
+## Individual source audit — fifth batch (2026-11-25)
+
+This batch reviewed JAVHDPorn.net, JAVLeak, JavMost, and JAVOut. The review records only what could be established from the exact catalog domains. Third-party reputation/WHOIS pages are not treated as permission to automate access or as substitutes for canonical terms.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JAVHDPorn.net | Canonical homepage and candidate terms route could not be retrieved; search results surfaced only third-party domain/reputation records | **Unverified** | Remove the unverified search template; no Worker requests pending canonical terms and a verified public search contract |
+| JAVLeak | Canonical homepage is reachable and exposes a search form, but current canonical terms and the exact search route were not established | **Unverified** | Remove the unverified search template; do not infer the route or permission from the visible form |
+| JavMost | The catalog's www5.javmost.com host redirects to javmost.ws; the current page exposes navigation and a legal/2257 page, not a verified automation policy | **Canonical host mismatch; policy unresolved** | Remove the old www5.javmost.com search template; do not automatically follow or scrape the new host pending canonical policy review |
+| JAVOut | Canonical homepage and candidate terms route could not be retrieved; no authoritative policy or stable search contract was found | **Unverified** | Remove the unverified search template; no Worker requests pending verification |
+
+### Source-specific findings
+
+#### JAVHDPorn.net
+
+The catalog points to javhdporn.net and previously contained a /search?q={query} template. Direct retrieval of the canonical homepage and the guessed terms route was unavailable to the research fetcher. Search results mainly returned third-party domain and reputation records, which do not establish the site's own terms, permission for automated access, or a supported search interface.
+
+Decision: remove the unverified search template. Keep the source as an unverified homepage reference only; do not automate access based on third-party technical records.
+
+#### JAVLeak
+
+The canonical javleak.com homepage is reachable and exposes a visible search field and an advanced-search link. However, the available page did not establish current canonical terms or confirm that the catalog's old /search?q={query} path is the supported public search route. A visible search form is not itself an automation permission or a stable endpoint contract.
+
+Decision: remove the unverified search template. Retain the homepage reference only until the current terms and exact ordinary public search route are verified. Do not reverse-engineer undocumented endpoints.
+
+#### JavMost
+
+The catalog's previous search template used www5.javmost.com. The current research result redirects that host to javmost.ws, and the current page identifies the latter as the site host. The linked legal page is an 18 U.S.C. 2257 compliance statement; it is not a terms-of-service or automated-access policy. Third-party WHOIS/reputation records do not fill that gap.
+
+Decision: remove the old search template and retain the existing catalog homepage as a directory reference only. Do not silently rewrite the catalog to a new host or automate requests against javmost.ws until the canonical domain, current terms, and public search contract are independently verified.
+
+#### JAVOut
+
+The catalog points to javout.co and previously contained a /search/{query} template. Direct retrieval of the canonical homepage and the guessed terms route was unavailable to the research fetcher. The available search results did not establish canonical current terms or a stable search interface.
+
+Decision: remove the unverified search template. Keep the source unverified; do not interpret research-fetch failure as proof that the site is offline or blocked for ordinary users.
+
+### Batch outcome
+
+- 4 sources received source-specific decisions.
+- All 4 unverified search templates were removed.
+- JavMost's catalog host was not silently changed to javmost.ws; its 2257 page was not misclassified as a ToS.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue with JAVSeen, JAVTsunami, and JavyNow, then review remaining external-search and homepage-only candidates.
