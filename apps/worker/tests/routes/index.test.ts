@@ -149,7 +149,7 @@ test("GET /api/sources exposes enabled sources without private configuration fie
             searchModes: ["number"],
             capabilities: ["metadata"],
             timeoutMs: 5000,
-            credentialBinding: "PRIVATE_API_TOKEN",
+            credentialBinding: "SOURCE_CREDENTIAL_PRIVATE_API_TOKEN",
             notes: "Internal operator note",
           },
           {
