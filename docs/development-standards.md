@@ -53,6 +53,9 @@ This document defines the implementation and review standards for AIOResourceSea
 - A source's declared capabilities must match the fields its configuration can actually extract. For generic HTML, image and Magnet capabilities require their corresponding selectors, and undeclared optional fields must not be returned even if a parser supplies them.
 - Each Provider must validate upstream status, response shape, result URLs, and supported resource links; apply bounded response sizes, timeouts, and safe redirect handling appropriate to its protocol.
 - A source configuration must declare at least one search mode; a Worker-backed Provider source must also declare at least one result capability. Enforce these invariants at the Worker boundary even when the UI already validates them.
+- The search request's AbortSignal must propagate to every active Provider. Per-source timeouts must abort the Provider signal; Providers must pass it to upstream Fetch calls and avoid starting cache writes or retries after cancellation.
+- The result normalizer must discard optional fields not covered by the source's declared capabilities (metadata, image, Magnet, ED2K, Torrent). A Provider returning a field does not itself grant the source that capability.
+- Deduplicate only by canonical detail URL. When multiple sources return that URL, preserve all source attributions and merge missing metadata/resource links without overwriting already selected values. Per-source result counts remain pre-deduplication counts.
 - Provider failures must be isolated so one unavailable source does not fail the entire search.
 - Do not bypass authentication, paywalls, CAPTCHA, anti-bot challenges, geo restrictions, rate limits, or other access controls.
 - External-search entries only produce user-opened HTTPS destinations; they must not silently become Worker fetches.
