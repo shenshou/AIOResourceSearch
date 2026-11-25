@@ -472,6 +472,18 @@ test("admin source test endpoints require administrator authorization", async ()
   assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "unauthorized");
 });
 
+test("source diagnostics reject unknown sources and unsupported source search modes", async () => {
+  const env = createEnv(adminTestValues({ ...adminTestSource, searchModes: ["keyword"] }), { adminToken: "test-secret" });
+  const missing = await worker.fetch(adminTestRequest("missing-source/test-connection"), env);
+  assert.equal(missing.status, 404);
+  assert.equal(((await readJson(missing)).error as Record<string, unknown>).code, "source_not_found");
+
+  const unsupported = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
+  assert.equal(unsupported.status, 422);
+  assert.equal(((await readJson(unsupported)).error as Record<string, unknown>).code, "unsupported_search_mode");
+  assert.equal(env.__writes.length, 0);
+});
+
 test("external-search test requests are rejected without fetching the destination", async () => {
   const originalFetch = globalThis.fetch;
   let fetched = false;
