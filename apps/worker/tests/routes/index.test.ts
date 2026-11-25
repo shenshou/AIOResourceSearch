@@ -522,6 +522,11 @@ test("disabled sources and disabled or unimplemented adapters are rejected befor
     const unimplementedResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), unimplementedAdapterEnv);
     assert.equal(unimplementedResponse.status, 409);
     assert.equal(((await readJson(unimplementedResponse)).error as Record<string, unknown>).code, "adapter_unavailable");
+
+    const incompatibleEnv = createEnv(adminTestValues({ ...adminTestSource, category: "jav" }), { adminToken: "test-secret" });
+    const incompatibleResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), incompatibleEnv);
+    assert.equal(incompatibleResponse.status, 409);
+    assert.equal(((await readJson(incompatibleResponse)).error as Record<string, unknown>).code, "adapter_incompatible");
     assert.equal(fetched, false);
   } finally {
     globalThis.fetch = originalFetch;
@@ -608,6 +613,15 @@ test("Provider test reports upstream failure and cancellation without persisting
     assert.equal(failureBody.status, "error");
     assert.equal(failureBody.errorCode, "provider_failed");
     assert.equal(env.__writes.length, 0);
+
+    globalThis.fetch = async () => new Promise<Response>(() => undefined);
+    const timeoutEnv = createEnv(adminTestValues({ ...adminTestSource, timeoutMs: 1000 }), { adminToken: "test-secret" });
+    const timedOut = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), timeoutEnv);
+    assert.equal(timedOut.status, 200);
+    const timeoutBody = await readJson(timedOut);
+    assert.equal(timeoutBody.status, "timeout");
+    assert.equal(timeoutBody.errorCode, "provider_timeout");
+    assert.equal(timeoutEnv.__writes.length, 0);
 
     const controller = new AbortController();
     controller.abort(new DOMException("Cancelled by test.", "AbortError"));
