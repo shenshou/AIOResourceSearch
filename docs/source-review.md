@@ -2355,3 +2355,20 @@ The current official contracts were rechecked and a separate implementation-read
 - Implemented `dmhy-rss` v1.0.0 with GET-only RSS parsing, exact HTTPS host/path validation, bounded 2 MiB response streaming, BTIH magnet validation, canonical HTTPS detail URLs, and no detail-page/image/torrent fetching.
 - No numeric request quota was found in the reviewed official FAQ. The public RSS feature is documented for subscriptions, but that alone is not a comprehensive third-party automation license. Keep the source disabled pending hosted Worker reachability, conservative pacing verification, current terms/robots review, and content/legal review.
 - Code is registered in the Worker compile-time registry. No KV adapter/source record was written, no source was enabled, no live upstream request was performed by Cloudflare, and no deployment occurred.
+
+
+## Mikan Project follow-up — 2026-11-25
+
+- The official homepage is active and currently exposes an ordinary keyword search page at `https://mikanani.me/Home/Search?searchstr={query}`. A live search for `Rewrite` returned anime titles and result rows with title, size, update time, and magnet-related controls.
+- The homepage also exposes account login/registration. Its announcement says advanced subscription options are available to registered users; this does not establish that the ordinary keyword search requires login.
+- Third-party clients document `/RSS/Search?searchstr={query}`, and recent Auto_Bangumi issue logs show successful responses from both `mikanani.me` and `mikanime.tv`. This is useful compatibility evidence, not an official API contract or permission for a third-party aggregator.
+- The `MyBangumi?token=...` feed remains a private, account-bound subscription endpoint. Do not request, collect, or store a user's personal token as a shared Worker credential.
+- No current official automation policy, robots directive, RSS response schema, or explicit permission for third-party result aggregation was established in this review. The RSS XML endpoint was not inspectable through the research fetcher because it returned an unsupported XML content type; this is not evidence that the endpoint is unavailable.
+- **Decision:** add Mikan Project to the anime/torrent source catalog as a user-initiated external search link using the verified `Home/Search` template. Do not implement RSS or HTML Worker fetching until official interface/policy evidence is sufficient. Site login is not a reason to exclude a source in general, but this particular personal subscription token is not a shared keyword-search API.
+- The source catalog increases from 94 to 95 unique candidates. This is one external-search catalog entry, not a new executable Provider.
+
+References:
+- Official homepage: https://mikanani.me/
+- Verified keyword search: https://mikanani.me/Home/Search?searchstr=Rewrite
+- Third-party client RSS configuration (interface lead only): https://github.com/yaqinking/DMHY/blob/master/DMHY/support-site.json
+- Auto_Bangumi issue showing RSS endpoint use: https://github.com/EstrellaXD/Auto_Bangumi/issues/893
