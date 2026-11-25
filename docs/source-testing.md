@@ -51,3 +51,13 @@ Invalid requests, missing sources, disabled sources, external-search entries, an
 - Source-specific access controls and usage rules remain in force. No login, paywall, CAPTCHA, anti-bot challenge, geographic restriction, rate limit, or other access control is bypassed.
 
 The frontend exposes separate **测试连接** and **测试搜索** actions for enabled Provider sources. The connection action is explicitly described as a smoke search rather than a TCP ping. Query tests allow the administrator to choose a supported search mode and display status, elapsed time, result count, and up to three samples.
+
+
+## Authenticated source diagnostics
+
+- If a source declares `credentialBinding`, the Worker resolves that exact named Worker Secret binding and passes the value only to the selected Provider through `ProviderContext.credential`.
+- If the binding is missing or empty, the diagnostic fails closed with `credential_unavailable`; no upstream request is made.
+- The credential value is never included in the diagnostic response, source API response, KV configuration, or sample results.
+- Configure deployed credentials as Worker Secrets, not plaintext `vars`. For local development, use an ignored `.dev.vars` file beside the Wrangler configuration. Never commit it.
+- `wrangler secret put` creates a new Worker version and deploys it immediately; use a dedicated non-production Worker/environment for credential setup and verification. Do not use production secrets during testing.
+- A binding name is only a reference to a secret; it does not specify the auth protocol. The Provider must implement the source's documented Bearer/API-key/Cookie behavior and must send the credential only to the canonical approved HTTPS host.
