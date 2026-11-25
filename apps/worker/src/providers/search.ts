@@ -281,6 +281,26 @@ async function searchOneSource(
   }
 }
 
+export async function executeSourceTest(
+  source: SourceDefinition,
+  request: SearchRequest,
+  adapterConfig: AdaptersConfig,
+  cache?: Cache,
+  signal?: AbortSignal,
+  rateLimitCoordinator?: RateLimitCoordinatorNamespace,
+): Promise<{ status: SourceSearchStatus; results: NormalizedResource[] }> {
+  const result = await searchOneSource(
+    source,
+    request,
+    adapterConfig,
+    getProviderAdapter,
+    cache,
+    signal,
+    rateLimitCoordinator,
+  );
+  return { status: result.status, results: result.resources };
+}
+
 export async function executeSearch(
   request: SearchRequest,
   sourceConfig: SourcesConfig,
