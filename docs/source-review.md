@@ -1010,3 +1010,52 @@ Decision: retain homepage-only as an unverified directory reference. Do not reve
 - The eight Lustpress-listed sources have now all received individual review entries (Eporner, XNXX, XVideos, XHamster, PornHub, RedTube, YouPorn, TXXX).
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: continue with FetchJAV-listed other-index candidates, starting with 91Porn, 85Tube, AApp11, and HAnime XYZ.
+
+
+## Individual source audit — fifteenth batch (2026-11-25)
+
+This batch reviewed four FetchJAV-listed other-index candidates: 91Porn, 85Tube, AApp11, and HAnime XYZ. The review keeps similarly named domains separate and does not treat third-party redirect records as definitive operator confirmation.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| 91Porn | Canonical homepage is an 18+ age gate and explicitly says mainland-China users should not visit; no canonical current automation policy/API/search route was verified | **Age-gated; policy/interface unresolved** | User-initiated external access only; no Worker fetching or age-gate bypass |
+| 85Tube | Third-party domain records report 85tube.com redirecting to 85ro.com; 85PO's first-party Terms restrict use to personal purposes and prohibit unauthorized linking/copying/redistribution | **Possible legacy alias; operator relationship not fully verified** | No Worker scraping; keep exact 85Tube domain unresolved pending operator confirmation |
+| AApp11 | FetchJAV names the source but no canonical domain, terms, or public interface was verified | **Name-only unverified candidate** | No domain guessing or automated access |
+| HAnime XYZ | FetchJAV names the source but exact canonical domain and terms were not verified; hanime.moe is a separate domain | **Name-only unverified candidate** | No domain guessing or automated access |
+
+### Source-specific findings
+
+#### 91Porn
+
+The canonical 91porn.com homepage currently presents an age-confirmation gate. Its text states that visitors must be at least 18 and explicitly says mainland-China users should not visit. The page also states the site's public-facing policy position against privacy violations, doxxing, coercion, and material involving persons under 18. No canonical current Terms of Service, documented public API/RSS, or stable search URL was verified. This site is distinct from the previously audited 91porny.com/forum; the two domains must not be conflated.
+
+Decision: keep only user-initiated external access for eligible visitors. Do not implement Worker fetching, HTML parsing, metadata extraction, or age-gate bypass. Revisit only after the exact site's current Terms and a supported public interface are verified.
+
+#### 85Tube
+
+The FetchJAV list names 85Tube, while third-party domain records report that 85tube.com redirects to www.85ro.com/en. The latter's first-party Terms identify the service as 85PO and state that the agreement applies to 85ro.com. Those Terms restrict use to personal purposes, prohibit unauthorized framing/linking, and prohibit copying, reproducing, distributing, or otherwise exploiting content without prior written consent. They permit links to materials for personal, non-commercial purposes only. However, the precise relationship between the old 85tube.com domain and the current 85PO/85RO operator was not confirmed by a first-party announcement in this review.
+
+Decision: do not implement Worker scraping or metadata redistribution. Do not silently rewrite the 85Tube entry to 85ro.com based only on third-party redirect observations. Keep the candidate's canonical domain unresolved until the operator confirms the alias and any allowed linking scope.
+
+#### AApp11
+
+FetchJAV's supported-site list names AApp11, but the catalog contains no verified canonical domain. Searches did not establish a first-party website, current Terms, public API/RSS, or stable public search contract for the exact name. Similar-looking domains are not sufficient evidence to select a destination.
+
+Decision: keep as a name-only candidate. Do not guess a domain, copy FetchJAV-specific scraping code, or implement automated access.
+
+#### HAnime XYZ
+
+FetchJAV's supported-site list names HAnime XYZ, but the exact canonical domain and current Terms were not verified. Search results surfaced hanime.moe Terms of Use, but hanime.moe is a separate domain and must not be treated as HAnime XYZ's policy. Similar branding or a shared category is not proof of common ownership or terms.
+
+Decision: keep as a name-only candidate. Do not substitute hanime.moe or any other similarly named domain, and do not implement automated access until the exact site is identified and its terms/interface are reviewed.
+
+### Batch outcome
+
+- 4 FetchJAV-listed candidates received source-specific decisions.
+- 91Porn's 18+ and mainland-China access notice was recorded; no access-gate bypass is permitted.
+- 85Tube's possible redirect to 85PO/85RO was recorded as third-party evidence, not as a confirmed first-party alias.
+- AApp11 and HAnime XYZ remain name-only candidates rather than receiving guessed URLs.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue with Hanime1, HanimeTV, MIEN321, and PigAV.
