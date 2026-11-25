@@ -127,7 +127,7 @@ export const sukebeiRssProvider: ProviderAdapter = {
   mechanism: "rss",
   contentCategories: ["jav"],
   categories: ["torrent"],
-  capabilities: ["magnet"],
+  capabilities: ["metadata", "magnet"],
   searchModes: ["number", "keyword"],
   async search(input, context) {
     const url = new URL(FEED_ENDPOINT);
