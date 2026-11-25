@@ -52,6 +52,7 @@ This document defines the implementation and review standards for AIOResourceSea
 - For a registered implementation, mechanism, version, supported source categories, content categories, and capabilities are implementation-owned facts. Normalize these fields from the registry when reading or validating adapter metadata; KV may manage descriptive/admin fields and enabled state, but must not override runtime capabilities.
 - A source's declared capabilities must match the fields its configuration can actually extract. For generic HTML, image and Magnet capabilities require their corresponding selectors, and undeclared optional fields must not be returned even if a parser supplies them.
 - Each Provider must validate upstream status, response shape, result URLs, and supported resource links; apply bounded response sizes, timeouts, and safe redirect handling appropriate to its protocol.
+- A source configuration must declare at least one search mode; a Worker-backed Provider source must also declare at least one result capability. Enforce these invariants at the Worker boundary even when the UI already validates them.
 - Provider failures must be isolated so one unavailable source does not fail the entire search.
 - Do not bypass authentication, paywalls, CAPTCHA, anti-bot challenges, geo restrictions, rate limits, or other access controls.
 - External-search entries only produce user-opened HTTPS destinations; they must not silently become Worker fetches.
