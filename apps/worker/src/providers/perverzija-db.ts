@@ -184,7 +184,7 @@ export const perverzijaDbProvider: ProviderAdapter = {
       payload = JSON.parse(await readLimitedText(response));
     } catch (error) {
       if (error instanceof SyntaxError) {
-        throw new Error("Perverzija DB returned malformed JSON.");
+        throw new Error("Perverzija DB returned malformed JSON.", { cause: error });
       }
       throw error;
     }
