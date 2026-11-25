@@ -789,8 +789,8 @@ test("site Providers declare metadata when they emit metadata fields", () => {
   assert.ok(yourBittorrentProvider.capabilities.includes("metadata"));
 });
 
-test("YourBittorrent declares both Magnet and torrent-file capabilities", () => {
-  assert.deepEqual(yourBittorrentProvider.capabilities, ["magnet", "torrent"]);
+test("YourBittorrent declares metadata, Magnet, and torrent-file capabilities", () => {
+  assert.deepEqual(yourBittorrentProvider.capabilities, ["metadata", "magnet", "torrent"]);
 });
 
 test("searches YourBittorrent's documented JSON API using the Adult category and maps links", async () => {
