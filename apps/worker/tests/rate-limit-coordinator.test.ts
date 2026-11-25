@@ -24,10 +24,15 @@ function namespace(
 test("reserves a slot before making the upstream request", async () => {
   const calls: string[] = [];
   const coordinator = namespace(async (request) => {
-    if (new URL(request.url).pathname === "/reserve") {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") {
       const body = await request.json() as { lane: string };
       assert.equal(body.lane, "mangadex");
       return Response.json({ scheduledAt: Date.now() });
+    }
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
     }
     return Response.json({ accepted: true });
   }, calls);
@@ -45,7 +50,7 @@ test("reserves a slot before making the upstream request", async () => {
   const response = await coordinatedFetch("https://api.mangadex.org/manga");
   assert.equal(response.status, 200);
   assert.equal(upstreamCalls, 1);
-  assert.deepEqual(calls, ["/reserve"]);
+  assert.deepEqual(calls, ["/reserve", "/validate"]);
 });
 
 test("fails closed when the coordinator cannot reserve a slot", async () => {
@@ -67,7 +72,12 @@ test("fails closed when the coordinator cannot reserve a slot", async () => {
 
 test("does not call upstream when a reserved slot wait is cancelled", async () => {
   const controller = new AbortController();
-  const coordinator = namespace(async () => Response.json({ scheduledAt: Date.now() + 60_000 }));
+  const coordinator = namespace(async (request) => {
+    if (new URL(request.url).pathname === "/reserve") {
+      return Response.json({ scheduledAt: Date.now() + 60_000 });
+    }
+    return Response.json({ scheduledAt: Date.now() + 60_000 });
+  });
   let upstreamCalls = 0;
   const coordinatedFetch = createCoordinatedFetch(
     coordinator,
@@ -88,8 +98,11 @@ test("does not call upstream when a reserved slot wait is cancelled", async () =
 test("extends the lane cooldown after a 429 response", async () => {
   const calls: string[] = [];
   const coordinator = namespace(async (request) => {
-    if (new URL(request.url).pathname === "/reserve") {
-      return Response.json({ scheduledAt: Date.now() });
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
     }
     const body = await request.json() as { lane: string; until: number };
     assert.equal(body.lane, "mangadex");
@@ -108,7 +121,7 @@ test("extends the lane cooldown after a 429 response", async () => {
 
   const response = await coordinatedFetch("https://api.mangadex.org/manga");
   assert.equal(response.status, 429);
-  assert.deepEqual(calls, ["/reserve", "/cooldown"]);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
 });
 
 test("uses one atomic SQLite UPSERT for reservation and rejects unknown lanes", async () => {
