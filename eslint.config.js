@@ -18,14 +18,27 @@ export default typescriptEslint.config(
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.serviceworker,
-      },
       parserOptions: {
         parser: typescriptEslint.parser,
       },
+    },
+  },
+  {
+    files: ["apps/web/src/**/*.{ts,vue}"],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+  {
+    files: ["apps/worker/src/**/*.ts"],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
+  {
+    files: ["apps/worker/tests/**/*.ts"],
+    languageOptions: {
+      globals: globals.node,
     },
   },
   eslintConfigPrettier,
