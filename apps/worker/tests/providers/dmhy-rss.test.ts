@@ -7,7 +7,7 @@ const magnet = "magnet:?xt=urn:btih:WCEZZOUBYIFBBFCU5IDPHOC7WVAKQ32B";
 const feed = (items: string) => `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>DMHY</title>${items}</channel></rss>`;
 const item = (overrides: { title?: string; guid?: string; magnet?: string; date?: string } = {}) => `
   <item>
-    <title><![CDATA[${overrides.title ?? "[字幕组] 示例动画 [01][1080p] ]]></title>
+    <title><![CDATA[${overrides.title ?? "[字幕组] 示例动画 [01][1080p]"}]]></title>
     <link>http://share.dmhy.org/topics/view/731088_Example.html</link>
     <guid isPermaLink="true">${overrides.guid ?? "http://share.dmhy.org/topics/view/731088_Example.html"}</guid>
     <pubDate>${overrides.date ?? "Mon, 16 Nov 2026 20:33:00 +0800"}</pubDate>
