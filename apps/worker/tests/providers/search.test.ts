@@ -21,7 +21,7 @@ const adapterMetadata: AdapterDefinition = {
   version: "1.0.0",
   enabled: true,
   categories: ["jav"],
-  capabilities: ["metadata", "magnet"],
+  capabilities: ["metadata", "image", "magnet", "ed2k", "torrent"],
   implemented: true,
 };
 
@@ -57,7 +57,7 @@ function provider(
     id: "test-adapter",
     version: "1.0.0",
     categories: ["jav"],
-    capabilities: ["metadata", "magnet"],
+    capabilities: ["metadata", "image", "magnet", "ed2k", "torrent"],
     searchModes: ["number", "keyword"],
     search,
     ...overrides,
@@ -176,7 +176,7 @@ test("normalizes provider-owned fields and validates optional resource links", a
   const magnet = "magnet:?dn=example&xt=urn:btih:01234567890123456789012345678901";
   const result = await executeSearch(
     request,
-    sourceConfig(source()),
+    sourceConfig(source({ capabilities: ["metadata", "magnet", "torrent"] })),
     adapters,
     resolve(provider(async () => [
       resource({
@@ -203,6 +203,25 @@ test("normalizes provider-owned fields and validates optional resource links", a
   ]);
 });
 
+test("drops optional result fields that the source has not declared", async () => {
+  const result = await executeSearch(
+    request,
+    sourceConfig(source({ capabilities: ["metadata"] })),
+    adapters,
+    resolve(provider(async () => [resource({
+      imageUrl: "https://example.com/image.jpg",
+      magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
+      ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/",
+      torrentUrl: "https://example.com/file.torrent",
+    })])),
+  );
+
+  assert.equal(result.results[0]?.imageUrl, undefined);
+  assert.equal(result.results[0]?.magnetUri, undefined);
+  assert.equal(result.results[0]?.ed2kUri, undefined);
+  assert.equal(result.results[0]?.torrentUrl, undefined);
+});
+
 test("deduplicates equivalent canonical result URLs across sources", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({
@@ -210,6 +229,9 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
       url: context.source.id === "first"
         ? "https://example.com/item#section"
         : "https://example.com/item/",
+      ...(context.source.id === "second"
+        ? { description: "Additional source description", metadata: { author: "Second source" } }
+        : {}),
     }),
   ]);
   const result = await executeSearch(
@@ -224,8 +246,15 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
 
   assert.equal(result.results.length, 1);
   assert.equal(result.results[0]?.sourceId, "first");
+  assert.deepEqual(result.results[0]?.sourceAttributions, [
+    { sourceId: "first", sourceName: "First source", category: "jav" },
+    { sourceId: "second", sourceName: "Second source", category: "jav" },
+  ]);
+  assert.equal(result.results[0]?.description, "Additional source description");
+  assert.deepEqual(result.results[0]?.metadata, { author: "Second source" });
   assert.equal(result.meta.totalResults, 1);
   assert.equal(result.sources.length, 2);
+  assert.deepEqual(result.sources.map((item) => item.resultCount), [1, 1]);
 });
 
 test("isolates provider failures so healthy sources still return results", async () => {
@@ -261,6 +290,35 @@ test("enforces per-source timeouts even when a provider ignores AbortSignal", as
   assert.equal(result.sources[0]?.status, "timeout");
   assert.equal(result.sources[0]?.errorCode, "provider_timeout");
   assert.equal(result.meta.failedSources, 1);
+});
+
+test("aborts in-flight providers and stops scheduling when the client cancels", async () => {
+  const controller = new AbortController();
+  let observedSignal: AbortSignal | undefined;
+  let started = 0;
+  const hangingProvider = provider((_input, context) => {
+    started += 1;
+    observedSignal = context.signal;
+    return new Promise<NormalizedResource[]>(() => {});
+  });
+  const pending = executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "one" }),
+      source({ id: "two" }),
+      source({ id: "three" }),
+    ),
+    adapters,
+    resolve(hangingProvider),
+    undefined,
+    controller.signal,
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  controller.abort(new DOMException("Client cancelled search.", "AbortError"));
+  await assert.rejects(pending, /cancelled/i);
+  assert.equal(observedSignal?.aborted, true);
+  assert.ok(started <= 3);
 });
 
 test("limits each source to 50 results", async () => {
