@@ -2555,3 +2555,39 @@ This section records official API candidates reviewed while expanding beyond the
   - Current branded host surfaced by search (ownership unverified): https://btsow.live/
   - Another similarly branded host (ownership unverified): https://btsow.icu/
   - Third-party legacy selector example (implementation evidence only): https://github.com/xiandanin/magnetW/blob/master/rule.json
+
+
+## Atlas torrent candidates — iJavTorrent, JAVBEE, My JAV Bay, OneJAV and 141PPV — reviewed 2026-11-26
+
+### iJavTorrent (ijavtorrent.com)
+- The public homepage is accessible to an ordinary browser and visibly exposes a search/filter interface, listing metadata, and source-provided Magnet links. This confirms a human-facing catalog, not a supported machine interface.
+- The homepage contains no verifiable API/RSS documentation or automation/republication policy. A direct attempt to retrieve `/robots.txt` was not available to the research fetcher; this is recorded as unknown, not as permission or prohibition.
+- **Decision: keep external-only.** Do not turn the visible page structure, form controls, or Magnet links into a generic HTML Provider without a first-party automation policy and stable documented search contract. Do not probe undocumented endpoints or bypass any challenge.
+
+### JAVBEE (javbee.org)
+- The canonical homepage could not be retrieved by the research fetcher. No operator-published API/RSS contract, current terms, or stable public search URL was verified.
+- **Decision: unverified homepage reference only.** No Worker fetch, HTML parsing, or alternate-domain substitution. Reconsider after the operator provides an accessible canonical site and documented automation interface/policy.
+
+### My JAV Bay (myjavbay.com)
+- The first-party homepage is accessible and exposes a searchable VR catalog with recent post metadata, including title/code, size, cast names, category, and dates.
+- No official API/RSS documentation or first-party permission for third-party metadata aggregation was found on the reviewed homepage. A search result advertised a third-party datawebot scraper API for this site; that service charges credits and explicitly states it does not use a My JAV Bay official API. It is neither a first-party integration nor compatible with the project's no-paid-services constraint, so it is not used.
+- **Decision: homepage-only.** Do not implement HTML scraping or use the paid third-party scraper. Reconsider only if My JAV Bay publishes an official API/feed and the applicable rules permit the intended metadata display.
+
+### OneJAV (onejav.com)
+- RSSHub's route documentation states that the site's official `/feeds/` subscription does not support BT-download subscriptions, while RSSHub separately provides its own BT-oriented route. The latter is a third-party scraper route, not a first-party API or evidence of automation permission.
+- Direct retrieval of `https://onejav.com/feeds/` returned HTTP 403 to the research fetcher. This is an access result, not a reason to deploy a challenge solver or use RSSHub as a proxy.
+- **Decision: external-only.** Do not use RSSHub's route, scrape the site, or bypass the 403. Reconsider if the operator publishes a supported BT-capable feed/API and automation terms.
+
+### 141PPV (141ppv.com)
+- The official homepage and `/feeds/` page could not be verified directly in this review. RSSHub documentation distinguishes the site's own feed from its third-party BT route and states that the official feed does not support BT-download subscriptions.
+- The RSSHub BT route is a third-party implementation; it does not establish a first-party BT search API, feed contract, or permission to republish metadata.
+- **Decision: external-only.** Do not use RSSHub as a proxy, scrape HTML, or probe undocumented endpoints. Reconsider after the operator publishes a BT-capable public feed/API and rules covering automated metadata display.
+
+### References
+- iJavTorrent first-party homepage: https://ijavtorrent.com/
+- JAVBEE candidate homepage (not retrievable in this review): https://javbee.org/
+- My JAV Bay first-party homepage: https://myjavbay.com/
+- My JAV Bay third-party paid scraper description (not used): https://www.datawebot.com/scraper/w_myjavbay_com
+- OneJAV first-party feed page (403 in this review): https://onejav.com/feeds/
+- RSSHub route documentation (third-party implementation evidence only): https://rsshub-doc.pages.dev/multimedia
+- 141PPV first-party homepage/feed (not verified in this review): https://141ppv.com/ and https://141ppv.com/feeds/
