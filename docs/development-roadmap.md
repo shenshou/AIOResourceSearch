@@ -172,6 +172,7 @@ As of the roadmap introduction:
 
 - [README](../README.md) — project overview, local development, and concise status.
 - [Architecture](./architecture.md) — system boundaries, data flow, and technical constraints.
+- [Frontend components](./frontend-components.md) — reusable Vue component contracts and usage examples.
 - [Development standards](./development-standards.md) — coding, module, frontend, testing, security, and review standards.
 - [Source catalog](./source-catalog.md) — candidate source inventory and registration rules.
 - [Source review log](./source-review.md) — evidence and decisions for individual sources.
