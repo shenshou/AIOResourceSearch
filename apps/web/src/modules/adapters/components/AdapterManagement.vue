@@ -204,13 +204,13 @@ async function deleteAdapter(adapter: AdapterDefinition) {
                 <option v-for="mechanism in FETCH_MECHANISMS" :key="mechanism" :value="mechanism">{{ mechanismLabels[mechanism] }}</option>
               </select>
             </label>
-            <label>版本<input v-model="form.version" required maxlength="40" placeholder="1.0.0" /></label>
+            <label>版本<input v-model="form.version" required maxlength="40" placeholder="1.0.0" :disabled="form.implemented" /></label>
             <label class="checkbox-line"><input v-model="form.enabled" type="checkbox" :disabled="!form.implemented" /> 启用适配器</label>
             <label class="wide">功能说明<textarea v-model="form.description" maxlength="500" rows="2" placeholder="描述适配器支持的协议或数据结构"></textarea></label>
             <fieldset class="wide choice-field">
               <legend>适用的数据源分类</legend>
               <label v-for="category in SOURCE_CATEGORIES" :key="category" class="choice">
-                <input type="checkbox" :checked="form.categories.includes(category)" @change="toggleCategory(category)" />{{ categoryLabels[category] }}
+                <input type="checkbox" :checked="form.categories.includes(category)" :disabled="form.implemented" @change="toggleCategory(category)" />{{ categoryLabels[category] }}
               </label>
             </fieldset>
             <fieldset class="wide choice-field">
@@ -222,12 +222,12 @@ async function deleteAdapter(adapter: AdapterDefinition) {
             <fieldset class="wide choice-field">
               <legend>能力声明</legend>
               <label v-for="capability in SOURCE_CAPABILITIES" :key="capability" class="choice">
-                <input type="checkbox" :checked="form.capabilities.includes(capability)" @change="toggleCapability(capability)" />{{ capabilityLabels[capability] }}
+                <input type="checkbox" :checked="form.capabilities.includes(capability)" :disabled="form.implemented" @change="toggleCapability(capability)" />{{ capabilityLabels[capability] }}
               </label>
             </fieldset>
             <label class="wide">备注<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="实现计划、协议限制或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">“新增适配器”目前只登记元数据，不会生成解析代码。Worker 会根据代码内的实现注册表判断是否已实现；未实现的适配器不能启用，也不能被数据源使用。新增协议或解析逻辑仍需修改并重新部署 Worker。</p>
+          <p class="form-hint">“新增适配器”目前只登记元数据，不会生成解析代码。Worker 会根据代码内的实现注册表判断是否已实现；未实现的适配器不能启用，也不能被数据源使用。已有实现的机制、版本、来源分类、内容分类和能力声明以 Worker 代码为准，不可在此修改；新增协议或解析逻辑仍需修改并重新部署 Worker。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="showEditor = false">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
