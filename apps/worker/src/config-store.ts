@@ -1,4 +1,5 @@
-import { getProviderAdapter, isProviderImplemented } from "./providers/registry";
+import { isProviderImplemented } from "./providers/registry";
+import { validateAdapter, validateSource } from "./validation";
 import type {
   AdapterDefinition,
   AdaptersConfig,
@@ -30,29 +31,36 @@ export async function readAdaptersConfig(env: Env): Promise<AdaptersConfig> {
     typeof parsed !== "object" ||
     parsed === null ||
     !("version" in parsed) ||
+    !Number.isSafeInteger(parsed.version) ||
+    parsed.version < 0 ||
     !("adapters" in parsed) ||
-    !Array.isArray(parsed.adapters)
+    !Array.isArray(parsed.adapters) ||
+    ("updatedAt" in parsed && parsed.updatedAt !== null && typeof parsed.updatedAt !== "string")
   ) {
     throw new Error("Stored adapter configuration is invalid.");
   }
 
-  const config = parsed as AdaptersConfig;
+  const ids = new Set<string>();
+  const adapters = parsed.adapters.map((item: unknown) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item) ||
+        !("id" in item) || typeof item.id !== "string" ||
+        !("enabled" in item) || typeof item.enabled !== "boolean") {
+      throw new Error("Stored adapter configuration contains an invalid adapter.");
+    }
+    if (ids.has(item.id)) throw new Error("Stored adapter configuration contains duplicate adapter IDs.");
+    ids.add(item.id);
+    const adapter = validateAdapter({
+      ...item,
+      enabled: item.enabled && isProviderImplemented(item.id),
+    });
+    if (!adapter) throw new Error("Stored adapter configuration contains an invalid adapter.");
+    return adapter;
+  });
+
   return {
-    ...config,
-    adapters: config.adapters.map((adapter) => {
-      const implementation = getProviderAdapter(adapter.id);
-      const implemented = isProviderImplemented(adapter.id);
-      return {
-        ...adapter,
-        mechanism: implementation?.mechanism ?? adapter.mechanism ?? "api",
-        contentCategories: [...(implementation?.contentCategories ?? adapter.contentCategories ?? ["jav"])],
-        version: implementation?.version ?? adapter.version,
-        categories: [...(implementation?.categories ?? adapter.categories)],
-        capabilities: [...(implementation?.capabilities ?? adapter.capabilities)],
-        implemented,
-        enabled: Boolean(adapter.enabled && implemented),
-      };
-    }),
+    version: parsed.version,
+    updatedAt: "updatedAt" in parsed && typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
+    adapters,
   };
 }
 
@@ -65,13 +73,29 @@ export async function readConfig(env: Env): Promise<SourcesConfig> {
     typeof parsed !== "object" ||
     parsed === null ||
     !("version" in parsed) ||
+    !Number.isSafeInteger(parsed.version) ||
+    parsed.version < 0 ||
     !("sources" in parsed) ||
-    !Array.isArray(parsed.sources)
+    !Array.isArray(parsed.sources) ||
+    ("updatedAt" in parsed && parsed.updatedAt !== null && typeof parsed.updatedAt !== "string")
   ) {
     throw new Error("Stored source configuration is invalid.");
   }
 
-  return parsed as SourcesConfig;
+  const ids = new Set<string>();
+  const sources = parsed.sources.map((item: unknown) => {
+    const source = validateSource(item);
+    if (!source) throw new Error("Stored source configuration contains an invalid source.");
+    if (ids.has(source.id)) throw new Error("Stored source configuration contains duplicate source IDs.");
+    ids.add(source.id);
+    return source;
+  });
+
+  return {
+    version: parsed.version,
+    updatedAt: "updatedAt" in parsed && typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
+    sources,
+  };
 }
 
 export async function saveAdaptersConfig(
