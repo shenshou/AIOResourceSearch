@@ -136,6 +136,29 @@ test("uses cached metadata without issuing an upstream request", async () => {
   assert.equal(results.length, 1);
 });
 
+test("keeps valid MangaDex results when cache lookup and write fail", async () => {
+  let fetchCount = 0;
+  const cache = {
+    match: async () => { throw new Error("cache unavailable"); },
+    put: async () => { throw new Error("cache write unavailable"); },
+  } as unknown as Cache;
+
+  const results = await mangaDexProvider.search(
+    { query: "Dorohedoro", mode: "keyword" },
+    context(async () => {
+      fetchCount += 1;
+      return new Response(JSON.stringify(payload), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }, cache),
+  );
+
+  assert.equal(fetchCount, 1);
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.title, "Dorohedoro");
+});
+
 test("rejects unexpected response content types and malformed envelopes", async () => {
   await assert.rejects(
     mangaDexProvider.search(
