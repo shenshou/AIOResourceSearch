@@ -385,3 +385,35 @@ test("accepts The RarBg anonymous lane with a conservative 2.1-second interval",
   assert.equal(bindings[1]?.[3], 2_100);
   assert.equal(bindings[1]?.[4], 2_100);
 });
+
+
+test("honors The RarBg daily quota reset header", async () => {
+  let cooldownUntil = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { until: number };
+    cooldownUntil = body.until;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "therarbg",
+    new AbortController().signal,
+    async () => new Response("daily quota exhausted", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining-Day": "0",
+        "X-RateLimit-Reset-Day": "120",
+      },
+    }),
+  );
+
+  await coordinatedFetch("https://therarbg.com/api/v1/search/");
+  assert.ok(cooldownUntil >= Date.now() + 118_000);
+  assert.ok(cooldownUntil <= Date.now() + 121_000);
+});

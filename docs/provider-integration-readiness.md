@@ -329,4 +329,4 @@ References:
 - Validates the 40-character infohash and requires the Magnet URI's BTIH to match it; detail links must be HTTPS on `therarbg.com` under `/post-detail/`. No Magnet is synthesized.
 - No images, torrent-file downloads, detail-page scraping, TMDB-backed metadata, or account credentials.
 - Focused fixture tests cover category selection, field normalization, hash/Magnet consistency, unsafe detail URLs, and unsupported categories. The Durable Object lane test checks the 2,100 ms reservation interval.
-- **Not enabled:** no KV source/adapter configuration has been created, and no Cloudflare deployment or production changes have been made. Hosted connectivity and actual upstream behavior remain unverified.
+- **Not enabled:** the Provider is registered in Worker code but no KV source/adapter configuration has been created. No Cloudflare deployment or production changes have been made. Hosted connectivity and actual upstream behavior remain unverified. The five content-category source records must be configured separately after deployment and review.
