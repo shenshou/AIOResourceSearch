@@ -113,8 +113,20 @@ export const genericHtmlProvider: ProviderAdapter = {
       throw new Error("HTML source did not return an HTML document.");
     }
 
+    const supportsImage = source.capabilities.includes("image");
+    const supportsMagnet = source.capabilities.includes("magnet");
+    if ((supportsImage && !source.htmlSelectors.image) ||
+        (supportsMagnet && !source.htmlSelectors.magnet)) {
+      throw new Error("HTML source capabilities require matching image or Magnet selectors.");
+    }
+
+    const selectors = {
+      ...source.htmlSelectors,
+      ...(!supportsImage ? { image: undefined } : {}),
+      ...(!supportsMagnet ? { magnet: undefined } : {}),
+    };
     const boundedResponse = await readBoundedHtml(response);
-    const extracted = await parseHtml(boundedResponse, source.htmlSelectors);
+    const extracted = await parseHtml(boundedResponse, selectors);
     const resources = [];
     for (const item of extracted.slice(0, MAX_RESULTS)) {
       const url = resolvePageUrl(item.url, baseUrl);
