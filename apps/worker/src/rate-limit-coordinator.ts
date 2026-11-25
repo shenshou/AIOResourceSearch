@@ -115,7 +115,7 @@ export class RateLimitCoordinator {
       }
 
       // Re-queue a slot if a 429 cooldown was extended after it was reserved.
-      const row = this.ctx.storage.sql.exec<{ scheduled_at: number }>(
+      const rows = Array.from(this.ctx.storage.sql.exec<{ scheduled_at: number }>(
         `UPDATE rate_limit_state
          SET next_allowed_at = MAX(next_allowed_at, cooldown_until, ?) + ?
          WHERE singleton = 1 AND ? < cooldown_until
@@ -124,7 +124,8 @@ export class RateLimitCoordinator {
         LANE_INTERVAL_MS[lane],
         body.scheduledAt,
         LANE_INTERVAL_MS[lane],
-      ).one();
+      ));
+      const row = rows[0];
 
       return json({ scheduledAt: row?.scheduled_at ?? body.scheduledAt });
     }
