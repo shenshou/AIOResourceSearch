@@ -2156,3 +2156,96 @@ References:
 - MangaNelo, MangaKakalot, DMZJ, and MangaSee remain external-only pending first-party API and policy evidence.
 - No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review the eight Atlas novel sources: Z-Library, Anna's Archive, 知轩藏书, 奇书网, SoBooks, Lunarora, PDFs.top, and 读书派.
+
+
+## Individual source audit — thirty-first batch (2026-11-25)
+
+This batch reviews the eight Atlas novel/e-book candidates: Z-Library, Anna's Archive, 知轩藏书, 奇书网, SoBooks, Lunarora, PDFs.top, and 读书派.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Z-Library | Official social account identifies current official domains, but the Atlas URL's exact endpoint/API policy and a public search API were not verified; available EAPI client material is third-party and account-oriented | **No public search API verified** | No scraping, account-cookie use, challenge bypass, or unofficial API |
+| Anna's Archive | Official FAQ says the only stable JSON API is member-only fast-download; custom search requires generating/downloading large ElasticSearch/MariaDB datasets | **Not suitable for this no-database search architecture** | No member download API, bulk dataset ingestion, or torrent metadata mirror |
+| 知轩藏书 | Current `zxcs.zip` explicitly says it is a user-created replacement, not the original site's official new domain; it discourages crawling and offers full dataset by email | **Unofficial successor; no crawler** | No scraping; do not present as original official site |
+| 奇书网 | No current first-party canonical domain, API specification, or acceptable-use policy was verified for the Atlas seed | **Unverified** | No domain substitution or automated access |
+| SoBooks | No current first-party API, terms authorizing automated aggregation, or stable search contract was verified | **Unverified / external-only** | No scraping or unofficial API |
+| Lunarora | No first-party canonical identity, API documentation, or terms for the Atlas seed was verified | **Unverified** | No scraping or domain guessing |
+| PDFs.top | No first-party API specification or metadata-use permission was verified | **Unverified / external-only** | No automated access or file retrieval |
+| 读书派 | Public catalog pages exist, but no first-party public API or permission for third-party metadata aggregation was verified | **External-only** | No scraping, book-file fetching, or unofficial API |
+
+### Source-specific findings
+
+#### Z-Library
+
+The Atlas seed points to `zh.z-library.sk`. Z-Library's official social account has identified `z-library.sk`, `z-lib.sk`, and `z-library.gy` as official domains at the time of its January 2026 notice. However, this does not establish a public third-party metadata search API. The API evidence found for Z-Library is primarily third-party client documentation for authenticated EAPI operations, and some documented domains use anti-bot challenge infrastructure. This project will not use account cookies, browser challenges, or unofficial reverse-engineered endpoints.
+
+Decision: no Worker Provider. Revisit only if Z-Library publishes a first-party public search API and explicit permitted third-party use terms for the exact integration.
+
+References:
+- https://mastodon.social/@Z_Lib_official/115982676684123606
+- https://z-library.sk/
+
+#### Anna's Archive
+
+Anna's Archive's official FAQ says its stable JSON API is for members to obtain a fast download URL. For other uses, including custom search and iterating through files, it recommends generating or downloading its ElasticSearch and MariaDB databases. The FAQ also describes raw torrent lists and bulk distribution. That is not a lightweight public metadata-search API and would introduce bulk dataset replication outside the project's no-database architecture.
+
+Decision: do not use the member download API, bulk datasets, raw torrent lists, or download endpoints. Keep external-only; no bulk mirror of its catalog.
+
+Reference:
+- https://annasarchive.io/faq
+
+#### 知轩藏书
+
+The current `zxcs.zip` About page explicitly states that it is not the official website or a new domain of the original 知轩藏书. It was created by former users from previously saved archives and merged user-preserved data. The operator discourages crawler use because it may overload the server and says users needing the full dataset should contact the site by email.
+
+Decision: do not call it the original official site, do not crawl, and do not fetch its full dataset. If the directory retains the link, label it accurately as a user-created successor/archive.
+
+References:
+- https://zxcs.zip/
+- https://zxcs.zip/about.html
+
+#### 奇书网
+
+The Atlas seed's `qishuxia.com` identity could not be corroborated through a current first-party operator page, API specification, or applicable terms. Similar Chinese book-site names and third-party directories are not sufficient to establish canonical ownership.
+
+Decision: unverified; do not guess replacement domains, follow mirror lists, or automate requests.
+
+#### SoBooks
+
+The Atlas seed points to `sobooks.cc`. This pass did not retrieve a current first-party API specification, acceptable-use policy, or permission for third-party automated metadata aggregation.
+
+Decision: external-only pending first-party documentation. No scraping, unofficial API, or file download.
+
+#### Lunarora
+
+The Atlas seed points to `lunarora.com`. This pass did not verify a first-party canonical service identity, API documentation, or data-use terms for the exact domain.
+
+Decision: unverified; no scraping or domain substitution.
+
+#### PDFs.top
+
+The Atlas seed points to `pdfs.top`. No first-party API contract, metadata license, or permission for automated collection was established.
+
+Decision: external-only; no Worker crawling or file retrieval.
+
+#### 读书派
+
+The official site exposes a public catalog of books and metadata such as title, author, category, and ratings. This review did not find a public developer API, a current automated-access policy, or permission to reuse its metadata in a third-party aggregator. A public page is not an API license.
+
+Decision: external-only. Do not scrape the catalog or fetch ebook files.
+
+Reference:
+- https://www.dushupai.com/
+
+### Batch outcome
+
+- 8 Atlas novel/e-book candidates received individual decisions.
+- No source in this batch was approved for a Worker Provider.
+- Z-Library and Anna's Archive do not expose a suitable public metadata search API for this architecture.
+- 知轩藏书 is explicitly not the original official site and discourages crawlers.
+- 奇书网, SoBooks, Lunarora, and PDFs.top remain unverified.
+- 读书派 remains external-only despite its public catalog.
+- No Provider implementation, source catalog entry, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: reconcile the remaining 63 Atlas seed rows outside the original 57-candidate scope and decide which anime/movie/manga/novel candidates can be safely added to the multi-category source catalog without duplicating already-reviewed entries.
