@@ -17,6 +17,11 @@ const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
   musicbrainz: 1_000,
   mangadex: 400,
 };
+const MAX_COOLDOWN_MS = 86_400_000;
+
+function boundedCooldownUntil(timestamp: number, now: number): number {
+  return Math.min(Math.max(now + 1_000, timestamp), now + MAX_COOLDOWN_MS);
+}
 
 function json(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
@@ -36,16 +41,20 @@ function parseCooldownUntil(response: Response, now: number): number | null {
   const mangaDexRetry = response.headers.get("X-RateLimit-Retry-After");
   if (mangaDexRetry && /^\d+(?:\.\d+)?$/.test(mangaDexRetry)) {
     const timestamp = Number(mangaDexRetry) * 1_000;
-    if (Number.isFinite(timestamp)) return Math.max(now + 1_000, timestamp);
+    if (Number.isFinite(timestamp)) return boundedCooldownUntil(timestamp, now);
   }
 
   const retryAfter = response.headers.get("Retry-After");
   if (retryAfter) {
     if (/^\d+(?:\.\d+)?$/.test(retryAfter)) {
-      return now + Math.max(1_000, Number(retryAfter) * 1_000);
+      const seconds = Number(retryAfter);
+      return boundedCooldownUntil(
+        Number.isFinite(seconds) ? now + seconds * 1_000 : Number.POSITIVE_INFINITY,
+        now,
+      );
     }
     const parsed = Date.parse(retryAfter);
-    if (Number.isFinite(parsed)) return Math.max(now + 1_000, parsed);
+    if (Number.isFinite(parsed)) return boundedCooldownUntil(parsed, now);
   }
 
   return now + 1_000;
