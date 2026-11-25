@@ -45,6 +45,8 @@ export function useSourceManager() {
         operationGeneration += 1;
         reloadSequence += 1;
         session.clear();
+        loading.value = false;
+        saving.value = false;
         sources.value = [];
         etag.value = "";
         revision.value = 0;
@@ -66,7 +68,10 @@ export function useSourceManager() {
       error.value = "请输入管理员令牌。";
       return false;
     }
+    const loginGeneration = operationGeneration;
+    const loginToken = token.value;
     const success = await reload();
+    if (loginGeneration !== operationGeneration || token.value !== loginToken) return false;
     if (success) notice.value = "管理员验证成功。";
     else session.clear();
     return success;
@@ -103,6 +108,7 @@ export function useSourceManager() {
       if (cause instanceof SourceApiError && cause.status === 409) {
         const conflictMessage = "配置已被其他操作更新。已重新载入最新数据，请确认后再操作。";
         await reload();
+        if (generation !== operationGeneration || token.value !== requestToken) return false;
         error.value = conflictMessage;
       } else {
         error.value = cause instanceof Error ? cause.message : "保存失败。";
