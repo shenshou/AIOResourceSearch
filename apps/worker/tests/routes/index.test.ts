@@ -208,3 +208,129 @@ test("admin endpoints report missing server-side token configuration", async () 
   assert.equal(response.status, 503);
   assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "admin_not_configured");
 });
+
+
+test("admin source mutations require an If-Match version", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/admin/sources", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-secret" },
+      body: JSON.stringify({ source: {} }),
+    }),
+    createEnv({}, { adminToken: "test-secret" }),
+  );
+
+  assert.equal(response.status, 428);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "precondition_required");
+});
+
+test("admin source mutations reject stale configuration versions", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/admin/sources", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer test-secret",
+        "If-Match": '"2"',
+      },
+      body: JSON.stringify({ source: {} }),
+    }),
+    createEnv({
+      "sources:config:v1": { version: 3, updatedAt: null, sources: [] },
+    }, { adminToken: "test-secret" }),
+  );
+
+  assert.equal(response.status, 409);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "version_conflict");
+});
+
+test("an adapter referenced by a Provider source cannot be deleted", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/admin/adapters/perverzija-db", {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer test-secret",
+        "If-Match": '"2"',
+      },
+    }),
+    createEnv({
+      "adapters:config:v1": {
+        version: 2,
+        updatedAt: null,
+        adapters: [{
+          id: "perverzija-db",
+          name: "Perverzija DB",
+          description: "Metadata provider",
+          version: "1.0.0",
+          enabled: true,
+          categories: ["jav"],
+          capabilities: ["metadata"],
+        }],
+      },
+      "sources:config:v1": {
+        version: 4,
+        updatedAt: null,
+        sources: [{
+          id: "linked-source",
+          name: "Linked source",
+          category: "jav",
+          type: "provider",
+          adapterId: "perverzija-db",
+          enabled: false,
+          searchModes: ["number"],
+          capabilities: ["metadata"],
+          timeoutMs: 5000,
+        }],
+      },
+    }, { adminToken: "test-secret" }),
+  );
+
+  assert.equal(response.status, 409);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "adapter_in_use");
+});
+
+test("an adapter with enabled linked sources cannot be disabled", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/admin/adapters/perverzija-db", {
+      method: "PATCH",
+      headers: {
+        Authorization: "Bearer test-secret",
+        "If-Match": '"2"',
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ adapter: { enabled: false } }),
+    }),
+    createEnv({
+      "adapters:config:v1": {
+        version: 2,
+        updatedAt: null,
+        adapters: [{
+          id: "perverzija-db",
+          name: "Perverzija DB",
+          description: "Metadata provider",
+          version: "1.0.0",
+          enabled: true,
+          categories: ["jav"],
+          capabilities: ["metadata"],
+        }],
+      },
+      "sources:config:v1": {
+        version: 4,
+        updatedAt: null,
+        sources: [{
+          id: "linked-source",
+          name: "Linked source",
+          category: "jav",
+          type: "provider",
+          adapterId: "perverzija-db",
+          enabled: true,
+          searchModes: ["number"],
+          capabilities: ["metadata"],
+          timeoutMs: 5000,
+        }],
+      },
+    }, { adminToken: "test-secret" }),
+  );
+
+  assert.equal(response.status, 409);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "adapter_has_enabled_sources");
+});
