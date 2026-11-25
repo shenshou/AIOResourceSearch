@@ -110,6 +110,7 @@ The published initial global limit is 5 requests/second per source IP, with addi
 
 Official references:
 - https://api.mangadex.org/docs/
+- https://gitlab.com/mangadex-pub/mangadex-api-docs/-/raw/main/static/api.yaml
 - https://gitlab.com/mangadex-pub/mangadex-api-docs/-/blob/main/index.md
 - https://gitlab.com/mangadex-pub/mangadex-api-docs/-/blob/main/rate-limits.md
 
