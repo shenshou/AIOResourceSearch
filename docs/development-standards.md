@@ -49,6 +49,8 @@ This document defines the implementation and review standards for AIOResourceSea
 - Administrator authorization must remain server-side. Secrets belong in Worker secrets; never expose them through public responses, KV configuration, logs, or browser persistence.
 - Public source/adapter responses must continue filtering private operator notes and credential-binding metadata.
 - Provider implementations must be registered in the compile-time registry. KV metadata must never execute or dynamically load arbitrary code.
+- For a registered implementation, mechanism, version, supported source categories, content categories, and capabilities are implementation-owned facts. Normalize these fields from the registry when reading or validating adapter metadata; KV may manage descriptive/admin fields and enabled state, but must not override runtime capabilities.
+- A source's declared capabilities must match the fields its configuration can actually extract. For generic HTML, image and Magnet capabilities require their corresponding selectors, and undeclared optional fields must not be returned even if a parser supplies them.
 - Each Provider must validate upstream status, response shape, result URLs, and supported resource links; apply bounded response sizes, timeouts, and safe redirect handling appropriate to its protocol.
 - Provider failures must be isolated so one unavailable source does not fail the entire search.
 - Do not bypass authentication, paywalls, CAPTCHA, anti-bot challenges, geo restrictions, rate limits, or other access controls.
