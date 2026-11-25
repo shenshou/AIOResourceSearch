@@ -2317,3 +2317,14 @@ Not approved or external-only under current evidence:
 - Atlas SQL: 119/119 rows accounted for across the original subset and the multi-category review.
 - Current source catalog remains 91 unique candidate records; no automatic expansion was made from the 63 reviewed rows.
 - No new Provider implementation, KV configuration, source enablement, or Cloudflare deployment was performed.
+
+
+## API integration readiness review — 2026-11-25
+
+The current official contracts were rechecked and a separate implementation-readiness document was added at `docs/provider-integration-readiness.md`.
+
+- **Bangumi:** `POST /v0/search/subjects` is explicitly marked experimental in the current official OpenAPI schema. Stable `GET /v0/subjects` is a browse/list endpoint requiring a subject type, not an arbitrary keyword-search replacement. Decision remains deferred; do not build a search Provider against the experimental endpoint.
+- **MangaDex:** public `GET /manga` is the viable metadata search contract. Official AUP requires attribution and prohibits ads/paid services. The documented initial global limit is 5 requests/second per source IP, with endpoint-specific quotas and `X-RateLimit-*` headers. A shared 400 ms lane (2.5 requests/second application-wide) remains a conservative implementation target. Conditional implementation candidate; metadata and official detail links only, no chapter content/reader.
+- **MangaUpdates:** official docs list public `POST /series/search` and say most endpoints need no account; AUP requires attribution, spacing, caching and prohibits use assisting illegal actions. Since this product also aggregates torrent indexes, metadata-only use still needs written scope clarification. Defer implementation until the operator confirms this integrated product use is acceptable.
+- **Correction to rate-limit wording:** MusicBrainz's current official documentation describes the numeric 1 request/second limit as average per source IP (unless otherwise agreed), not as a literal per-client-app numeric quota. The proposed app-wide 1-second lane is a stricter project control that coordinates requests across Worker instances. The detailed rate-limit document has been corrected accordingly.
+- No source catalog record, Provider code, KV config, Durable Object binding, source enablement, or deployment was added.
