@@ -70,6 +70,8 @@ Acceptance:
 - [x] Make registered Provider mechanism/version/categories/capabilities authoritative over editable KV metadata.
 - [x] Bind generic HTML image and Magnet extraction to each source's declared capabilities and configured selectors.
 - [x] Propagate client cancellation to active Provider requests and retain per-source timeout isolation.
+- [x] Guard cache reads, upstream response parsing, and cache writes against cancelled/timed-out Provider work.
+- [x] Document cache-key completeness, explicit TTLs, edge-local cache behavior, and the absence of distributed request coalescing/rate limiting.
 - [x] Enforce declared capabilities during result normalization, not only during adapter resolution.
 - [x] Preserve source attribution and merge missing metadata/resource links when canonical URLs deduplicate.
 - [x] Validate persisted KV configuration envelopes and individual records when reading them; reject malformed records and duplicate IDs.
