@@ -63,7 +63,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | r/JAV | Atlas | 有上游搜索模板，需复核 |
 | SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-## BT / Torrent（20）
+## BT / Torrent（21）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -85,7 +85,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | YourBittorrent | AIOResourceSearch | 已实现免费 JSON Provider；同时保留原站首页入口 |
 | Bitsearch | AIOResourceSearch | 仅首页入口；API 数据再展示许可待确认 |
 | XXXClub | Atlas | 仅首页入口或 URL 待补 |
-| Nyaa | AIOResourceSearch | 动漫分类；仅原站首页入口，自动化访问待审查 |\n| DMHY | AIOResourceSearch | 官方关键词 RSS；Provider 已实现，待 Hosted 验证 |
+| Nyaa | AIOResourceSearch | 动漫分类；仅原站首页入口，自动化访问待审查 |
+| DMHY | AIOResourceSearch | 官方关键词 RSS；Provider 已实现，待 Hosted 验证 |
 | Shana Project | AIOResourceSearch | 动漫分类；仅原站首页入口，公开 RSS 非查询型 |
 
 ## 论坛（16）
@@ -145,6 +146,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 ## 补充跨分类来源
 
+- DMHY：官方 FAQ 明确提供关键词 RSS；Provider 已实现，仍需 Cloudflare Hosted 可达性、请求节奏及内容合规复核，保持禁用。
 - Nyaa：动漫 BT 索引入口，仅提供用户主动访问的首页链接；未完成精确域名的自动化访问政策、robots 与 Worker 可达性审查，不实现抓取。
 - Shana Project：官网帮助页公开说明其站点 RSS 只包含最近 50 条发布；个人私有 RSS 是账户持有人的安全订阅，不得作为共享数据源。由于公开 RSS 不是关键词检索接口，暂只提供原站入口。
 

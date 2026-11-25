@@ -12,32 +12,32 @@ function decodeXml(value: string): string {
     return String.fromCodePoint(codePoint);
   };
   return value
-    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#(\\d+);/g, (_match, code: string) => decodeCodePoint(code, 10))
-    .replace(/&#x([\\da-f]+);/gi, (_match, code: string) => decodeCodePoint(code, 16))
+    .replace(/&#(\d+);/g, (_match, code: string) => decodeCodePoint(code, 10))
+    .replace(/&#x([\da-f]+);/gi, (_match, code: string) => decodeCodePoint(code, 16))
     .trim();
 }
 
 function readTag(xml: string, tagName: string): string {
-  const escaped = tagName.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
+  const escaped = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = new RegExp(
-    `<(?:[\\\\w.-]+:)?${escaped}(?:\\\\s[^>]*)?>([\\\\s\\\\S]*?)<\\\\/(?:[\\\\w.-]+:)?${escaped}\\\\s*>`,
+    `<(?:[\\w.-]+:)?${escaped}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[\\w.-]+:)?${escaped}\\s*>`,
     "i",
   ).exec(xml);
   return match ? decodeXml(match[1]) : "";
 }
 
 function readAttribute(xml: string, tagName: string, attributeName: string): string {
-  const escapedTag = tagName.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
-  const escapedAttribute = attributeName.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
-  const tag = new RegExp(`<(?:[\\\\w.-]+:)?${escapedTag}\\\\b([^>]*)/?>`, "i").exec(xml);
+  const escapedTag = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedAttribute = attributeName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const tag = new RegExp(`<(?:[\\w.-]+:)?${escapedTag}\\b([^>]*)/?>`, "i").exec(xml);
   if (!tag) return "";
-  const attribute = new RegExp(`(?:^|\\\\s)${escapedAttribute}\\\\s*=\\\\s*(?:"([^"]*)"|'([^']*)')`, "i").exec(tag[1]);
+  const attribute = new RegExp(`(?:^|\\s)${escapedAttribute}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, "i").exec(tag[1]);
   return attribute ? decodeXml(attribute[1] ?? attribute[2] ?? "") : "";
 }
 
@@ -72,7 +72,7 @@ function canonicalDetailUrl(value: string): string | null {
       !["http:", "https:"].includes(url.protocol) ||
       url.hostname.toLowerCase() !== FEED_HOST ||
       url.username || url.password ||
-      !/^\\/topics\\/view\\/\\d+_[^/]+\\.html$/i.test(url.pathname)
+      !/^\/topics\/view\/\d+_[^/]+\.html$/i.test(url.pathname)
     ) return null;
     url.protocol = "https:";
     url.hash = "";
@@ -96,14 +96,14 @@ function validMagnet(value: string): string | null {
 }
 
 function parseItems(xml: string, query: string): NormalizedResource[] {
-  if (!/<rss\\b[^>]*>[\\s\\S]*<channel\\b[^>]*>/i.test(xml) ||
-      !/<\\/channel\\s*>[\\s\\S]*<\\/rss\\s*>/i.test(xml)) {
+  if (!/<rss\b[^>]*>[\s\S]*<channel\b[^>]*>/i.test(xml) ||
+      !/<\/channel\s*>[\s\S]*<\/rss\s*>/i.test(xml)) {
     throw new Error("DMHY returned an invalid RSS document.");
   }
 
   const searchUrl = new URL("https://share.dmhy.org/topics/list");
   searchUrl.searchParams.set("keyword", query);
-  const items = xml.match(/<item\\b[\\s\\S]*?<\\/item>/gi) ?? [];
+  const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
 
   return items.flatMap((item) => {
     const title = readTag(item, "title").trim();
@@ -112,7 +112,7 @@ function parseItems(xml: string, query: string): NormalizedResource[] {
     const magnetUri = validMagnet(readAttribute(item, "enclosure", "url"));
     if (!title || !detailUrl || !magnetUri) return [];
 
-    const id = detailUrl.match(/\\/topics\\/view\\/(\\d+)_/)?.[1] ??
+    const id = detailUrl.match(/\/topics\/view\/(\d+)_/)?.[1] ??
       magnetUri.match(/urn:btih:([^&]+)/i)?.[1] ??
       magnetUri;
     const published = readTag(item, "pubDate");
