@@ -30,17 +30,25 @@ function boundedString(value: unknown, maxLength: number): string | undefined {
 
 function parseArtistCredit(value: unknown): string | undefined {
   if (!Array.isArray(value)) return undefined;
-  const names: string[] = [];
-  for (const item of value.slice(0, 20)) {
+  let result = "";
+  const credits = value.slice(0, 20);
+  for (let index = 0; index < credits.length; index += 1) {
+    const item = credits[index];
     if (!item || typeof item !== "object") continue;
     const credit = item as Record<string, unknown>;
     const artist = credit.artist && typeof credit.artist === "object"
       ? credit.artist as Record<string, unknown>
       : undefined;
     const name = boundedString(credit.name, 200) ?? boundedString(artist?.name, 200);
-    if (name) names.push(name);
+    if (!name) continue;
+    result += name;
+    if (typeof credit.joinphrase === "string" && credit.joinphrase.length <= 80) {
+      result += credit.joinphrase;
+    } else if (index < credits.length - 1) {
+      result += " ";
+    }
   }
-  return names.length ? names.join("").slice(0, 500) : undefined;
+  return result.trim().slice(0, 500) || undefined;
 }
 
 function parseFirstReleaseDate(value: unknown): {

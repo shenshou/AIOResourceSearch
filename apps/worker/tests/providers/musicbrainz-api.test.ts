@@ -91,6 +91,26 @@ test("uses the documented release-group JSON search contract and maps core metad
   assert.equal(results[0]?.imageUrl, undefined);
 });
 
+test("preserves MusicBrainz artist-credit join phrases", async () => {
+  const multiArtist = {
+    "release-groups": [{
+      id: releaseGroupId,
+      title: "Collaboration",
+      "artist-credit": [
+        { artist: { name: "Artist One" }, joinphrase: " & " },
+        { artist: { name: "Artist Two" } },
+      ],
+    }],
+  };
+  const results = await musicBrainzProvider.search(
+    { query: "Collaboration", mode: "keyword" },
+    context(async () => new Response(JSON.stringify(multiArtist), {
+      headers: { "Content-Type": "application/json" },
+    })),
+  );
+  assert.equal(results[0]?.metadata?.artist, "Artist One & Artist Two");
+});
+
 test("preserves full-precision release dates but does not invent a day for partial dates", async () => {
   const fullDate = {
     "release-groups": [{
