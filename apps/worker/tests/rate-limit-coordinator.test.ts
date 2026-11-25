@@ -256,3 +256,36 @@ test("uses one atomic SQLite UPSERT for reservation and rejects unknown lanes", 
   }));
   assert.equal(invalid.status, 400);
 });
+
+test("persists an upstream cooldown even if the client cancels after the response", async () => {
+  const controller = new AbortController();
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    calls.push(path);
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    assert.equal(request.signal.aborted, false);
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    controller.signal,
+    async () => {
+      const response = new Response("rate limited", {
+        status: 429,
+        headers: { "Retry-After": "2" },
+      });
+      controller.abort(new DOMException("Client disconnected.", "AbortError"));
+      return response;
+    },
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
