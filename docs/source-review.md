@@ -664,3 +664,53 @@ Decision: remove the unverified search template. Keep SupJAV unverified and do n
 - SupJAV remains unverified; a terms document hosted on a different domain was not misrepresented as canonical.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Remaining search templates should now be reviewed individually: JAV.guru (personal/non-commercial external link), r/JAV (external-search only), and YourBittorrent (implemented Provider fallback).
+
+
+## Individual source audit — eighth batch (2026-11-25)
+
+This batch reviewed four torrent-directory candidates: 141PPV, BTSOW, Empornium, and iJavTorrent. The decisions distinguish public UI visibility, mirror announcements, and third-party indexer metadata from canonical automation permission.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| 141PPV | A third-party RSSHub route reference points to https://141ppv.com/feeds/ and says the site's official feed does not support BT-download subscriptions; direct feed details and current terms were not verified | **Feed candidate; insufficient evidence for integration** | Keep homepage-only; do not implement RSS/API fetching until the exact feed format, content fields, and policy are verified |
+| BTSOW | The catalog's btsow.com URL redirects to tellme.pw/btsow, which lists btsow.live and the old domain; no canonical operator-controlled mirror or current terms were verified | **Legacy domain / mirror provenance unresolved** | Keep only the existing directory reference; do not silently switch to third-party-listed mirrors or automate access |
+| Empornium | Official status page lists empornium.sx online; the old .is domain is retired. Jackett identifies Empornium as a private tracker | **Current destination verified; private access only** | Update external destination to www.empornium.sx; no anonymous or authenticated Worker integration, account-cookie handling, or scraping |
+| iJavTorrent | Public homepage exposes search/filter controls and torrent metadata; no canonical current Terms, documented API, or verified search URL was found | **Public UI visible; automation policy/interface unverified** | Keep user-initiated external search only; no Worker fetching or metadata extraction pending policy and interface verification |
+
+### Source-specific findings
+
+#### 141PPV
+
+The catalog points to 141ppv.com. The research fetcher could not retrieve the site's /feeds/ page directly. RSSHub's third-party route documentation references https://141ppv.com/feeds/ as the official feed page and explicitly notes that the official feed does not support BT-download subscriptions. This is useful discovery evidence, but it does not establish the exact current feed format, which metadata fields are exposed, or permission for this product to republish feed data. A third-party reputation scan also reports one security-provider warning out of 26 displayed sources; that is not a definitive malware verdict, but it is a reason for caution before any server-side fetch.
+
+Decision: retain the homepage reference only. Do not implement an RSS/API Provider until the official feed can be inspected directly and its terms/content scope reviewed. Do not treat an RSSHub route as an official 141PPV API.
+
+#### BTSOW
+
+The catalog's btsow.com URL now redirects the research browser to tellme.pw/btsow, a directory-style page that lists btsow.live and btsow.com as destinations. A separate btsow.icu search result also describes itself as BTSOW and lists bt1.btsow.me/bt2.btsow.me, but no canonical operator announcement tying these mirror domains to the catalog's original domain was verified. The redirect directory and search results are not sufficient to establish current operator control, policy, or a stable search contract.
+
+Decision: do not rewrite the catalog to btsow.live, btsow.icu, or btsow.me based on third-party mirror listings. Keep the old entry as an unverified directory reference only; no Worker fetching or HTML parsing.
+
+#### Empornium
+
+The catalog previously pointed to empornium.is. The current status page hosted at about.empornium.sx lists empornium.sx as online and emparadise.rs as online, while the older .is domain is no longer the current site. Jackett's current indexer definition identifies Empornium as a private torrent tracker and lists https://www.empornium.sx/ as the active site URL, with .is as a legacy link. A January 2026 Jackett issue also records that the .is domain was retired and the .sx domain was active.
+
+Decision: update the external destination to https://www.empornium.sx. Because it is a private tracker, do not build an anonymous Provider or handle user credentials, cookies, invite-only access, or authenticated search. This change only corrects the directory destination; it does not add a Provider.
+
+#### iJavTorrent
+
+The canonical homepage is reachable and exposes a search/filter UI for title, actress, or code, along with listing metadata and magnet links. The page footer states that the site does not host video files and that links are uploaded/shared by others; this disclaimer does not grant permission to scrape, copy, or republish the site's metadata. No canonical Terms of Service, documented API, or verifiable ordinary public search URL was found in the reviewed page. The site's articles page also says it collects articles from other websites and links back to sources, but that statement is not an authorization for third-party automation.
+
+Decision: retain only a user-initiated external-search entry. Do not implement Worker fetching, HTML parsing, magnet extraction, or metadata redistribution until the operator publishes a clear policy and a stable public interface.
+
+### Batch outcome
+
+- 4 torrent candidates received source-specific decisions.
+- Empornium's stale .is destination was corrected to its current .sx site, based on its status page and current indexer metadata.
+- 141PPV's feed page is a possible future source, but its direct contents and policy remain unverified.
+- BTSOW mirror domains were not substituted based on unofficial directory/search results.
+- iJavTorrent remains external-search only; public page visibility is not treated as automation permission.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review forum candidates in small groups, prioritizing domains with a clearly identifiable canonical operator and public RSS/API documentation.
