@@ -129,7 +129,7 @@ test("GET /api/sources exposes enabled sources without private configuration fie
             category: "jav",
             enabled: false,
             searchModes: ["number"],
-            capabilities: [],
+            capabilities: ["metadata"],
             timeoutMs: 5000,
           },
         ],
