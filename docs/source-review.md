@@ -1417,3 +1417,36 @@ Decision: retain user-initiated external access only. Do not implement Worker sc
 - NextJAV's current DNS indicates parking; no replacement domain was guessed.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review TorrentKitty and XXXClub, then reconcile the remaining Atlas torrent entries against the original Atlas seed list and current catalog.
+
+
+## Individual source audit — twenty-third batch (2026-11-25)
+
+This batch reviewed the final two Atlas torrent-directory candidates: TorrentKitty and XXXClub.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| TorrentKitty | TorrentKitty-branded .net page lists .tv/.cam/.ink as permanent domains but describes a torrent-file-to-magnet conversion service; a separate .app Terms page was not confirmed to govern .tv | **External destination only; policy/search contract unresolved** | No Worker search scraping or magnet harvesting |
+| XXXClub | Domain is registered; third-party indexer logs show a public /torrents/search route, but canonical homepage returns HTTP 403 and no first-party Terms/API/automation permission was verified | **Public indexer evidence; policy unresolved** | External-only; no scraping, undocumented endpoint use, or challenge bypass |
+
+### Source-specific findings
+
+#### TorrentKitty
+
+The catalog points to https://www.torrentkitty.tv. A TorrentKitty-branded site at torrentkitty.net describes a torrent-file-to-magnet conversion service and lists torrentkitty.tv, torrentkitty.cam, and torrentkitty.ink as permanent domains. This supports the relationship between the brand and the .tv destination, but the .net page does not provide a documented public search API. A Terms/Copyright page found at tw.torrentkitty.app describes a search index that gathers information from public websites and has a DMCA metadata-removal process, but it is hosted on a different domain; this review did not establish that it is the canonical policy governing torrentkitty.tv. Third-party client code shows historical search routes, but client code is not operator authorization.
+
+Decision: retain the existing .tv destination for user-initiated external access only. Do not implement Worker search scraping or magnet harvesting until the exact .tv policy and supported search contract are verified. Do not switch to .cam or .ink without first-party confirmation of current domain status.
+
+#### XXXClub
+
+The catalog points to xxxclub.to. Current WHOIS records show the domain registered through 2027. The research fetcher receives HTTP 403 from the canonical homepage. Third-party indexer issue logs from March 2026 show a public `/torrents/search` route returning HTTP 200 to that indexer's client, and an earlier Jackett request describes it as a public tracker. Those are technical observations from third-party clients, not first-party API documentation or permission to collect and republish metadata. A third-party reputation service flags the site as suspicious; this is not a definitive malware verdict but supports caution. No canonical Terms, public API policy, or automation permission was verified.
+
+Decision: retain user-initiated external access only. Do not use the undocumented route, implement Worker scraping, or attempt cookie/proxy/challenge workarounds. Revisit only after first-party Terms and an authorized public interface are available.
+
+### Batch outcome
+
+- 2 final Atlas torrent candidates received source-specific decisions.
+- TorrentKitty's cross-domain Terms were not misrepresented as definitely applying to torrentkitty.tv.
+- XXXClub's third-party indexer route was recorded as technical evidence only, not authorization.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
