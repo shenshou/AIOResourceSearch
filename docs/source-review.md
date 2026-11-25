@@ -2382,3 +2382,12 @@ References:
 - **Current runtime limitation:** the shared source contract has a `credentialBinding` metadata field, but the current Worker `Env` and `ProviderContext` do not yet expose a generic credential store to Provider implementations. Therefore, authenticated sources can be researched and cataloged, but must not be implemented as runnable Providers until a secure credential-injection path is designed and reviewed.
 - Never put passwords, session cookies, API keys, or OAuth client secrets in source catalog entries, ordinary KV source records, public API responses, browser storage, or logs. The eventual implementation must use Worker-side secrets, scope credentials to the intended source/host, and define rotation/expiry and failure behavior.
 - Do not automate interactive login flows, defeat CAPTCHA/anti-bot checks, reuse stolen/shared sessions, bypass paywalls, or evade account/region/rate restrictions.
+
+
+## Access-control bypass deferral rule — 2026-11-25
+
+- A source that requires bypassing CAPTCHA, anti-bot challenges, Cloudflare challenge pages, paywalls, login gates not legitimately available to the operator, geo/IP restrictions, or published rate limits is **not an active development target**.
+- Such sources and techniques belong in [deferred-source-backlog.md](./deferred-source-backlog.md), not the runnable Provider catalog. Record the specific blocker and a concrete reconsideration condition (official API, permitted account access, explicit authorization, or the source removing the restriction).
+- This is not a blanket ban on login. Ordinary free-account authentication is eligible where the source's rules permit automated use and the account holder legitimately controls the credential.
+- Do not reuse private personal feeds as shared search APIs. Do not automate interactive login or CAPTCHA solving.
+- The current Worker now supports source-scoped credential injection through a named Worker Secret binding. A configured but missing secret fails closed before the Provider makes an upstream request. Provider-specific auth headers/cookies still require a reviewed implementation and must be restricted to the source's canonical host.
