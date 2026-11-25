@@ -207,3 +207,11 @@ test("validateAdapter removes duplicate categories and capabilities for unimplem
   assert.deepEqual(result.categories, ["jav"]);
   assert.deepEqual(result.capabilities, ["metadata"]);
 });
+
+
+test("validateSource accepts only dedicated source credential binding names", () => {
+  assert.equal(validateSource(source({ credentialBinding: "SOURCE_CREDENTIAL_EXAMPLE" }))?.credentialBinding, "SOURCE_CREDENTIAL_EXAMPLE");
+  assert.equal(validateSource(source({ credentialBinding: "ADMIN_API_TOKEN" })), null);
+  assert.equal(validateSource(source({ credentialBinding: "SOURCES_KV" })), null);
+  assert.equal(validateSource(source({ credentialBinding: "OTHER_SECRET" })), null);
+});
