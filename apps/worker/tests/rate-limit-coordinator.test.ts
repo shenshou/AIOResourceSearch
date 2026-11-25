@@ -320,3 +320,36 @@ test("caps an upstream Retry-After value at the coordinator's maximum cooldown",
   assert.ok(cooldownUntil <= startedAt + 86_400_000 + 1_000);
   assert.ok(cooldownUntil >= startedAt + 86_400_000 - 1_000);
 });
+
+
+test("accepts the dedicated AniBT lane for coordinated public Torznab requests", async () => {
+  const statements: string[] = [];
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          statements.push(query);
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "anibt" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.match(statements[1] ?? "", /INSERT INTO rate_limit_state/i);
+  assert.equal(bindings[1]?.[1], 1_100);
+  assert.equal(bindings[1]?.[3], 1_100);
+  assert.equal(bindings[1]?.[4], 1_100);
+});
