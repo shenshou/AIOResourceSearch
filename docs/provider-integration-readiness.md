@@ -207,3 +207,34 @@ This is a generic transport boundary, not a universal login automation engine. P
 - Maps only safe same-host release details (when supplied), the official torrent download URL, publication date, size, seeders, and peers. No magnet URI is inferred.
 - Public Torznab integration is explicitly documented for third-party indexer clients, but broad republication terms are not separately stated. Keep disabled until project content-policy review and non-production Cloudflare connectivity verification pass.
 - No private RSS token, group API key, account session, publishing endpoint, KV config, source enablement, or deployment is included.
+
+
+## 5. Additional cross-category API candidates — 2026-11-25
+
+The following candidates were reviewed against official API documentation and current use restrictions. They are not yet registered in the runtime catalog.
+
+### IGDB — conditional game metadata candidate
+
+- Official endpoint: `POST https://api.igdb.com/v4/games`, using the APICalypse request body (for example, `search "query"; fields name,summary,url,first_release_date,genres.name,platforms.name; limit 20;`).
+- The API is free for non-commercial projects. Commercial usage requires a partnership; the API docs describe commercial partnership as free but require contacting IGDB and user-facing attribution. This project must remain non-commercial unless a partnership is obtained.
+- Authentication requires a free Twitch account with 2FA, a registered confidential application, Client ID and Client Secret, and OAuth client-credentials token issuance. Access tokens have an expiry and must be refreshed.
+- Official limits: 4 requests/second and up to 8 concurrent requests. Use a shared lane and respect 429 responses; do not parallelize around limits.
+- Proposed scope: game metadata only; no images in the first version. Consider excluding IGDB's documented erotic theme (theme ID 42) from this general games metadata source to avoid mixing adult-game metadata into the game category.
+- **Decision: conditional candidate, not implemented.** Before coding, define a safe source-scoped credential representation for Client ID + Client Secret, token caching/refresh and expiry handling, and the Worker secret rotation procedure. Do not store credentials or OAuth tokens in KV or browser storage. Do not ask the operator to paste credentials into chat; use the established Worker Secret provisioning process when implementation is approved.
+- Official references: https://api-docs.igdb.com/ and https://www.twitch.tv/p/en/legal/developer-agreement/
+
+### AniList — defer pending scope clarification
+
+- Official public GraphQL endpoint: `POST https://graphql.anilist.co`; public search can be anonymous.
+- The API documentation currently states a normal rate limit of 90 requests/minute, while also warning that a temporary degraded state may reduce it to 30 requests/minute. The implementation would need to honor response headers and 429 cooldowns.
+- The terms prohibit use in competing, non-complementary services of the same nature, explicitly including anime/manga list or tracker services. This project is a multi-source resource-search aggregator, not a tracker, but its anime/manga discovery scope makes compatibility uncertain.
+- **Decision: do not implement until AniList confirms in writing that metadata search in this product is permitted.** No assumption that “metadata only” automatically resolves the product-scope restriction.
+- References: https://docs.anilist.co/guide/terms-of-use, https://docs.anilist.co/guide/graphql/, https://github.com/AniList/docs/blob/master/docs/guide/rate-limiting.md
+
+### Excluded or unsuitable APIs
+
+- **TMDB:** free non-commercial API with an API key and attribution, but its official FAQ says API data/images may not be used in connection with pornographic content. The overall product is an adult-resource search aggregator; do not integrate even metadata-only results without an explicit written exception. Reference: https://developer.themoviedb.org/docs/faq
+- **Discogs:** some catalogue fields are CC0, but its API terms prohibit using API content to drive traffic to non-Discogs websites/services. That conflicts with this product's external-resource-linking purpose. Do not integrate without written permission. Reference: https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use
+- **Open Library:** its official API guidance says the API is not intended as a data backend for third-party services; its legacy search API is deprecated and the current Search API is described as experimental. Do not implement a Worker Provider unless Open Library confirms the intended use and a stable search contract. Reference: https://openlibrary.org/developers/api
+- **Kitsu (CGWire):** the current Kitsu API is for animation/VFX production tracking and requires JWT authentication; it is not a consumer anime/manga catalogue. Not applicable. Reference: https://api-docs.kitsu.cloud/
+

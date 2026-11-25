@@ -2431,3 +2431,32 @@ References:
   - Canonical site listing and RSS announcement: https://www.tokyotosho.info/
   - Example current listing indexed by search: https://www.tokyotosho.info/?cat=10&date=2026-08-31
 
+
+
+## Additional cross-category API candidates — 2026-11-25
+
+This section records official API candidates reviewed while expanding beyond the current JAV/torrent source set. These candidates are not part of the 97-entry upstream-derived catalog and are not automatically registered.
+
+| Candidate | Category | Evidence-based decision |
+|---|---|---|
+| IGDB | Game | **Conditional Provider candidate.** Official API is free for non-commercial use and supports server-side game search. It requires a Twitch account with 2FA, a registered confidential application, Client ID and Client Secret, and OAuth client-credentials access tokens. Tokens expire and must be refreshed; the project must design a safe token lifecycle and source-scoped secret handling before implementation. Official quota is 4 requests/second and at most 8 concurrent requests. Keep unregistered until credential lifecycle and current Twitch Developer Service Agreement conditions are reviewed. |
+| AniList | Anime / manga metadata | **Deferred pending scope clarification.** Public GraphQL API is free and anonymous, but its terms prohibit use in competing, non-complementary services of the same nature, including anime/manga list or tracker services. AIOResourceSearch is a multi-source resource-search product rather than a tracker, but its anime/manga discovery functionality makes the boundary insufficiently clear. Do not assume compatibility; seek written clarification before Provider implementation. |
+| TMDB | Film / TV metadata | **Not eligible for this product's current scope.** The API is free for non-commercial use with an API key and attribution, but its official FAQ prohibits using its data/images in connection with pornographic content. Because the overall product is an adult-resource search aggregator, metadata-only use does not reliably remove that product-context restriction. Do not integrate. |
+| Discogs | Music metadata | **Not eligible for current external-resource search use.** Some catalog fields are CC0, but its API terms prohibit using API content to drive traffic to non-Discogs websites or services. This product's purpose includes linking users to external resource destinations, so the intended use conflicts with that restriction. Do not integrate without written permission. |
+| Open Library | Books / novels | **Deferred; unsuitable as a backend under current guidance.** The official API provides search, but its current usage guidance says the APIs are not intended as a data backend for third-party services and prioritizes human-centered, time-sensitive lookup. The legacy search endpoint is deprecated and the current Search API is described as experimental. Keep out of Provider implementation unless Open Library confirms this product's use is acceptable and a stable search contract is available. |
+| Kitsu (CGWire) | Not a consumer anime catalog | **Not applicable.** The current official Kitsu API documentation describes an animation/VFX production-management system and requires JWT authentication. It is not a public anime/manga metadata catalogue; do not confuse it with similarly named consumer anime databases. |
+
+### Official references
+
+- IGDB API account, authentication, and rate limits: https://api-docs.igdb.com/
+- IGDB FAQ and non-commercial / commercial partnership terms: https://api-docs.igdb.com/
+- AniList API terms: https://docs.anilist.co/guide/terms-of-use
+- AniList GraphQL request guide: https://docs.anilist.co/guide/graphql/
+- AniList rate limits: https://github.com/AniList/docs/blob/master/docs/guide/rate-limiting.md
+- TMDB API FAQ and prohibited-content notice: https://developer.themoviedb.org/docs/faq
+- TMDB search and authentication: https://developer.themoviedb.org/docs/search-and-query-for-details
+- Discogs API Terms of Use: https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use
+- Open Library API usage guidelines: https://openlibrary.org/developers/api
+- Open Library Search API status: https://openlibrary.org/dev/docs/api/search
+- Kitsu API documentation: https://api-docs.kitsu.cloud/
+
