@@ -20,7 +20,7 @@ This document defines the implementation and review standards for AIOResourceSea
 - Shared contracts must not depend on Vue, browser APIs, Cloudflare runtime APIs, or Worker implementation details.
 - The frontend must not import Worker implementation modules. The Worker must not depend on frontend state or UI libraries.
 - Add a dependency only when it solves a concrete requirement. Check existing packages and platform capabilities first; do not introduce duplicate libraries.
-- Keep the agreed stack: Vue 3, TypeScript, Vite, Cloudflare Pages, Cloudflare Workers, and KV. Do not add Pinia, a UI framework, Tailwind, or another test framework solely for consistency with another project.
+- Keep the agreed stack: Vue 3, TypeScript, Vite, Cloudflare Pages, Cloudflare Workers, and KV. Do not add Pinia, a UI framework, Tailwind, or another test framework solely for consistency with another project. A separate Workers Vitest runtime suite is an approved, narrowly scoped exception because Node test doubles cannot verify real `workerd` / SQLite Durable Object behavior; it must not replace or slow down the existing Node unit suite.
 
 ## 3. Module and code organization
 
@@ -87,7 +87,7 @@ This document defines the implementation and review standards for AIOResourceSea
 
 ## 8. Testing and verification
 
-- Keep the current `tsx --test` / Node.js test-runner approach. Do not migrate frameworks without a demonstrated need and an explicit decision.
+- Keep `tsx --test` / Node.js as the default fast unit-test runner. Do not migrate the existing suite. The dedicated `@cloudflare/vitest-plugin` suite is limited to local Workers Runtime / Durable Object integration behavior that Node test doubles cannot establish.
 - Add tests at the layer where behavior is owned:
   - Provider tests for protocol parsing, mapping, URL validation, limits, and failure behavior.
   - Route tests for HTTP methods, validation, status codes, CORS, authorization, public-field filtering, and response contracts.
@@ -96,9 +96,10 @@ This document defines the implementation and review standards for AIOResourceSea
 - For behavior changes, add regression coverage for the affected success and failure paths.
 - Before a change is considered ready, the complete CI suite must pass:
   1. ESLint for frontend, Worker, tests, and shared TypeScript.
-  2. Worker unit tests.
-  3. Frontend production build.
-  4. Worker TypeScript type-check.
+  2. Worker unit tests (`tsx --test`).
+  3. Local Worker Durable Object runtime integration tests (`vitest` / `workerd`).
+  4. Frontend production build.
+  5. Worker TypeScript type-check.
 - Prettier provides the repository formatting configuration and the `npm run format` convenience command. Do not reformat unrelated files; format only the files in the current change when making focused edits. Prettier is not yet a CI gate because the existing codebase has not undergone a deliberate baseline formatting pass.
 - Real Cloudflare integration, HTMLRewriter runtime behavior, KV propagation, and live Provider connectivity are separate verification gates and must be tested in a non-production environment when needed.
 

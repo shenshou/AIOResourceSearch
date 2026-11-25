@@ -65,15 +65,16 @@ Before enabling any rate-limited Provider, still verify in a non-production Clou
 The project deliberately separates three levels of evidence:
 
 1. **Existing Node unit tests** (`tsx --test`) exercise the coordinator wrapper and SQL interaction through test doubles. They remain the fast default suite, but do not execute the Durable Object inside Cloudflare's `workerd` runtime.
-2. **Local Workers runtime integration tests** should use the official Workers Vitest integration (`@cloudflare/vitest-plugin`) with the repository's existing `apps/worker/wrangler.jsonc`. This runs the Worker and Durable Object in the local `workerd` runtime and supports direct Durable Object access, SQLite assertions, and explicit eviction through `cloudflare:test`. Keep this as a separate, opt-in test command; do not replace or slow down the existing Node suite. Before adding the test dependencies, confirm the plugin can consume the current declarative Wrangler `exports` configuration without introducing legacy `migrations` or changing the production binding model.
+2. **Local Workers runtime integration tests** are implemented with the official Workers Vitest integration (`@cloudflare/vitest-plugin`) and the repository's existing `apps/worker/wrangler.jsonc`. This runs the Worker and Durable Object in the local `workerd` runtime and supports direct Durable Object access, SQLite assertions, and explicit eviction through `cloudflare:test`. It is a separate test command (`npm run test:worker:runtime`); it does not replace or slow down the existing Node suite. The current declarative Wrangler `exports` configuration is consumed directly, without legacy `migrations` or changes to the production binding model.
 3. **Hosted non-production Cloudflare verification** remains a separate gate. Local `workerd` tests cannot prove hosted account quotas, deployed namespace/binding configuration, Cloudflare network behavior, or real upstream reachability. Use only a dedicated test Worker, test KV namespace, and test-only secret/origin values. Never attach remote bindings to production resources.
 
-The local runtime suite should cover:
+The local runtime suite covers:
 
 - Many concurrent `/reserve` calls on one lane produce monotonically spaced slots at the configured interval.
 - Different lane IDs remain independent.
 - A cooldown inserted after reservations causes pending slots to be shifted by `/validate`.
 - SQLite timestamp state survives `evictDurableObject()` and reconstruction.
+- A real upstream-style 429 response writes a cooldown through the coordinated-fetch path, and the next reservation observes that persisted cooldown.
 - The actual DO request path accepts and rejects the same payloads as the existing wrapper expects.
 - The existing Node tests continue to cover cancellation and fail-closed behavior when the coordinator binding is missing or errors.
 

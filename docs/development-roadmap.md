@@ -115,7 +115,7 @@ Deliverables:
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
 - [x] Implement the SQLite-backed Durable Object rate-limit coordinator, Worker binding contract, per-Provider lane opt-in, cancellation-aware wait, cooldown handling, and fail-closed fetch wrapper. Keep it dormant until a Provider opts in; see [provider-rate-limiting.md](./provider-rate-limiting.md).
-- [ ] Add a dedicated Workers Vitest integration suite against the existing Wrangler configuration to verify SQLite concurrency, lane isolation, cooldown revalidation, and Durable Object eviction/recovery in the local workerd runtime; retain the existing Node test suite unchanged.
+- [x] Add a dedicated Workers Vitest integration suite against the existing Wrangler configuration; verify SQLite concurrency, lane isolation, cooldown revalidation, upstream 429 cooldown persistence, and Durable Object eviction/recovery in the local workerd runtime while retaining the existing Node test suite unchanged.
 - [ ] Verify hosted Cloudflare binding behavior and Free-plan quota accounting in a separate non-production environment before enabling MangaDex or implementing/enabling MusicBrainz.
 - [x] Prepare API integration readiness analysis for Bangumi, MangaDex, and MangaUpdates in [provider-integration-readiness.md](./provider-integration-readiness.md); record current deferrals and conditions before further implementation or enablement.
 - [x] Implement and register the metadata-only MangaDex Provider; keep it unconfigured in KV and disabled pending runtime verification and policy gates.
@@ -183,6 +183,7 @@ Current branch implementation snapshot:
 | Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
+| Local Workers / Durable Object runtime integration tests | Implemented and passing in CI; hosted Cloudflare verification remains pending |
 | Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 
