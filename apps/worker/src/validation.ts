@@ -81,6 +81,14 @@ export function validateSource(input: unknown): SourceDefinition | null {
   if (typeof value.enabled !== "boolean") return null;
   if (!Array.isArray(value.searchModes) || !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
   if (!Array.isArray(value.capabilities) || !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
+  if (type === "provider" && value.adapterId === "generic-html") {
+    const selectors = value.htmlSelectors as Record<string, unknown>;
+    const declaredCapabilities = value.capabilities as string[];
+    const hasImageSelector = typeof selectors.image === "string" && Boolean(selectors.image.trim());
+    const hasMagnetSelector = typeof selectors.magnet === "string" && Boolean(selectors.magnet.trim());
+    if (declaredCapabilities.includes("image") !== hasImageSelector ||
+        declaredCapabilities.includes("magnet") !== hasMagnetSelector) return null;
+  }
   if (type === "external-search" &&
       (value.capabilities.length > 0 ||
        value.adapterId !== undefined ||
@@ -156,10 +164,14 @@ export function validateAdapter(input: unknown): AdapterDefinition | null {
     description: value.description.trim(),
     mechanism: (implementation?.mechanism ?? value.mechanism ?? "api") as AdapterDefinition["mechanism"],
     contentCategories: (implementation?.contentCategories ?? value.contentCategories ?? ["jav"]) as AdapterDefinition["contentCategories"],
-    version: value.version.trim(),
+    version: implementation?.version ?? value.version.trim(),
     enabled: value.enabled,
-    categories: [...new Set(value.categories as SourceDefinition["category"][])],
-    capabilities: [...new Set(value.capabilities as SourceDefinition["capabilities"])],
+    categories: implementation
+      ? [...implementation.categories]
+      : [...new Set(value.categories as SourceDefinition["category"][])],
+    capabilities: implementation
+      ? [...implementation.capabilities]
+      : [...new Set(value.capabilities as SourceDefinition["capabilities"])],
     implemented,
     ...(typeof value.notes === "string" ? { notes: value.notes } : {}),
   };
