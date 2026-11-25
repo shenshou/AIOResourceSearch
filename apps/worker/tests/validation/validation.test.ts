@@ -184,8 +184,10 @@ test("validateAdapter uses the registered implementation as the source of truth"
   assert.equal(result.version, "1.0.0");
 });
 
-test("validateAdapter removes duplicate categories and capabilities", () => {
+test("validateAdapter removes duplicate categories and capabilities for unimplemented adapters", () => {
   const result = validateAdapter(adapter({
+    id: "planned-adapter",
+    enabled: false,
     categories: ["jav", "jav"],
     capabilities: ["metadata", "metadata"],
   }));
