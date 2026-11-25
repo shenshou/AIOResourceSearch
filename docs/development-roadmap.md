@@ -114,6 +114,8 @@ Deliverables:
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
+- [x] Define the authenticated-source boundary: source-scoped Worker Secret bindings are injected only into the matching Provider; missing secrets fail closed. Free-account authentication is allowed only where ordinary authenticated access is permitted.
+- [x] Create a deferred-source backlog for sources that require access-control bypass; reconsider only after the source changes its access method or grants explicit authorization.
 - [x] Implement the SQLite-backed Durable Object rate-limit coordinator, Worker binding contract, per-Provider lane opt-in, cancellation-aware wait, cooldown handling, and fail-closed fetch wrapper. Keep it dormant until a Provider opts in; see [provider-rate-limiting.md](./provider-rate-limiting.md).
 - [x] Add a dedicated Workers Vitest integration suite against the existing Wrangler configuration; verify SQLite concurrency, lane isolation, cooldown revalidation, upstream 429 cooldown persistence, and Durable Object eviction/recovery in the local workerd runtime while retaining the existing Node test suite unchanged.
 - [ ] Verify hosted Cloudflare binding behavior and Free-plan quota accounting in a separate non-production environment before enabling MangaDex or implementing/enabling MusicBrainz.
@@ -121,6 +123,7 @@ Deliverables:
 - [x] Implement and register the metadata-only MangaDex Provider; keep it unconfigured in KV and disabled pending runtime verification and policy gates.
 - [ ] Keep Bangumi keyword search deferred while its public subject-search endpoint remains marked experimental; use only stable public endpoints or external-search.
 - [ ] Add per-source fixtures and tests; keep uncertain sources as disabled candidates or external-search entries.
+- [ ] Implement Provider-specific authentication only after reviewing the source terms, credential type, canonical host, expiry/rotation behavior, and redirect handling.
 
 Acceptance:
 - A catalog entry is never represented as an implemented Provider unless its adapter is registered and tested.
@@ -137,7 +140,7 @@ Deliverables:
 - [ ] Create or designate a non-production Cloudflare Pages + Worker test environment.
 - [ ] Bind a test KV namespace and the SQLite rate-limit Durable Object; configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
 - [ ] Verify Durable Object slot spacing, cooldown revalidation, restart persistence, cancellation, and quota accounting in a hosted non-production environment. Do not deliberately exhaust shared account quotas or switch to a Paid plan to complete verification.
-- [ ] Verify public API, admin CRUD, ETag conflicts, CORS, and KV propagation end to end.
+- [ ] Verify public API, admin CRUD, ETag conflicts, CORS, KV propagation, and source-scoped Worker Secret injection end to end.
 - [ ] Verify the real Cloudflare HTMLRewriter runtime with representative HTML fixtures and at least one reviewed source configuration.
 - [ ] Test live Provider connectivity individually, recording success, failure, response behavior, and any source-side restrictions.
 - [ ] Keep providers disabled when ordinary Worker requests are blocked or terms/permissions remain unclear; do not attempt bypasses.
@@ -184,6 +187,7 @@ Current branch implementation snapshot:
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
 | Local Workers / Durable Object runtime integration tests | Implemented and passing in CI; hosted Cloudflare verification remains pending |
+| Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI and hosted verification pending |
 | Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 
@@ -197,6 +201,7 @@ Current branch implementation snapshot:
 - [Source review log](./source-review.md) — evidence and decisions for individual sources.
 - [Provider documentation](./providers/) — implementation details for site-specific adapters.
 - [Source testing](./source-testing.md) — authenticated Provider connection smoke checks and query-based diagnostics.
+- [Deferred source backlog](./deferred-source-backlog.md) — sources held back until ordinary permitted access becomes available.
 
 ## Change control
 
