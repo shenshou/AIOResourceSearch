@@ -49,6 +49,8 @@ export interface ProviderContext {
   /** Use the Worker Fetch API; adapters must honor the supplied abort signal. */
   fetch: typeof fetch;
   signal: AbortSignal;
+  /** Optional secret value resolved from the source Worker secret binding; never persisted or returned to clients. */
+  credential?: string;
   /** Optional Cloudflare edge cache for upstream APIs with explicit cache intervals. */
   cache?: Cache;
   /** Cloudflare HTMLRewriter-backed parser, injected by the Worker runtime. */
