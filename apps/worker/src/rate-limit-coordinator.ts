@@ -247,7 +247,9 @@ export function createCoordinatedFetch(
     const response = await fetchImpl(input, init);
     const cooldownUntil = parseCooldownUntil(response, Date.now());
     if (cooldownUntil !== null) {
-      await coordinatorRequest(namespace, "cooldown", lane, requestSignal, cooldownUntil);
+      // Persist upstream throttling even if the initiating client disconnects
+      // after the response arrives; otherwise the shared lane can lose a 429.
+      await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownUntil);
     }
     return response;
   };
