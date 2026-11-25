@@ -79,8 +79,11 @@ export function validateSource(input: unknown): SourceDefinition | null {
     }
   }
   if (typeof value.enabled !== "boolean") return null;
-  if (!Array.isArray(value.searchModes) || !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
-  if (!Array.isArray(value.capabilities) || !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number]))) return null;
+  if (!Array.isArray(value.searchModes) || value.searchModes.length === 0 ||
+      !value.searchModes.every((item) => searchModes.includes(item as SourceDefinition["searchModes"][number]))) return null;
+  if (!Array.isArray(value.capabilities) ||
+      !value.capabilities.every((item) => capabilities.includes(item as SourceDefinition["capabilities"][number])) ||
+      (type === "provider" && value.capabilities.length === 0)) return null;
   if (type === "provider" && value.adapterId === "generic-html") {
     const selectors = value.htmlSelectors as Record<string, unknown>;
     const declaredCapabilities = value.capabilities as string[];
