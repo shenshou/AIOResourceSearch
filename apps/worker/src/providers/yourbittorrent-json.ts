@@ -162,7 +162,9 @@ export const yourBittorrentProvider: ProviderAdapter = {
     try {
       payload = JSON.parse(await readLimitedText(response));
     } catch (error) {
-      if (error instanceof SyntaxError) throw new Error("YourBittorrent returned malformed JSON.");
+      if (error instanceof SyntaxError) {
+        throw new Error("YourBittorrent returned malformed JSON.", { cause: error });
+      }
       throw error;
     }
 
