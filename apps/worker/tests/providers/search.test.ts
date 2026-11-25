@@ -294,19 +294,17 @@ test("enforces per-source timeouts even when a provider ignores AbortSignal", as
 
 test("aborts in-flight providers and stops scheduling when the client cancels", async () => {
   const controller = new AbortController();
-  let observedSignal: AbortSignal | undefined;
+  const observedSignals: AbortSignal[] = [];
   let started = 0;
   const hangingProvider = provider((_input, context) => {
     started += 1;
-    observedSignal = context.signal;
+    observedSignals.push(context.signal);
     return new Promise<NormalizedResource[]>(() => {});
   });
   const pending = executeSearch(
     request,
     sourceConfig(
-      source({ id: "one" }),
-      source({ id: "two" }),
-      source({ id: "three" }),
+      ...Array.from({ length: 15 }, (_, index) => source({ id: "source-" + index })),
     ),
     adapters,
     resolve(hangingProvider),
@@ -317,8 +315,9 @@ test("aborts in-flight providers and stops scheduling when the client cancels", 
   await new Promise((resolve) => setTimeout(resolve, 0));
   controller.abort(new DOMException("Client cancelled search.", "AbortError"));
   await assert.rejects(pending, /cancelled/i);
-  assert.equal(observedSignal?.aborted, true);
-  assert.ok(started <= 3);
+  assert.equal(started, 10);
+  assert.equal(observedSignals.length, 10);
+  assert.ok(observedSignals.every((signal) => signal.aborted));
 });
 
 test("limits each source to 50 results", async () => {
