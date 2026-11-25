@@ -36,6 +36,7 @@ async function route(request: Request, env: Env): Promise<Response> {
       adapters,
       undefined,
       (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default,
+      request.signal,
     );
     return json(result);
   }
