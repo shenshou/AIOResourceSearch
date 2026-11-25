@@ -97,7 +97,7 @@ export function validateSource(input: unknown): SourceDefinition | null {
       if (value.adapterId === "generic-html" &&
           (url.hostname === "localhost" || url.hostname.endsWith(".local") ||
            url.hostname.endsWith(".internal") || url.hostname.startsWith("[") ||
-           /^\\d{1,3}(?:\\.\\d{1,3}){3}$/.test(url.hostname) || !url.hostname.includes("."))) return null;
+           /^\d{1,3}(?:\.\d{1,3}){3}$/.test(url.hostname) || !url.hostname.includes("."))) return null;
     } catch {
       return null;
     }
