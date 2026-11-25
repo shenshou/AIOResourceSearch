@@ -66,7 +66,7 @@ Acceptance:
 - [x] Add HTTP route-level tests for health, CORS, malformed search requests, public filtering, and admin authorization/configuration.
 - [x] Split the Worker entry point along real responsibility boundaries: HTTP response/CORS utilities, configuration access, validation, and source/adapter administration.
 - [x] Keep the entry point as a thin composition layer.
-- [ ] Add focused tests around configuration validation and critical management invariants where extraction makes them independently testable.
+- [x] Add focused tests for source/adapter validation, ETag preconditions, and adapter-reference/enablement invariants.
 
 Acceptance:
 - Existing API paths, HTTP methods, status codes, response shapes, ETag behavior, CORS behavior, authentication, KV keys, and validation rules remain unchanged.
