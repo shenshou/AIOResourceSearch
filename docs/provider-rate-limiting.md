@@ -6,7 +6,7 @@ Some public metadata APIs impose limits on the application or source IP, not on 
 
 The current Cloudflare Cache API is edge-local. Workers KV is eventually consistent and does not provide compare-and-swap transactions. Neither can enforce a strict cross-request, cross-isolate quota. Do not use either as a distributed lock or global rate limiter.
 
-This document defines the implementation gate for APIs whose terms require coordinated outbound pacing. The Worker-side coordinator infrastructure is now implemented on the feature branch, but no rate-limited Provider is registered and no Cloudflare deployment or production binding has been applied.
+This document defines the implementation gate for APIs whose terms require coordinated outbound pacing. The Worker-side coordinator infrastructure and the MangaDex metadata Provider are implemented and registered on the feature branch. No MangaDex source/adapter configuration is enabled in KV, and no Cloudflare deployment or production binding has been applied.
 
 ## Current API requirements
 
@@ -32,7 +32,7 @@ Reservation is allocated using one SQLite UPSERT with `RETURNING`; it does not p
 
 The fetch wrapper supports standard `Retry-After` (seconds or HTTP date) and MangaDex's `X-RateLimit-Retry-After` Unix timestamp. It also honors `X-RateLimit-Remaining: 0` on otherwise successful responses when a retry timestamp is supplied. It applies a conservative one-second fallback for 429/503 without a usable header. A coordinator error or missing binding fails closed: the rate-limited Provider's upstream fetch is not called. Provider cache lookups remain outside the wrapper, so a cache hit does not reserve a slot. Aborting while waiting prevents the upstream fetch; an already reserved slot may be wasted rather than unsafely released.
 
-No current Provider declares `rateLimitLane`. The infrastructure is therefore dormant until MangaDex (or another approved API Provider) is implemented and explicitly opts in.
+The MangaDex Provider declares the `mangadex` lane, but no configured/enabled source currently invokes it. The infrastructure remains dormant in production until the Worker and Durable Object are deployed and an approved MangaDex source is explicitly enabled.
 
 ## Cost and operational implications
 
