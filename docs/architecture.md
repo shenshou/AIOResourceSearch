@@ -154,7 +154,7 @@ External-search sources
 
 The search category defaults to `all`. Legacy sources with no `contentCategory` are treated as `jav`. Each result is stamped with the configured source identity and effective content category. The normalized result contract keeps stable common fields (title, URL, release date, image, resource links) and an optional bounded `metadata` string map for category-specific fields such as author, ISBN, publisher, season, episode, platform, or artist.
 
-The scheduler limits outbound concurrency, applies per-source timeouts, isolates failures, and caps results at 50 per source and 100 total. HTTPS result links are validated. Magnet links require a valid `xt=urn:btih`; ED2K values are checked against their expected URI format.
+The scheduler limits outbound concurrency, applies per-source timeouts, isolates failures, and caps results at 50 per source and 100 total. HTTPS result links are validated. Magnet links require a valid `xt=urn:btih`; ED2K values are checked against their expected URI format. APIs with application-wide or IP-wide quotas require a shared upstream coordinator; see [Shared Upstream Rate-Limiting Design](./provider-rate-limiting.md). Edge-local Cache API entries and KV writes are not global rate limiters.
 
 ## Security and access policy
 

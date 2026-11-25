@@ -36,7 +36,7 @@ The platform distinguishes Worker-backed **Provider** sources from **External Se
 - `packages/shared`: shared TypeScript contracts.
 - Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
-See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md).
+See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md).
 
 ## Local development
 

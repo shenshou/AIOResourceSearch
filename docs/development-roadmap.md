@@ -113,6 +113,8 @@ Deliverables:
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
+- [ ] Decide whether to add the shared Durable Object rate-limit coordinator described in [provider-rate-limiting.md](./provider-rate-limiting.md); do not implement MusicBrainz or MangaDex Providers until coordinated quotas, cost limits, and fail-closed behavior are in place.
+- [ ] Keep Bangumi keyword search deferred while its public subject-search endpoint remains marked experimental; use only stable public endpoints or external-search.
 - [ ] Add per-source fixtures and tests; keep uncertain sources as disabled candidates or external-search entries.
 
 Acceptance:
