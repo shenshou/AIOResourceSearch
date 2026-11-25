@@ -36,7 +36,7 @@ The platform distinguishes Worker-backed **Provider** sources from **External Se
 - `packages/shared`: shared TypeScript contracts.
 - Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
-See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), and candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md).
+See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), and the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md).
 
 ## Local development
 
@@ -92,7 +92,7 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Runtime Provider interface and compile-time adapter registry
 - [x] Content-category model and category-filtered search
 - [x] API, RSS, and configurable HTML acquisition mechanisms
-- [x] Four site-specific API/RSS providers plus reusable HTML adapter
+- [x] Five site-specific API/RSS providers plus reusable HTML adapter (MangaDex is implemented but not enabled)
 - [ ] Per-source HTML selector review and live Cloudflare connectivity verification
 - [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
 - [x] Frontend aggregated-search page, result presentation, and resource-link actions
