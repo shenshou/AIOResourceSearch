@@ -202,14 +202,13 @@ function waitUntil(timestamp: number, signal?: AbortSignal): Promise<void> {
   if (delay <= 0) return Promise.resolve();
 
   return new Promise((resolve, reject) => {
-    let timeout: ReturnType<typeof setTimeout>;
     const cleanup = () => signal?.removeEventListener("abort", onAbort);
     const onAbort = () => {
       clearTimeout(timeout);
       cleanup();
       reject(signal?.reason ?? new DOMException("Rate-limited request was cancelled.", "AbortError"));
     };
-    timeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       cleanup();
       resolve();
     }, delay);
