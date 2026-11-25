@@ -15,6 +15,12 @@ export interface NormalizedResource {
   sourceId: string;
   sourceName: string;
   category: SourceCategory;
+  /** All configured sources that returned the same canonical resource URL. */
+  sourceAttributions?: Array<{
+    sourceId: string;
+    sourceName: string;
+    category: SourceCategory;
+  }>;
   contentCategory?: ContentCategory;
   title: string;
   url: string;
