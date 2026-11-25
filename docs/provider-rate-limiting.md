@@ -60,6 +60,30 @@ Before enabling any rate-limited Provider, still verify in a non-production Clou
 7. Existing unrelated Providers retain their current concurrency behavior.
 8. Free-plan quotas and storage limits are respected under representative load.
 
+## Verification layers and test strategy
+
+The project deliberately separates three levels of evidence:
+
+1. **Existing Node unit tests** (`tsx --test`) exercise the coordinator wrapper and SQL interaction through test doubles. They remain the fast default suite, but do not execute the Durable Object inside Cloudflare's `workerd` runtime.
+2. **Local Workers runtime integration tests** should use the official Workers Vitest integration (`@cloudflare/vitest-plugin`) with the repository's existing `apps/worker/wrangler.jsonc`. This runs the Worker and Durable Object in the local `workerd` runtime and supports direct Durable Object access, SQLite assertions, and explicit eviction through `cloudflare:test`. Keep this as a separate, opt-in test command; do not replace or slow down the existing Node suite. Before adding the test dependencies, confirm the plugin can consume the current declarative Wrangler `exports` configuration without introducing legacy `migrations` or changing the production binding model.
+3. **Hosted non-production Cloudflare verification** remains a separate gate. Local `workerd` tests cannot prove hosted account quotas, deployed namespace/binding configuration, Cloudflare network behavior, or real upstream reachability. Use only a dedicated test Worker, test KV namespace, and test-only secret/origin values. Never attach remote bindings to production resources.
+
+The local runtime suite should cover:
+
+- Many concurrent `/reserve` calls on one lane produce monotonically spaced slots at the configured interval.
+- Different lane IDs remain independent.
+- A cooldown inserted after reservations causes pending slots to be shifted by `/validate`.
+- SQLite timestamp state survives `evictDurableObject()` and reconstruction.
+- The actual DO request path accepts and rejects the same payloads as the existing wrapper expects.
+- The existing Node tests continue to cover cancellation and fail-closed behavior when the coordinator binding is missing or errors.
+
+For hosted verification, use bounded representative traffic to inspect request/SQLite usage against the Free allowances. Do not intentionally exhaust a shared account quota as a test. Cloudflare documents that Free-plan limit exhaustion causes the affected operation to fail; it does not automatically upgrade the account. Any real quota-exhaustion observation must be treated as an operational failure, not a target acceptance test.
+
+Official Cloudflare testing guidance:
+- [Testing Workers](https://developers.cloudflare.com/workers/testing/) — recommends Workers Vitest integration for unit tests and `createTestHarness()` for integration tests.
+- [Testing Durable Objects](https://developers.cloudflare.com/durable-objects/examples/testing-with-durable-objects/) — documents SQLite-backed DO tests, direct access, and eviction helpers.
+- [Workers Vitest configuration](https://developers.cloudflare.com/workers/testing/vitest-integration/configuration/) — documents loading Wrangler configuration into the test runtime.
+- [Local development](https://developers.cloudflare.com/workers/local-development/) — explains local `workerd` execution and local versus remote bindings.
 ## Source eligibility remains separate
 
 A working limiter does not grant API permission. Before enabling a source, separately verify the current official terms, attribution, commercial status, data-license obligations, endpoint stability, response schema, and live Cloudflare connectivity.
