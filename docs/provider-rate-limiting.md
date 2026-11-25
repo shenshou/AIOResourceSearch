@@ -14,7 +14,7 @@ This document defines the implementation gate for APIs whose terms require coord
 |---|---|---|
 | MusicBrainz `/ws/2` | Official documentation currently states an average maximum of 1 request/second per source IP (unless otherwise agreed), and requires a meaningful identifying User-Agent | One shared application lane at a minimum 1,000 ms between requests; this is deliberately stricter and helps coordinate all Worker traffic, but the published numeric limit is IP-based |
 | MangaDex REST | Initial documented limit 5 requests/second/IP, with endpoint-specific limits and response headers | One shared application-wide lane at 400 ms (2.5 requests/second), leaving headroom below the published ceiling; honor response headers and back off on 429 |
-| Bangumi API v0 | Search endpoint currently marked experimental in the official OpenAPI schema | Do not implement keyword search against the experimental endpoint as a required Provider. Prefer a stable endpoint or keep it external-search until the API contract is suitable |
+| Bangumi API v0 | Search endpoint currently marked experimental in the official OpenAPI schema | Do not implement keyword search against the experimental endpoint as a required Provider. Prefer a stable endpoint or keep it external-search until the API contract is suitable |\n| AniBT Torznab | 60 requests / 60 seconds / IP; Torznab is documented as no-store; 503 means temporarily unavailable | Shared `anibt` Durable Object lane at 1,100 ms spacing (about 54.5/min); no edge caching; honor 429/503 and `Retry-After` |
 
 MusicBrainz documents its numeric 1 request/second ceiling against source IP, while also applying User-Agent-specific throttling. The project-wide lane is a conservative application-level control and must not be enforced independently per Worker instance. MangaDex documents an initial 5 requests/second per IP plus endpoint-specific limits; the project target is deliberately more conservative. Actual quota headers and newer official policy always take precedence over these starting intervals.
 
@@ -32,7 +32,7 @@ Reservation is allocated using one SQLite UPSERT with `RETURNING`; it does not p
 
 The fetch wrapper supports standard `Retry-After` (seconds or HTTP date) and MangaDex's `X-RateLimit-Retry-After` Unix timestamp. It also honors `X-RateLimit-Remaining: 0` on otherwise successful responses when a retry timestamp is supplied. It applies a conservative one-second fallback for 429/503 without a usable header. A coordinator error or missing binding fails closed: the rate-limited Provider's upstream fetch is not called. Provider cache lookups remain outside the wrapper, so a cache hit does not reserve a slot. Aborting while waiting prevents the upstream fetch; an already reserved slot may be wasted rather than unsafely released.
 
-The MangaDex Provider declares the `mangadex` lane, but no configured/enabled source currently invokes it. The infrastructure remains dormant in production until the Worker and Durable Object are deployed and an approved MangaDex source is explicitly enabled.
+The MangaDex Provider declares the `mangadex` lane, and AniBT declares the `anibt` lane. Neither has a configured/enabled source invoking it. The infrastructure remains dormant in production until the Worker and Durable Object are deployed and an approved MangaDex source is explicitly enabled.
 
 ## Cost and operational implications
 
@@ -91,7 +91,7 @@ A working limiter does not grant API permission. Before enabling a source, separ
 
 - MusicBrainz: use `/ws/2`, a descriptive User-Agent, and only data whose applicable license is understood. The published 1 req/s limit is per source IP; non-commercial API access conditions must remain satisfied.
 - MangaDex: metadata only; visibly credit MangaDex; do not add chapter reading or proxy chapter content; the project must not run ads or paid services while relying on its public API. Initial documented limit is 5 req/s per IP, plus endpoint-specific limits.
-- Bangumi: use the maintained public `/v0/` API only. Do not rely on experimental keyword search as a production dependency or attempt to access NSFW-only data without authorization.
+- Bangumi: use the maintained public `/v0/` API only. Do not rely on experimental keyword search as a production dependency or attempt to access NSFW-only data without authorization.\n- AniBT: use only the public anonymous Torznab read endpoint. The official docs state 60 requests/60 seconds/IP and no-store for Torznab. Use the shared 1,100 ms lane, do not cache responses, do not call personal RSS or group publishing endpoints, and keep the source disabled until hosted connectivity and content-policy review pass.
 
 ## Official references
 
