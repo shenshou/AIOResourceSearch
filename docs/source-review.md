@@ -959,3 +959,54 @@ Decision: do not automate access to xhamster.com pending written clarification o
 - No unofficial scraper/API wrapper was adopted.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next batch: review the remaining Lustpress-listed sources PornHub, RedTube, YouPorn, and TXXX, then move to the FetchJAV-listed other-index candidates.
+
+
+## Individual source audit — fourteenth batch (2026-11-25)
+
+This batch reviewed the remaining four Lustpress-listed sites: PornHub, RedTube, YouPorn, and TXXX. It uses exact-site policy evidence where available and does not transfer terms between related sites solely because they share a corporate operator.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| PornHub | Third-party Terms index records a clause prohibiting spidering, crawling, or automated access; canonical Terms page could not be retrieved | **Automated access treated as prohibited pending contrary written authorization** | User-initiated external access only; no Worker crawling |
+| RedTube | First-party Terms last modified 2026-05-01 grant a revocable personal-use license requiring full-site display with ads and prohibit public reproduction/distribution/linking absent express permission | **Public aggregator linking/reuse not permitted by the reviewed license** | Remove product destination; no scraping, linking, or metadata redistribution absent written permission |
+| YouPorn | Homepage links to Terms and Privacy Notice, but Terms route redirects to a regional access notice in the research session | **Exact-site policy unverified** | External-only; no Worker access pending current Terms review |
+| TXXX | Canonical homepage fetch returned only a minimal shell/tracking resources; no current terms, API/RSS, or stable search contract was verified | **Unverified** | Homepage-only; no Worker scraping or metadata extraction |
+
+### Source-specific findings
+
+#### PornHub
+
+The catalog entry originates from the Lustpress provider list. A third-party Terms index for PornHub records an approved clause stating that spidering, crawling, or accessing the site through automated means is not allowed. The canonical Terms URL at https://www.pornhub.com/information/terms could not be retrieved by the research browser, so this is recorded as a strong third-party policy signal rather than a direct first-party quotation. No official public metadata API or written authorization for this project was identified.
+
+Decision: treat Worker crawling and HTML parsing as prohibited unless the operator provides contrary written authorization. Keep only a user-initiated external entry; do not adopt unofficial scrapers.
+
+#### RedTube
+
+The canonical RedTube Terms of Service at https://www.redtube.com/information/terms were directly retrieved and were last modified 2026-05-01. The Terms apply to registered and unregistered users. The license to access and use the website and its Works is revocable and conditional on personal use, and requires the website to be displayed whole and intact as presented by its host, including all advertising. The Terms also state that users may not otherwise reproduce, distribute, communicate to the public, make available, adapt, publicly perform, link to, or publicly display the website and Works absent express permission; they separately prohibit copying or reproducing content that does not belong to the user.
+
+Decision: do not include a RedTube destination link in the public source catalog and do not scrape, extract, or redistribute metadata. Reconsider only if the operator grants written permission for the exact public linking and metadata-aggregation use.
+
+#### YouPorn
+
+The canonical YouPorn homepage exposes links to its Terms of Service and Privacy Notice. However, opening the Terms route in the research session redirected to a regional access notice explaining that access is disabled in Virginia pending age-verification requirements. The current Terms text could not be retrieved from that session. RedTube and PornHub are operated by the same corporate group, but their individual site policies cannot be assumed to be identical or automatically extended to YouPorn.
+
+Decision: retain user-initiated external access only. Do not implement Worker fetching, HTML parsing, or metadata extraction until the exact YouPorn Terms and any public API/search contract are verified.
+
+#### TXXX
+
+The catalog points to txxx.com. The canonical homepage returned only a minimal shell and tracking resources to the research browser. No canonical current Terms, documented public API/RSS feed, or stable ordinary public search route was verified. A thin page response is not evidence that the site is offline or that an undocumented route may be probed.
+
+Decision: retain homepage-only as an unverified directory reference. Do not reverse-engineer endpoints, scrape HTML, or extract metadata pending policy and interface verification.
+
+### Batch outcome
+
+- 4 Lustpress-listed sources received source-specific decisions.
+- RedTube's product destination was removed because its first-party license restricts public linking and reuse absent express permission.
+- PornHub automation remains disallowed pending contrary written authorization.
+- YouPorn was not assigned RedTube/PornHub terms by corporate association alone.
+- TXXX remains unverified; no undocumented endpoint probing was performed.
+- The eight Lustpress-listed sources have now all received individual review entries (Eporner, XNXX, XVideos, XHamster, PornHub, RedTube, YouPorn, TXXX).
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: continue with FetchJAV-listed other-index candidates, starting with 91Porn, 85Tube, AApp11, and HAnime XYZ.
