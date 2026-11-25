@@ -63,7 +63,7 @@ function parseCooldownUntil(response: Response, now: number): number | null {
   }
 
   const dayReset = response.headers.get("X-RateLimit-Reset-Day");
-  if (response.headers.get("X-RateLimit-Remaining-Day") === "0" && dayReset && /^\\d+$/.test(dayReset)) {
+  if (response.headers.get("X-RateLimit-Remaining-Day") === "0" && dayReset && /^\d+$/.test(dayReset)) {
     const seconds = Number(dayReset);
     if (Number.isFinite(seconds)) return boundedCooldownUntil(now + seconds * 1_000, now);
   }
