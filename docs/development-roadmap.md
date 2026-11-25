@@ -49,6 +49,7 @@ Deliverables:
 - [x] Public source and adapter listings with private fields filtered.
 - [x] Search orchestration, per-source timeout/failure isolation, normalization, deduplication, and result caps.
 - [x] Frontend source and adapter management screens.
+- [ ] Add administrator-only source connection checks and query-based Provider test searches with clear timeout, error, and result-count feedback.
 - [x] External-search URL generation without fetching the destination.
 - [ ] Verify KV propagation and management flows in a non-production Cloudflare environment.
 
