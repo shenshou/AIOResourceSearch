@@ -2512,3 +2512,21 @@ This section records official API candidates reviewed while expanding beyond the
   - YTS status page: https://yifystatus.com/
   - Third-party API documentation lead (not treated as authoritative): https://yts.proxyninja.org/api
   - Historical API documentation (retired host examples): https://github.com/BrokenEmpire/YTS/blob/master/API.md
+
+
+## The RarBg public JSON API — conditional Provider candidate — 2026-11-25
+
+- First-party developer guide: `https://therarbg.com/developers/`; first-party OpenAPI 3.1 specification: `https://therarbg.com/api/openapi.json`.
+- The operator explicitly describes the API as free, read-only, and available to scripts, apps, media servers, and AI agents without signup or an API key. The documented search endpoint is `GET https://therarbg.com/api/v1/search/` with free-text `q`, category filters, pagination, and a maximum of 50 results per page.
+- Supported categories include `XXX`, `Anime`, `Movies`, `TV`, `Games`, and `Music`; the same API also indexes Apps, Books, and Other. This makes it a potentially useful cross-category torrent source, not just an adult source.
+- Search results include title, infohash, magnet URI, category, size, seeders, leechers, indexed timestamp, optional IMDb ID, tags, and a canonical torrent detail URL. The first implementation should consume only this search endpoint and display text metadata plus the source-provided magnet/detail link.
+- Anonymous quota: 30 requests/minute and 10,000/day per IP (IPv6 counted per /64). A free account API key raises the limit, but this project does not need or intend to request one. Responses include minute/day rate-limit headers and 429 with `Retry-After`. The operator asks clients to cache; server-side responses are cached for 2–60 minutes.
+- The API documents versioned `/api/v1/` compatibility and says breaking changes receive a new version path and at least 90 days' notice.
+- **Important scope boundary:** the separate title/extras/upcoming/streaming endpoints include TMDB-sourced metadata and images. Because TMDB's terms prohibit use of its data/images in connection with pornographic content, this project must not call those endpoints or display those fields. Restrict the Provider to `/api/v1/search/` torrent-result records only; do not fetch posters, plot, ratings, streaming availability, or other TMDB-backed metadata.
+- The API guide expressly invites application/script use, but this review did not locate a separate broad data-republication license. Keep output limited to the metadata fields necessary for search results and link back to the canonical source page; re-check the current API guide before expanding scope.
+- **Decision: suitable for a narrowly scoped Provider implementation, subject to shared rate limiting and hosted validation.** Use no API key, no account, no HTML scraping, no images, and no TMDB-backed endpoints. The global request lane must stay below 30/minute across Worker instances (target at least 2.1 seconds between upstream requests), honor `Retry-After` and daily quota headers, and cache responses for at least the operator's requested interval.
+- References:
+  - First-party API guide: https://therarbg.com/developers/
+  - First-party OpenAPI 3.1 contract: https://therarbg.com/api/openapi.json
+  - First-party About page: https://therarbg.com/about-us/
+  - First-party DMCA / removal process: https://therarbg.com/dmca/

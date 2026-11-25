@@ -298,3 +298,22 @@ References:
 - https://yifystatus.com/
 - https://yts.proxyninja.org/api (third-party lead only)
 - https://github.com/BrokenEmpire/YTS/blob/master/API.md (historical docs)
+
+
+## 8. The RarBg public JSON API — ready for a narrow Provider implementation
+
+- **Adapter candidate:** `the-rarbg-json`; mechanism `api`; source category `torrent`; capabilities `metadata` + `magnet`; search modes `keyword` and `number`.
+- **Canonical endpoint:** `GET https://therarbg.com/api/v1/search/`; use only the documented free-text search endpoint.
+- **No credential required:** anonymous use is documented at 30 requests/minute and 10,000 requests/day per IP. Do not create an account or request the optional free key.
+- **Rate coordination:** the project must add a dedicated shared Durable Object lane with at least 2,100 ms between upstream reservations (approximately 28.6/minute), leaving headroom under the 30/minute limit. Respect 429 `Retry-After`, minute/day rate-limit headers, and fail closed if the coordinator is unavailable.
+- **Caching:** operator asks API clients to cache; upstream server-side cache is 2–60 minutes. Use a conservative 120-second edge cache for identical query/category/page requests; cache is an optimization and not a substitute for the shared global rate limiter.
+- **Category mapping:** `jav` → `XXX`; `anime` → `Anime`; `film-tv` → `Movies,TV`; `game` → `Games`; `music` → `Music`. Do not claim support for manga/novel because the documented categories do not include them. Apps/Books/Other can be considered later under `general` only if product taxonomy and result relevance are deliberately defined.
+- **Result mapping:** accept only valid 40-character hex infohashes and source-provided Magnet URIs; accept detail URLs only on the canonical HTTPS host and documented torrent-detail path; map title, indexed timestamp, seeders, leechers, size, source category, quality score and tags as text metadata. Do not synthesize Magnet URIs from hashes.
+- **TMDB boundary:** do not call the API's title, extras, upcoming, collection, or streaming endpoints, and do not use poster/plot/rating/streaming fields. Those separate endpoints include TMDB-sourced data; TMDB's prohibition on use in connection with pornographic content applies to this overall product context. Keep this Provider strictly on the torrent search endpoint and omit all images.
+- **Transport hardening:** HTTPS only, manual redirects, canonical-host validation, JSON content-type validation, streamed 2 MiB response cap, query length cap, maximum 50 upstream results, no automatic retry on 429/5xx.
+- **Status:** documented API contract is sufficient to begin implementation. Provider remains unregistered/unconfigured until implementation, focused fixture tests, source catalog entries, and non-production Cloudflare connectivity/policy verification are complete. Do not deploy or enable it as part of this code change.
+- References:
+  - https://therarbg.com/developers/
+  - https://therarbg.com/api/openapi.json
+  - https://therarbg.com/about-us/
+  - https://therarbg.com/dmca/
