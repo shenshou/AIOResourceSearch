@@ -1,8 +1,8 @@
 # Source Catalog
 
-本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并在管理页面提供预置登记入口。
+本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 91 个去重候选</badge>
+<badge>共 93 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -18,13 +18,13 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. The catalog remains at 91 unique candidate records until individual integrations pass policy, interface, and architecture checks.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. The two supplemental external entries documented below bring the current catalog total to 93; the 63 reviewed Atlas rows remain unimported.
 
 
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 91 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 3；标签存在交叉，不能将标签数直接相加当作来源总数。
+- 93 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 5；标签存在交叉，不能将标签数直接相加当作来源总数。
 - 当前仅保留 3 条搜索模板：JAV.guru、r/JAV、YourBittorrent。它们是外部搜索/备用入口，不代表新增 Worker Provider。
 - 当前 6 个具体 Provider：Sukebei RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API。MangaDex 仅提供元数据，MusicBrainz 仅提供音乐发行组元数据；两者均已注册在 Worker 代码中，但尚未写入 KV、未启用，仍需完成 hosted Cloudflare 验证和来源政策检查；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -63,7 +63,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | r/JAV | Atlas | 有上游搜索模板，需复核 |
 | SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-## BT / Torrent（18）
+## BT / Torrent（20）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -85,6 +85,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | YourBittorrent | AIOResourceSearch | 已实现免费 JSON Provider；同时保留原站首页入口 |
 | Bitsearch | AIOResourceSearch | 仅首页入口；API 数据再展示许可待确认 |
 | XXXClub | Atlas | 仅首页入口或 URL 待补 |
+| Nyaa | AIOResourceSearch | 动漫分类；仅原站首页入口，自动化访问待审查 |
+| Shana Project | AIOResourceSearch | 动漫分类；仅原站首页入口，公开 RSS 非查询型 |
 
 ## 论坛（16）
 
@@ -141,6 +143,11 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | XVideos | Lustpress | 仅首页入口或 URL 待补 |
 | YouPorn | Lustpress | 仅首页入口或 URL 待补 |
 
+## 补充跨分类来源
+
+- Nyaa：动漫 BT 索引入口，仅提供用户主动访问的首页链接；未完成精确域名的自动化访问政策、robots 与 Worker 可达性审查，不实现抓取。
+- Shana Project：官网帮助页公开说明其站点 RSS 只包含最近 50 条发布；个人私有 RSS 是账户持有人的安全订阅，不得作为共享数据源。由于公开 RSS 不是关键词检索接口，暂只提供原站入口。
+
 ## 来源项目范围说明
 
 ### Atlas
@@ -163,7 +170,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 ## 登记和启用规则
 
-1. 从数据源管理页打开“预置来源目录”；可以逐个配置，也可以一次性批量登记全部未登记候选。
+1. 从数据源管理页打开“预置来源目录”；可以逐个配置，也可以一次性批量登记全部未登记候选。目录条目可声明独立的内容分类，批量登记和单条登记都必须保留该分类。
 2. 批量登记会把候选一次写入 KV，所有条目均保持禁用；没有确认 URL 的条目允许先作为待配置记录存在。逐个配置时，对有上游搜索模板的条目先核对当前站点 URL 格式；对仅首页入口的条目可使用基础 URL。
 3. 没有可确认的 HTTPS 首页或搜索 URL 时，保持禁用，补齐 URL 并核验后再启用。
 4. 所有目录条目默认禁用；启用前必须确认访问规则和目标站点仍可正常访问。

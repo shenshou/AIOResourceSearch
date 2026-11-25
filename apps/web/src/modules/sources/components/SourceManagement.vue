@@ -91,7 +91,9 @@ const visibleCatalogEntries = computed(() => {
     !query ||
     entry.name.toLowerCase().includes(query) ||
     entry.projects.some((project) => project.toLowerCase().includes(query)) ||
-    entry.category.includes(query),
+    entry.category.includes(query) ||
+    (entry.contentCategory?.includes(query) ?? false) ||
+    contentCategoryLabels[entry.contentCategory ?? "jav"].toLowerCase().includes(query),
   );
 });
 
@@ -110,7 +112,7 @@ async function importAllCatalogSources() {
     id: entry.id,
     name: entry.name,
     category: entry.category,
-    contentCategory: "jav",
+    contentCategory: entry.contentCategory ?? "jav",
     type: "external-search",
     enabled: false,
     ...(entry.baseUrl ? { baseUrl: entry.baseUrl } : {}),
@@ -132,7 +134,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     id: entry.id,
     name: entry.name,
     category: entry.category,
-    contentCategory: "jav",
+    contentCategory: entry.contentCategory ?? "jav",
     type: "external-search" as const,
     adapterId: "",
     searchUrlTemplate: entry.searchUrlTemplate ?? "",
@@ -306,7 +308,7 @@ async function deleteSource(source: SourceDefinition) {
     <template v-else>
       <details class="source-catalog-panel">
         <summary>预置来源目录 · {{ unregisteredCatalogEntries.length }} 个尚未登记</summary>
-        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 中识别到的 {{ SOURCE_CATALOG.length }} 个候选来源。登记时默认创建禁用的外部入口；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
+        <p class="form-hint">目录收录 Atlas、Lustpress、FetchJAV 及本项目补充的 {{ SOURCE_CATALOG.length }} 个候选来源。登记时默认创建禁用的外部入口，并保留各来源的内容分类；上游模板和首页地址只是参考，必须核验。目录不代表来源已获授权或可被 Worker 自动抓取。</p>
         <div class="source-catalog-toolbar">
           <input v-model="catalogQuery" class="catalog-search" type="search" placeholder="搜索来源名称、项目或分类…" aria-label="搜索预置来源目录">
           <button class="primary-button small" type="button" :disabled="manager.saving.value || !unregisteredCatalogEntries.length" @click="importAllCatalogSources">
@@ -317,7 +319,7 @@ async function deleteSource(source: SourceDefinition) {
           <article v-for="entry in visibleCatalogEntries" :key="entry.id" class="source-catalog-item">
             <div>
               <strong>{{ entry.name }}</strong>
-              <small>{{ categoryLabels[entry.category] }} · {{ entry.projects.join(" / ") }}</small>
+              <small>{{ categoryLabels[entry.category] }} / {{ contentCategoryLabels[entry.contentCategory ?? "jav"] }} · {{ entry.projects.join(" / ") }}</small>
               <small>{{ entry.note }}</small>
             </div>
             <button class="secondary-button small" type="button" @click="beginCatalogCreate(entry)">配置并登记</button>

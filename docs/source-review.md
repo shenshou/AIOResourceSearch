@@ -2338,3 +2338,11 @@ The current official contracts were rechecked and a separate implementation-read
 - The Provider maps core release-group metadata only: MBID, title, artist credit, primary type, and first-release date. It does not map tags, ratings, annotations, user data, or cover art.
 - The MusicBrainz database license distinguishes CC0 core data from CC BY-NC-SA 3.0 supplementary data. Keep this Provider limited to the documented core fields and re-review if monetization or supplementary fields are added.
 - Code is registered in the Worker compile-time registry; no adapter/source record has been written to KV, and the Provider is not enabled. Hosted Cloudflare connectivity, quota behavior, and final product-policy review remain outstanding.
+
+
+## Supplemental cross-category external sources — 2026-11-25
+
+- **Nyaa** (`https://nyaa.si`): added as an anime-category, torrent-kind external entry only. The exact canonical domain's current automation terms, robots policy, and ordinary Cloudflare Worker access were not established in this review. No RSS request, HTML scraping, or metadata harvesting is approved; users open the original site themselves.
+- **Shana Project** (`https://www.shanaproject.com`): its official Help page documents a public site RSS feed containing only the latest 50 releases, plus separate public and private personal feeds. The secure private feed is explicitly for its account holder and must not be used as a shared source. The site-wide feed is not a query-specific search endpoint, so using it as a keyword Provider would produce incomplete and misleading search results. Keep as homepage-only; do not request personal feeds.
+- Both entries are tagged `contentCategory: anime` and `category: torrent`. The catalog-registration flow now preserves an entry's declared content category rather than forcing every imported source into `jav`.
+- Source catalog count is now 93 unique candidates: 91 existing candidates plus these two supplemental external entries. Both remain disabled after registration; no Provider code, KV mutation, source activation, or deployment is included.

@@ -1,9 +1,11 @@
-import type { SearchMode, SourceCategory } from "@aio-resource-search/shared";
+import type { ContentCategory, SearchMode, SourceCategory } from "@aio-resource-search/shared";
 
 export interface SourceCatalogEntry {
   id: string;
   name: string;
   category: SourceCategory;
+  /** User-facing category; omitted legacy candidates default to JAV. */
+  contentCategory?: ContentCategory;
   searchModes: SearchMode[];
   projects: string[];
   baseUrl?: string;
@@ -12,7 +14,7 @@ export interface SourceCatalogEntry {
 }
 
 /**
- * Candidate inventory from Atlas, Lustpress, and FetchJAV.
+ * Candidate inventory from Atlas, Lustpress, FetchJAV, plus reviewed supplemental entries.
  * Entries are not pre-enabled. Homepage and search templates copied from
  * upstream catalogs are starting references and must be re-verified.
  */
@@ -110,4 +112,6 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
   { id: "bitsearch", name: "Bitsearch", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://bitsearch.eu", note: "官方提供免费 REST API，但 API 数据再展示许可尚未确认；暂时只提供原站首页跳转，不自动抓取。"},
 
   { id: "yourbittorrent", name: "YourBittorrent", category: "torrent", searchModes: ["number","keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://yourbittorrent.com", searchUrlTemplate: "https://yourbittorrent.com/?q={query}", note: "官方提供免费 JSON API，无需 API Key；Adult 分类 ID 为 7。Worker Provider 已实现，仍需 Cloudflare 实测后启用。"},
+  { id: "nyaa", name: "Nyaa", category: "torrent", contentCategory: "anime", searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://nyaa.si", note: "补充的动漫 BT 索引入口。当前仅提供用户主动访问的原站首页；尚未确认该精确域名的自动化访问条款、robots 规则和 Worker 出口兼容性，因此不实现 RSS 抓取或元数据采集。" },
+  { id: "shanaproject", name: "Shana Project", category: "torrent", contentCategory: "anime", searchModes: ["keyword"], projects: ["AIOResourceSearch"], baseUrl: "https://www.shanaproject.com", note: "补充的动漫发布索引入口。官方公开 RSS 仅提供最近 50 条发布，不是按查询词检索的 Feed；个人私有 RSS 仅供账户持有人使用。当前只保留原站入口，不请求私有 Feed，也不将最新列表误当作完整搜索。" },
 ];
