@@ -91,11 +91,37 @@ test("validateSource accepts a valid generic HTML source and bounded metadata se
       image: "img.cover",
       fields: { releaseDate: ".date", author: ".author" },
     },
+    capabilities: ["metadata", "image"],
+    },
   }));
 
   assert.ok(result);
   assert.equal(result.adapterId, "generic-html");
   assert.equal(result.htmlSelectors?.fields?.releaseDate, ".date");
+});
+
+test("validateSource requires generic HTML image and Magnet selectors to match declared capabilities", () => {
+  const base = {
+    adapterId: "generic-html",
+    baseUrl: "https://source.example",
+    providerSearchUrlTemplate: "https://source.example/search?q={query}",
+    htmlSelectors: { result: ".result", title: ".title", link: "a", image: "img.cover" },
+  };
+
+  assert.equal(validateSource(source(base)), null);
+  assert.equal(validateSource(source({
+    ...base,
+    capabilities: ["metadata", "image"],
+  }))?.capabilities.includes("image"), true);
+  assert.equal(validateSource(source({
+    ...base,
+    htmlSelectors: { ...base.htmlSelectors, magnet: "a.magnet" },
+    capabilities: ["metadata", "image", "magnet"],
+  }))?.capabilities.includes("magnet"), true);
+  assert.equal(validateSource(source({
+    ...base,
+    capabilities: ["metadata", "image", "magnet"],
+  })), null);
 });
 
 test("validateSource rejects more than 20 custom HTML metadata fields", () => {
@@ -144,6 +170,19 @@ test("validateAdapter allows an unimplemented adapter to remain disabled", () =>
   assert.ok(result);
   assert.equal(result.implemented, false);
   assert.equal(result.enabled, false);
+});
+
+test("validateAdapter uses the registered implementation as the source of truth", () => {
+  const result = validateAdapter(adapter({
+    categories: ["jav"],
+    capabilities: ["metadata", "ed2k"],
+    version: "99.0.0",
+  }));
+
+  assert.ok(result);
+  assert.deepEqual(result.categories, ["other-index"]);
+  assert.deepEqual(result.capabilities, ["metadata"]);
+  assert.equal(result.version, "1.0.0");
 });
 
 test("validateAdapter removes duplicate categories and capabilities", () => {
