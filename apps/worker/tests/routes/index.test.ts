@@ -147,6 +147,44 @@ test("GET /api/sources exposes enabled sources without private configuration fie
   assert.equal("notes" in sources[0], false);
 });
 
+test("GET /api/sources fails closed on malformed or duplicate persisted sources", async () => {
+  const malformed = await worker.fetch(
+    new Request("https://worker.example/api/sources"),
+    createEnv({
+      "sources:config:v1": {
+        version: 1,
+        updatedAt: null,
+        sources: [{ id: "broken-source" }],
+      },
+    }),
+  );
+  assert.equal(malformed.status, 500);
+  assert.equal(((await readJson(malformed)).error as Record<string, unknown>).code, "internal_error");
+
+  const duplicated = await worker.fetch(
+    new Request("https://worker.example/api/sources"),
+    createEnv({
+      "sources:config:v1": {
+        version: 1,
+        updatedAt: null,
+        sources: [
+          {
+            id: "same-source", name: "One", category: "jav", type: "external-search",
+            enabled: false, searchModes: ["keyword"], capabilities: [], timeoutMs: 5000,
+            baseUrl: "https://example.com",
+          },
+          {
+            id: "same-source", name: "Two", category: "jav", type: "external-search",
+            enabled: false, searchModes: ["keyword"], capabilities: [], timeoutMs: 5000,
+            baseUrl: "https://example.net",
+          },
+        ],
+      },
+    }),
+  );
+  assert.equal(duplicated.status, 500);
+});
+
 test("GET /api/adapters exposes only enabled implemented adapters", async () => {
   const response = await worker.fetch(
     new Request("https://worker.example/api/adapters"),
@@ -187,6 +225,22 @@ test("GET /api/adapters exposes only enabled implemented adapters", async () => 
   assert.equal(adapters[0].id, "perverzija-db");
   assert.equal(adapters[0].implemented, true);
   assert.equal("notes" in adapters[0], false);
+});
+
+test("GET /api/adapters fails closed on malformed persisted adapter metadata", async () => {
+  const response = await worker.fetch(
+    new Request("https://worker.example/api/adapters"),
+    createEnv({
+      "adapters:config:v1": {
+        version: 1,
+        updatedAt: null,
+        adapters: [{ id: "broken-adapter", enabled: true }],
+      },
+    }),
+  );
+
+  assert.equal(response.status, 500);
+  assert.equal(((await readJson(response)).error as Record<string, unknown>).code, "internal_error");
 });
 
 test("admin endpoints reject requests without a bearer token", async () => {
