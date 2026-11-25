@@ -439,3 +439,51 @@ Decision: keep disabled and remove the catalog's unverified /search?q= template.
 - JAV.guru is restricted to user-initiated external links under its stated personal/non-commercial conditions.
 - MissAV and BestJavPorn remain unapproved for automated access.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+
+
+## Individual source audit — third batch (2026-11-25)
+
+This batch reviewed JAV Ass Lover, JAV Desu, JAV Subtitle, and JAV Subtitled. Direct page retrieval was unsuccessful or inconclusive for all four. A failed fetch from a research tool is not proof that a site is offline or blocks ordinary users; it only means the site, its policy, and its search contract could not be verified from the available evidence.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| JAV Ass Lover | Canonical homepage fetch returned HTTP 403 to the research fetcher; search results were limited to third-party technical/domain records | **Unverified** | Remove the unverified search template; no Worker access until canonical terms and ordinary public search are verified |
+| JAV Desu | Homepage fetch returned HTTP 502 to the research fetcher; search results did not establish a current canonical policy or stable search route | **Unverified** | Remove the unverified search template; no Worker access until canonical terms and ordinary public search are verified |
+| JAV Subtitle (javsubtitle.xyz) | Canonical homepage could not be retrieved; search results for JAV-Subtitles at jav-subtitles.com refer to a different domain | **Unverified; domain identity must not be conflated** | Remove the unverified search template; do not apply jav-subtitles.com terms to javsubtitle.xyz |
+| JAV Subtitled (javsubtitled.com) | Canonical homepage could not be retrieved; third-party technical pages are not authoritative policy evidence | **Unverified** | Remove the unverified search template; no Worker access until canonical terms and ordinary public search are verified |
+
+### Source-specific findings
+
+#### JAV Ass Lover
+
+The current catalog points to javass.love and contains a WordPress-style search template. The available research fetch returned HTTP 403, while third-party sources provide only domain/hosting and reputation metadata. None establishes the current canonical terms, a supported API, or a stable public search contract.
+
+Decision: remove the unverified search template. Keep the source as an unverified homepage candidate only. Do not interpret the fetcher's 403 as permission to try alternate routes, proxies, cookies, or challenge bypasses.
+
+#### JAV Desu
+
+The catalog points to javdesu.tv, while some search results concern the separate domain jav-desu.com. Those domains must not be treated as interchangeable. The direct fetch of javdesu.tv returned HTTP 502 to the research fetcher, and the search results did not provide current canonical terms or an authoritative search interface description.
+
+Decision: remove the unverified search template. Keep the source unverified; do not substitute jav-desu.com or infer a route from another domain.
+
+#### JAV Subtitle
+
+The catalog points to javsubtitle.xyz. Search results for JAV-Subtitles and its terms page refer to jav-subtitles.com, which is a different domain and appears to be a commercial subtitle service. Those terms do not govern javsubtitle.xyz. The canonical javsubtitle.xyz homepage could not be retrieved in this review.
+
+Decision: remove the unverified search template. Do not conflate javsubtitle.xyz with jav-subtitles.com or transfer its terms, commercial model, or policy to this source.
+
+#### JAV Subtitled
+
+The catalog points to javsubtitled.com. The canonical homepage could not be retrieved in this review. Third-party domain, ownership, reputation, and technology records do not establish whether automated search or scraping is permitted. A third-party FAQ warning about the site is not the site's own policy.
+
+Decision: remove the unverified search template. Keep the source unverified until its canonical policy and normal public search interface can be confirmed.
+
+### Batch outcome
+
+- 4 sources received a source-specific status.
+- All 4 existing search templates are removed because they have not been verified as stable, ordinary public search routes.
+- No site is declared offline solely because a research fetch failed.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- The next batch should continue through the remaining JAV search-template candidates, then review the torrent/forum candidates with homepage-only entries.
