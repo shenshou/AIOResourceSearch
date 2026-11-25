@@ -93,6 +93,7 @@ function parseManga(record: MangaDexRecord) {
     contentCategory: "manga" as const,
     title,
     url: "https://mangadex.org/title/" + record.id,
+    externalLinks: [{ label: "MangaDex attribution", url: "https://mangadex.org" }],
     ...(description ? { description } : {}),
     ...(Object.keys(metadata).length ? { metadata } : {}),
   }];
