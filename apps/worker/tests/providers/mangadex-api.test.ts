@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mangaDexProvider } from "../../src/providers/mangadex-api.ts";
+import { getProviderAdapter } from "../../src/providers/registry.ts";
 
 const mangaId = "1d6f4b8c-2a31-4f10-9b8d-5c7e2a1f3d40";
 const payload = {
@@ -39,6 +40,7 @@ function context(fetch: typeof globalThis.fetch, cache?: Cache) {
 
 test("declares a metadata-only MangaDex provider on the shared rate-limit lane", () => {
   assert.equal(mangaDexProvider.id, "mangadex-api");
+  assert.equal(getProviderAdapter("mangadex-api"), mangaDexProvider);
   assert.equal(mangaDexProvider.rateLimitLane, "mangadex");
   assert.deepEqual(mangaDexProvider.contentCategories, ["manga"]);
   assert.deepEqual(mangaDexProvider.categories, ["other-index"]);
