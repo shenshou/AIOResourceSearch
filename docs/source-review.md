@@ -1592,3 +1592,89 @@ References:
 - MAL, Douban, Kitsu, and LiveChart remain external-only or unverified.
 - No new source, Provider, KV configuration, source enablement, or Cloudflare deployment was added.
 - Next batch: review Atlas anime torrent candidates Nyaa.si, Mikan Project, DMHY, AnimeBytes, Sukebei Nyaa, and Shana Project.
+
+
+## Individual source audit — twenty-fifth batch (2026-11-25)
+
+This batch reviews the six Atlas anime-torrent candidates: Nyaa.si, Mikan Project, DMHY, AnimeBytes, Sukebei Nyaa, and Shana Project. A public RSS feed is distinguished from a user-specific/private feed, and from permission to build a third-party aggregation service.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| Nyaa.si | RSS-style `?page=rss` and Torznab routes are described by Nyaa-compatible documentation, but the canonical nyaa.si help/rules pages could not be independently retrieved in this pass | **Technical lead; policy verification pending** | No new Provider until canonical policy and endpoint are verified; do not scrape HTML |
+| Mikan Project | Public site is active; documented RSS examples are account-specific `MyBangumi?token=...` feeds | **User-specific RSS only** | Do not request or store user tokens; no shared Worker Provider |
+| DMHY | Official FAQ explicitly documents public RSS and keyword/category/team/uploader filters | **Conditional public RSS candidate** | RSS-only candidate; confirm current terms, HTTPS behavior, response limits, and content policy before implementation |
+| AnimeBytes | Official status page indicates a private tracker service; no public API or public RSS contract was verified | **Private-tracker / external-only** | No login, invite, cookie, or authenticated Worker access |
+| Sukebei Nyaa | Already represented by the existing Sukebei RSS Provider; its rules warn that mirrored entries can include content removed upstream or violating rules/law | **Existing Provider only; not an Anime source** | Do not add a duplicate provider or classify adult Sukebei results as Anime; keep source disabled pending operator content/legal review |
+| Shana Project | Official help documents a public RSS feed of the latest 50 releases, alongside user-specific public-follow and private secure feeds | **Conditional public RSS candidate** | Only the site-wide public feed may be considered; never use or store private per-user feed tokens |
+
+### Source-specific findings
+
+#### Nyaa.si
+
+The Atlas seed points to `nyaa.si`. Nyaa-compatible help material describes a live RSS endpoint using `?page=rss` and legacy feed/Torznab routes, but the canonical `nyaa.si/help`, `/rules`, and feed endpoints could not be independently retrieved by the research fetcher in this pass. Documentation hosted on another Nyaa-related domain is not treated as conclusive proof of the exact current nyaa.si policy.
+
+Decision: retain as an external candidate only. Before integration, verify the canonical Nyaa help/rules, RSS response, supported query/category filters, and content policy. Do not use undocumented HTML scraping or mirrors.
+
+#### Mikan Project
+
+The canonical site is active and exposes anime listings. The RSS subscription examples found in public documentation use a per-user `MyBangumi?token=...` URL; the token represents the user's personal subscription. This is not a general anonymous search API and should not be collected into a shared Worker configuration.
+
+Decision: external-only. Do not ask users to submit private RSS tokens, store them in KV, or run a shared Provider against user-specific subscriptions.
+
+References:
+- https://mikanani.me/
+- https://www.autobangumi.org/en/config/rss.html
+
+#### DMHY
+
+The official DMHY FAQ documents RSS subscriptions at `/topics/rss/rss.xml`, including keyword, team, category, and uploader filters. This is a first-party public feed contract and is materially stronger than an undocumented HTML search route. The FAQ also describes posting restrictions, including a prohibition on real-person adult content in its publishing rules.
+
+The current FAQ uses an HTTP example URL; the HTTPS endpoint and response behavior must be confirmed before a Worker integration. The exact current service terms and any restrictions on third-party aggregation still need review.
+
+Decision: conditional RSS candidate only. If later implemented, use the documented feed, enforce anime-category scope, avoid adult-content categories, honor removal/rules, and do not scrape HTML.
+
+Reference:
+- https://www.dmhy.org/cms/page/name/faq.html
+
+#### AnimeBytes
+
+The official status page reports the site and tracker service status, but this review did not verify an anonymous public API or RSS search contract. AnimeBytes is a private tracker; account/invite access must not be converted into a shared backend integration.
+
+Decision: external-only. No account registration, invite acquisition, cookie handling, or authenticated Worker requests.
+
+Reference:
+- https://status.animebytes.tv/
+
+#### Sukebei Nyaa
+
+This is already represented by the existing `sukebei-rss` Provider and is not a new source integration. The current Sukebei rules explicitly warn that the site mirrors entries from upstream Nyaa/Sukebei sources shortly after publication, sometimes before moderation, and that mirrored entries may later be removed or violate origin rules or applicable law.
+
+Although the Atlas seed groups this entry under anime torrent, the Sukebei service is an adult-oriented index. Its results must not be presented as Anime merely because of the Atlas seed category. Keep it in the adult/JAV content scope and retain the existing disabled-by-default/content-review guard.
+
+References:
+- https://sukebei.nyaa.net/rss
+- https://sukebei.nyaa.net/rules
+
+#### Shana Project
+
+The official help documents a site-wide public RSS feed containing the latest 50 releases. It separately documents a public feed associated with a user's follows and a secure private feed that is intended only for that user and their torrent client; the private feed can mark downloads as consumed.
+
+Decision: only the site-wide public RSS is a possible integration candidate, subject to current terms and response verification. Do not use the private secure feed or user-specific follow feeds in a shared Provider.
+
+References:
+- https://www.shanaproject.com/help/feeds/
+- https://www.shanaproject.com/help/client/
+- https://www.shanaproject.com/help/follows/
+
+### Batch outcome
+
+- 6 Atlas anime-torrent candidates received individual decisions.
+- DMHY and Shana Project have documented public RSS interfaces worth further policy/technical validation.
+- Mikan Project's tokenized personal RSS is not suitable for a shared search Provider.
+- Nyaa.si remains pending canonical policy/endpoint verification.
+- AnimeBytes remains external-only as a private tracker.
+- Sukebei is an existing adult-content Provider, not an anime source; no duplicate was added.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
+- Next batch: review the remaining Atlas anime entries, starting with Bilibili, DiliDili, Crunchyroll, Funimation, HIDIVE, AniWatch, GogoAnime, and 9Anime.
