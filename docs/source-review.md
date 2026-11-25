@@ -2739,3 +2739,52 @@ This pass rechecked the previously deferred JavJunkies, LoveTorrent, NextJAV, Ma
   - https://www.redtube.com/
 
 **Batch outcome:** zero sources promoted, zero mirror substitutions, zero new Provider implementations, and zero access-control workarounds. The deferred-source backlog remains unchanged; these entries continue to require first-party confirmation and an expressly permitted public interface before reconsideration.
+
+## Forum-source revalidation batch — 2026-11-26
+
+This batch revisited 141HongKong, 52AV, Cool18, EYNY, and HJD2048. The review distinguishes a live domain or third-party scraper route from an operator-published and permitted integration interface.
+
+### 141HongKong
+- A direct retrieval of the catalog's exact domain, `https://141hongkong.com/`, was unavailable in this review.
+- Search did not locate first-party current Terms, an official API/RSS feed, or an operator-documented public search contract. Third-party domain records alone cannot establish any of those.
+- **Decision: retain homepage-only external reference.** No Worker requests or post metadata extraction pending canonical policy and public-search verification.
+- Reference: https://141hongkong.com/
+
+### 52AV
+- A direct retrieval of `https://52av.one/` was unavailable in this review. Third-party domain records show that the domain is registered and has DNS/TLS infrastructure, but those facts do not establish the current service operator, its terms, or permission for automated collection.
+- Search did not locate first-party current Terms, an official API/RSS feed, or a documented public search contract.
+- **Decision: retain homepage-only external reference.** Do not probe alternate routes, reuse cookies, or bypass any challenge; no Worker scraping.
+- References:
+  - https://52av.one/
+  - https://radar.cloudflare.com/domains/domain/52av.one
+
+### Cool18
+- The current RSSHub project contains a `cool18` route that constructs search URLs and parses the site's HTML, including article details. This is evidence of a third-party scraper implementation, not an operator-published RSS feed, API, or authorization for this project to collect and republish metadata.
+- A 2026-09-26 RSSHub issue discussion says the broader 6park site had shut down while the Cool18 board remained reachable. A third-party regional measurement reports Cool18 blocked in mainland China as of 2026-11-24; that regional restriction is not a reason to proxy around it.
+- No first-party automation/data-use terms or official public API/RSS contract were verified.
+- **Decision: retain homepage-only external access.** Do not import RSSHub parsing code or call its hosted route as a substitute for first-party permission; no Worker scraping or regional-block evasion.
+- References:
+  - https://github.com/DIYgod/RSSHub/blob/master/lib/routes/cool18/index.ts
+  - https://github.com/DIYgod/RSSHub/issues/3496
+  - https://zh.greatfire.org/domain/cool18.com
+
+### EYNY
+- The first-party homepage returned a transient “system busy, please wait” message in this review. A third-party status snapshot reported HTTP 200 on 2026-11-25, and Cloudflare Radar showed recent domain/certificate activity; neither establishes a stable public search interface or automation permission.
+- No first-party current Terms, official API/RSS feed, or documented public search contract was verified.
+- **Decision: retain homepage-only external access.** Do not infer permission from domain reachability or third-party status; no Worker crawling or post extraction.
+- References:
+  - https://eyny.com/
+  - https://sitetrends.org/site/eyny.com/
+  - https://radar.cloudflare.com/domains/domain/eyny.com
+
+### HJD2048
+- The exact catalog domain returned HTTP 403 in this review. Third-party domain records show that the domain remains registered and resolves, but DNS activity does not override the observed access restriction or establish an authorized public interface.
+- Historical RSSHub issue reports describe earlier access failures; neither third-party scraper code nor an old route is an authorization basis.
+- No first-party current Terms or supported public API/RSS/search contract was verified.
+- **Decision: retain homepage-only external reference.** Do not probe alternate paths, replay cookies, proxy around the 403, or automate access.
+- References:
+  - https://hjd2048.com/
+  - https://www.ipaddress.com/website/hjd2048.com/
+  - https://github.com/DIYgod/RSSHub/issues/13014
+
+**Batch outcome:** no source was promoted to an automated Provider; no catalog destination was replaced; no third-party scraper implementation was adopted. Reconsider only after first-party confirmation of canonical ownership, a supported public interface, and terms that permit the intended metadata use.
