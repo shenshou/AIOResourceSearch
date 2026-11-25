@@ -23,7 +23,7 @@ MusicBrainz documents its numeric 1 request/second ceiling against source IP, wh
 The feature branch now contains:
 
 - `apps/worker/src/rate-limit-coordinator.ts`: a SQLite-backed `RateLimitCoordinator` Durable Object, a narrow internal `/reserve`, `/validate`, and `/cooldown` interface, and a Worker-side coordinated-fetch wrapper.
-- `apps/worker/wrangler.jsonc`: a `RATE_LIMIT_COORDINATOR` binding and SQLite class export declaration. This is repository configuration only; it does not create a Cloudflare namespace until deployment.
+- `apps/worker/wrangler.jsonc`: a `RATE_LIMIT_COORDINATOR` binding and declarative SQLite class export. `apps/worker/src/index.ts` re-exports the class from the Worker entry point, as Wrangler requires. This is repository configuration only; it does not create a Cloudflare namespace until deployment.
 - `apps/worker/src/env.ts`: the typed binding contract.
 - `apps/worker/src/providers/types.ts`: optional compile-time `rateLimitLane` metadata on a Provider.
 - `apps/worker/src/providers/search.ts` and `src/index.ts`: inject the coordinator-backed fetch only for Providers that declare a lane.
