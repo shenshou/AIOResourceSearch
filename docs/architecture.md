@@ -118,6 +118,10 @@ CRUD and enable/disable operations update KV and do not require deployment. New 
 
 Executable adapters are registered in `apps/worker/src/providers/registry.ts`. The registry is a compile-time allowlist and is never populated from KV. An adapter metadata record cannot make arbitrary code executable.
 
+For registered adapters, runtime-owned metadata (mechanism, implementation version, source categories, content categories, and capabilities) is derived from the compiled Provider definition when validating or reading configuration. KV can store the adapter's administrative description, display name, notes, and enabled state, but cannot redefine what the code actually supports. A source may select only a subset of the implementation's capabilities.
+
+The generic HTML adapter additionally requires its optional image and Magnet capabilities to match configured CSS selectors. It does not return image or Magnet fields when the source has not declared those capabilities, even if a parser implementation supplies such values.
+
 Current registered implementations:
 
 | Adapter | Mechanism | Content category | Role |
