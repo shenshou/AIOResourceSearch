@@ -1613,9 +1613,15 @@ This batch reviews the six Atlas anime-torrent candidates: Nyaa.si, Mikan Projec
 
 #### Nyaa.si
 
-The Atlas seed points to `nyaa.si`. Nyaa-compatible help material describes a live RSS endpoint using `?page=rss` and legacy feed/Torznab routes, but the canonical `nyaa.si/help`, `/rules`, and feed endpoints could not be independently retrieved by the research fetcher in this pass. Documentation hosted on another Nyaa-related domain is not treated as conclusive proof of the exact current nyaa.si policy.
+The Atlas seed points to `nyaa.si`. Third-party Nyaa-compatible documentation describes queryable RSS using `?page=rss` and parameters such as `q`, `c`, and `f`, but this does not establish the current canonical site's contract or grant permission for a third-party aggregator. The canonical `nyaa.si/help`, `/rules`, and feed endpoints could not be independently retrieved in this pass. An archived Servarr supported-indexer reference also warns that Nyaa discourages automation and may ban automated clients' IP addresses; treat this as an operational warning, not as a substitute for current first-party policy.
 
-Decision: retain as an external candidate only. Before integration, verify the canonical Nyaa help/rules, RSS response, supported query/category filters, and content policy. Do not use undocumented HTML scraping or mirrors.
+Decision: retain as an external candidate only. Do not implement a Worker Provider until the canonical site's current rules and public RSS/search contract can be verified, including whether automated third-party search is permitted. Do not respond to blocking with proxy rotation, identity changes, browser impersonation, challenge solving, or other access-control evasion. The user-opened original-site link remains available.
+
+References:
+- https://nyaa.si/help
+- https://nyaa.si/rules
+- https://nyaa.si/?page=rss
+- https://wiki.servarr.com/sonarr/supported#nyaa
 
 #### Mikan Project
 
