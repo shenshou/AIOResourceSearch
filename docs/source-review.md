@@ -391,3 +391,51 @@ JableTV and SupJAV remain candidates, but the search results available in this r
 - 2 further candidates (JableTV and SupJAV) remain explicitly unresolved.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - The next audit batch should prioritize the remaining catalog entries that already have search URL templates, then proceed to homepage-only candidates. Each review must record evidence provenance separately from technical reachability.
+
+
+## Individual source audit — second batch (2026-11-25)
+
+This batch reviewed AV01, JAV.guru, MissAV, and BestJavPorn. The review distinguishes permission to retrieve a site-maintained discovery document (such as a mirror list) from permission to crawl the site's search results or content.
+
+### Decision summary
+
+| Source | Evidence reviewed | Current decision | Worker action |
+|---|---|---|---|
+| AV01 | Official AV01 URL-announcement repository and mirrors JSON: https://github.com/av01tv/url | **Mirror-list retrieval only; search crawling not approved** | The official JSON may be used solely to refresh the current mirror destination. Do not fetch/search the mirror site automatically. Existing search template is removed until a normal public search contract is verified |
+| JAV.guru | Canonical Terms: https://jav.guru/terms/ | **External-search only, personal/non-commercial linking conditions** | User-initiated search links may be offered subject to the site's stated non-commercial linking conditions. No Worker scraping, metadata extraction, copying, or redistribution |
+| MissAV | Current site at https://missav.ws; a similarly named terms page was found at missav.run, a different domain | **External-search only; canonical policy unresolved** | Do not treat missav.run terms as binding for missav.ws. No Worker requests or automated HTML parsing until canonical terms and an ordinary public search contract are verified |
+| BestJavPorn | Current homepage and third-party technical/privacy scans; no authoritative canonical terms found | **Unverified; no automated access** | Remove the unverified search template. Keep disabled pending canonical terms and confirmation of ordinary public search behavior |
+
+### Source-specific findings
+
+#### AV01
+
+The official av01tv/url repository states that it publishes updated mirror URLs and explicitly invites developers to use its mirrors JSON in automation. The permission described is limited to integrating the mirror links. It does not document a search API, a stable result-page contract, or permission to crawl search results/content. A recent third-party scan of av01.media also describes the page as heavily JavaScript-built, so a static HTML parser would not be a reliable integration assumption.
+
+Decision: the mirrors JSON can be considered an official, narrow-purpose discovery input for updating the external destination. It is not a content/search Provider. The catalog's old /jp/search?q={query} template is removed until independently verified as a normal public search route. No challenge solving, cookie reuse, or alternate access path is permitted.
+
+#### JAV.guru
+
+The canonical Terms state that the site is for personal use and restricts commercial endeavors absent approval. They prohibit unauthorized framing/linking and content copying or redistribution without prior written consent. The Terms separately permit links to site materials for personal, non-commercial purposes.
+
+Decision: retain only a user-initiated external search link, subject to the personal/non-commercial conditions in the site's Terms. Do not have the Worker fetch the site, parse metadata, copy titles/thumbnails, or redistribute site content. This is a conservative product boundary; it is not a legal opinion.
+
+#### MissAV
+
+The current catalog domain missav.ws is reachable and exposes a public search interface in the page content. However, a search result for a "MissAV" terms page was hosted at missav.run, which is a different registrable domain. It cannot be treated as the canonical policy for missav.ws. The currently observed page also includes account/login and dynamically loaded areas; this does not establish a stable server-side search contract.
+
+Decision: preserve only a user-initiated external search destination for now. Do not automatically fetch missav.ws or reuse the missav.run terms as evidence of permission. Revisit only after canonical terms for the exact domain and an ordinary public search flow are verified.
+
+#### BestJavPorn
+
+The homepage is reachable through a redirect to www.bestjavporn.com. Third-party scans show substantial third-party advertising/tracking requests and point-in-time changes in Cloudflare challenge behavior. These scans are technical/privacy observations, not the site's authoritative terms and not permission to automate access. No canonical terms page or verified search URL contract was established in this batch.
+
+Decision: keep disabled and remove the catalog's unverified /search?q= template. Do not infer permission from reachability, a clean malware scan, or the absence of a challenge during one scan.
+
+### Batch outcome
+
+- 4 sources received source-specific decisions.
+- AV01's official mirror JSON is recognized as a narrowly permitted mirror-discovery input, not a search Provider.
+- JAV.guru is restricted to user-initiated external links under its stated personal/non-commercial conditions.
+- MissAV and BestJavPorn remain unapproved for automated access.
+- No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
