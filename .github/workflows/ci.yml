@@ -5,7 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, reopened, synchronize, ready_for_review]
+    # Run an initial PR verification. Later commits are verified on demand
+    # after a coherent task/module has been completed.
+    types: [opened, reopened, ready_for_review]
+  workflow_dispatch:
 
 # Keep only the newest run for each PR (or branch push).
 concurrency:
@@ -30,7 +33,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const isDocumentation = (path) =>
-              path.startsWith("docs/") || /\.mdx?$/i.test(path);
+              path.startsWith("docs/") || /\\.mdx?$/i.test(path);
 
             async function changedPaths(base, head) {
               try {
@@ -68,7 +71,10 @@ jobs:
 
             let paths = null;
 
-            if (context.eventName === "pull_request") {
+            if (context.eventName === "workflow_dispatch") {
+              // An explicit manual run always verifies the selected ref in full.
+              core.info("Manual CI requested; running the complete verification suite.");
+            } else if (context.eventName === "pull_request") {
               const pr = context.payload.pull_request;
               const currentHead = pr.head.sha;
               let successfulRuns = [];
@@ -90,7 +96,7 @@ jobs:
                 core.warning(`Could not inspect previous CI runs: ${error.message}`);
               }
 
-              // Reuse the newest successful CI baseline that is an ancestor of this PR head.
+              // Reuse the newest successful PR CI baseline that is an ancestor of this PR head.
               for (const run of successfulRuns) {
                 const candidate = await changedPaths(run.head_sha, currentHead);
                 if (candidate !== null) {
@@ -115,8 +121,12 @@ jobs:
               }
             }
 
-            // Any uncertainty or non-documentation change must run the full suite.
-            const docsOnly = paths !== null && paths.every(isDocumentation);
+            // Manual dispatch always runs full CI. For automatic runs, uncertainty
+            // or any non-documentation change also requires the complete suite.
+            const docsOnly =
+              context.eventName !== "workflow_dispatch" &&
+              paths !== null &&
+              paths.every(isDocumentation);
             const runFull = !docsOnly;
             core.info(
               runFull
@@ -134,6 +144,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
