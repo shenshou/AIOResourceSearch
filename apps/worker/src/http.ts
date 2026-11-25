@@ -1,5 +1,7 @@
 import type { Env } from "./env";
 
+const MAX_CONFIG_BYTES = 64 * 1024;
+
 export function json(data: unknown, status = 200, headers?: HeadersInit): Response {
   const responseHeaders = new Headers(headers);
   responseHeaders.set("Content-Type", "application/json; charset=utf-8");
@@ -34,16 +36,6 @@ export function withEtag(response: Response, version: number): Response {
   const headers = new Headers(response.headers);
   headers.set("ETag", `"${version}"`);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
-}
-
-function publicSource(source: SourceDefinition): Omit<SourceDefinition, "credentialBinding" | "notes"> {
-  const { credentialBinding: _credentialBinding, notes: _notes, ...safeSource } = source;
-  return safeSource;
-}
-
-function publicAdapter(adapter: AdapterDefinition): Omit<AdapterDefinition, "notes"> {
-  const { notes: _notes, ...safeAdapter } = adapter;
-  return safeAdapter;
 }
 
 export async function readJsonBody(request: Request): Promise<unknown> {
