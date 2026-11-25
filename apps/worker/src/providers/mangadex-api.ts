@@ -70,7 +70,7 @@ function parseManga(record: MangaDexRecord) {
     metadata.status = attributes.status;
   }
   if (typeof attributes.originalLanguage === "string" &&
-      /^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(attributes.originalLanguage)) {
+      /^[a-z]{2,3}(?:-[a-z]{2,3})?$/i.test(attributes.originalLanguage)) {
     metadata.originalLanguage = attributes.originalLanguage;
   }
   if (typeof attributes.contentRating === "string" &&
