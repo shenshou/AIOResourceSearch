@@ -2652,3 +2652,19 @@ This section records official API candidates reviewed while expanding beyond the
 - References:
   - Third-party domain observation: https://www.ipaddress.com/website/seselah.com/
   - Third-party Papalah profile: https://tools.malwaretips.com/url-scan/papalah.com
+
+
+## PornHK and PornHoHo domain-status recheck — 2026-11-26
+
+### PornHK
+- The RDAP lookup for `pornhk.com` reports the domain as registered through 2028-01-17, with registrar Porkbun and DAN marketplace nameservers. The record was fetched on 2026-11-04.
+- The domain being registered does not mean the historical PornHK service is active or operated by the previous source owner. The marketplace nameservers are consistent with a parked/for-sale domain.
+- No first-party service homepage, current Terms, public API/RSS/search contract, or official replacement domain was verified.
+- **Decision: retain name-only and do not link to pornhk.com.** Do not infer an operator from the registration record or substitute a domain suggested by third parties.
+- Reference: https://who.is/rdap/pornhk.com
+
+### PornHoHo
+- A third-party site-status report contains a WHOIS snapshot for `pornhoho.com` listing an expiry date of 2025-12-12, but the same report also lists Cloudflare DNS records and nameservers updated in 2026. The data is internally stale/inconsistent and cannot establish whether the domain is currently renewed, parked, or serving the historical site.
+- No first-party operator statement, current Terms, public API/RSS/search contract, or canonical replacement was verified.
+- **Decision: retain name-only.** Do not describe the domain as definitively expired or offline based solely on the stale snapshot; do not link or guess mirrors.
+- Reference: https://sitetrends.org/site/pornhoho.com
