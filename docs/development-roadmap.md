@@ -69,6 +69,9 @@ Acceptance:
 - [x] Add focused tests for source/adapter validation, ETag preconditions, and adapter-reference/enablement invariants.
 - [x] Make registered Provider mechanism/version/categories/capabilities authoritative over editable KV metadata.
 - [x] Bind generic HTML image and Magnet extraction to each source's declared capabilities and configured selectors.
+- [x] Propagate client cancellation to active Provider requests and retain per-source timeout isolation.
+- [x] Enforce declared capabilities during result normalization, not only during adapter resolution.
+- [x] Preserve source attribution and merge missing metadata/resource links when canonical URLs deduplicate.
 
 Acceptance:
 - Existing API paths, HTTP methods, status codes, response shapes, ETag behavior, CORS behavior, authentication, KV keys, and validation rules remain unchanged.
@@ -159,7 +162,7 @@ As of the roadmap introduction:
 | Area | Status |
 |---|---|
 | Monorepo, shared contracts, architecture | Implemented |
-| Search orchestration and result normalization | Implemented |
+| Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
 | Site-specific Providers | Four implemented; live verification pending |
