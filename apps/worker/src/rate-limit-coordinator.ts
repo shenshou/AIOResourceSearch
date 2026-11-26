@@ -24,6 +24,8 @@ const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
   eporner: 1_000,
 };
 const MAX_COOLDOWN_MS = 86_400_000;
+const EPORNER_LOCK_LEASE_MS = 60_000;
+const EPORNER_LOCK_RETRY_MS = 500;
 
 function boundedCooldownUntil(timestamp: number, now: number): number {
   return Math.min(Math.max(now + 1_000, timestamp), now + MAX_COOLDOWN_MS);
@@ -110,6 +112,48 @@ export class RateLimitCoordinator {
     const lane = body.lane;
     const now = Date.now();
 
+    if (path === "/acquire") {
+      if (lane !== "eporner" || !("leaseId" in body) ||
+          typeof body.leaseId !== "string" || !/^[a-f0-9-]{36}$/i.test(body.leaseId)) {
+        return json({ error: "invalid_lease" }, 400);
+      }
+      const leaseId = body.leaseId;
+      this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS eporner_request_lock (lane TEXT PRIMARY KEY, lease_id TEXT, lease_until INTEGER NOT NULL)");
+      this.ctx.storage.sql.exec(
+        "INSERT OR IGNORE INTO eporner_request_lock (lane, lease_id, lease_until) VALUES (?, NULL, 0)",
+        lane,
+      );
+      const acquired = Array.from(this.ctx.storage.sql.exec<{ lease_id: string }>(
+        "UPDATE eporner_request_lock SET lease_id = ?, lease_until = ? WHERE lane = ? AND lease_until <= ? RETURNING lease_id",
+        leaseId,
+        now + EPORNER_LOCK_LEASE_MS,
+        lane,
+        now,
+      ))[0];
+      if (acquired) return json({ acquired: true, leaseId });
+      const active = this.ctx.storage.sql.exec<{ lease_until: number }>(
+        "SELECT lease_until FROM eporner_request_lock WHERE lane = ?",
+        lane,
+      ).one();
+      return json({
+        acquired: false,
+        retryAt: Math.min(active?.lease_until ?? now + EPORNER_LOCK_RETRY_MS, now + EPORNER_LOCK_RETRY_MS),
+      });
+    }
+
+    if (path === "/release") {
+      if (lane !== "eporner" || !("leaseId" in body) ||
+          typeof body.leaseId !== "string" || !/^[a-f0-9-]{36}$/i.test(body.leaseId)) {
+        return json({ error: "invalid_lease" }, 400);
+      }
+      const released = Array.from(this.ctx.storage.sql.exec<{ lane: string }>(
+        "UPDATE eporner_request_lock SET lease_id = NULL, lease_until = 0 WHERE lane = ? AND lease_id = ? RETURNING lane",
+        lane,
+        body.leaseId,
+      )).length > 0;
+      return json({ released });
+    }
+
     if (path === "/reserve") {
       const interval = LANE_INTERVAL_MS[lane];
       // One atomic UPSERT allocates a unique slot. No read-then-write race.
@@ -188,12 +232,13 @@ function throwIfAborted(signal?: AbortSignal): void {
 
 async function coordinatorRequest(
   namespace: RateLimitCoordinatorNamespace,
-  path: "reserve" | "validate" | "cooldown",
+  path: "reserve" | "validate" | "cooldown" | "acquire" | "release",
   lane: RateLimitLane,
   signal?: AbortSignal,
   until?: number,
   scheduledAt?: number,
-): Promise<{ scheduledAt?: number }> {
+  leaseId?: string,
+): Promise<{ scheduledAt?: number; acquired?: boolean; retryAt?: number }> {
   throwIfAborted(signal);
   const stub = namespace.get(namespace.idFromName(lane));
   const response = await stub.fetch(new Request("https://rate-limit-coordinator/" + path, {
@@ -202,7 +247,8 @@ async function coordinatorRequest(
     body: JSON.stringify(
       path === "reserve" ? { lane }
         : path === "validate" ? { lane, scheduledAt }
-          : { lane, until },
+          : path === "cooldown" ? { lane, until }
+            : { lane, leaseId },
     ),
     signal,
   }));
@@ -215,6 +261,15 @@ async function coordinatorRequest(
       throw new Error("Invalid rate-limit reservation.");
     }
     return { scheduledAt };
+  }
+  if (path === "acquire") {
+    const acquired = "acquired" in payload ? payload.acquired : undefined;
+    const retryAt = "retryAt" in payload ? payload.retryAt : undefined;
+    if (typeof acquired !== "boolean" ||
+        (!acquired && (typeof retryAt !== "number" || !Number.isFinite(retryAt)))) {
+      throw new Error("Invalid Eporner request-lock response.");
+    }
+    return { acquired, ...(typeof retryAt === "number" ? { retryAt } : {}) };
   }
   return {};
 }
@@ -266,13 +321,38 @@ export function createCoordinatedFetch(
     }
     throwIfAborted(requestSignal);
 
-    const response = await fetchImpl(input, init);
-    const cooldownUntil = parseCooldownUntil(response, Date.now());
-    if (cooldownUntil !== null) {
-      // Persist upstream throttling even if the initiating client disconnects
-      // after the response arrives; otherwise the shared lane can lose a 429.
-      await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownUntil);
+    const exclusiveLeaseId = lane === "eporner" ? crypto.randomUUID() : undefined;
+    if (exclusiveLeaseId) {
+      while (true) {
+        const lock = await coordinatorRequest(
+          namespace,
+          "acquire",
+          lane,
+          requestSignal,
+          undefined,
+          undefined,
+          exclusiveLeaseId,
+        );
+        if (lock.acquired) break;
+        await waitUntil(lock.retryAt!, requestSignal);
+      }
     }
-    return response;
+
+    try {
+      const response = await fetchImpl(input, init);
+      const cooldownUntil = parseCooldownUntil(response, Date.now());
+      if (cooldownUntil !== null) {
+        // Persist upstream throttling even if the initiating client disconnects
+        // after the response arrives; otherwise the shared lane can lose a 429.
+        await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownUntil);
+      }
+      return response;
+    } finally {
+      if (exclusiveLeaseId) {
+        // Release independently of the client signal. If this operation fails,
+        // the bounded lease expires and prevents a permanent lock.
+        await coordinatorRequest(namespace, "release", lane, undefined, undefined, undefined, exclusiveLeaseId);
+      }
+    }
   };
 }

@@ -2995,7 +2995,7 @@ The Eporner public API integration has now been implemented in the feature branc
 - Search requests use the documented API with `thumbs=none`; returned video IDs are checked through the official status endpoint and only `active` records are returned.
 - Search metadata is restricted to title, canonical URL, keywords, view count, rating, duration, and the original timezone-unspecified added-time string.
 - Embed/player markup, image URLs, downloads, and media fields are neither returned to the UI nor retained in the edge cache. The cache stores an allowlisted metadata projection only.
-- Added a shared one-second `eporner` Durable Object lane so search, status, and scheduled feed requests remain sequential across Worker instances.
+- Added a shared one-second `eporner` Durable Object lane plus a 60-second exclusive lease, so search, status, and scheduled feed requests cannot overlap across Worker instances. Scheduled sync requests have a 30-second abort bound, shorter than the lease.
 - Added an hourly Cron Trigger. Each invocation consumes one page of up to 1,000 removal-feed records, validates it, and advances the opaque cursor only after successful validation.
 - The existing `SOURCES_KV` namespace stores only the small sync cursor/timestamp record. No removed-ID list, search result, media, or user data is stored. The Provider fails closed while a continuation cursor is pending or the last completed sync is older than 36 hours.
 - Added focused Provider, removal-sync, metadata-cache, and rate-lane tests. They have been added to the Worker test command but have not yet been executed in CI for the current branch head.

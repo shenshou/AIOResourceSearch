@@ -86,9 +86,14 @@ export default {
     if (!env.RATE_LIMIT_COORDINATOR) {
       throw new Error("Eporner removal sync requires the shared rate-limit coordinator.");
     }
-    const signal = new AbortController().signal;
-    const coordinatedFetch = createCoordinatedFetch(env.RATE_LIMIT_COORDINATOR, "eporner", signal);
-    await syncEpornerRemovalFeed(env, coordinatedFetch, controller.scheduledTime);
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(new DOMException("Eporner removal sync timed out.", "TimeoutError")), 30_000);
+    const coordinatedFetch = createCoordinatedFetch(env.RATE_LIMIT_COORDINATOR, "eporner", abortController.signal);
+    try {
+      await syncEpornerRemovalFeed(env, coordinatedFetch, controller.scheduledTime);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
   async fetch(request: Request, env: Env): Promise<Response> {
     const cors = getCorsHeaders(request, env);

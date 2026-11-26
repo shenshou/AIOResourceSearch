@@ -355,6 +355,73 @@ test("accepts the dedicated AniBT lane for coordinated public Torznab requests",
 });
 
 
+test("serializes Eporner requests with an expiring exclusive lease", async () => {
+  let activeLease: string | null = null;
+  let leaseUntil = 0;
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          if (query.includes("UPDATE eporner_request_lock SET lease_id = ?")) {
+            if (leaseUntil <= Number(values[3])) {
+              activeLease = String(values[0]);
+              leaseUntil = Number(values[1]);
+              return {
+                one: () => ({ lease_id: activeLease } as T),
+                [Symbol.iterator]: function* () { yield { lease_id: activeLease } as T; },
+              };
+            }
+            return { one: () => null, [Symbol.iterator]: function* () {} };
+          }
+          if (query.includes("SELECT lease_until")) {
+            return {
+              one: () => ({ lease_until: leaseUntil } as T),
+              [Symbol.iterator]: function* () { yield { lease_until: leaseUntil } as T; },
+            };
+          }
+          if (query.includes("UPDATE eporner_request_lock SET lease_id = NULL")) {
+            const released = activeLease === String(values[1]);
+            if (released) {
+              activeLease = null;
+              leaseUntil = 0;
+            }
+            return {
+              one: () => released ? ({ lane: "eporner" } as T) : null,
+              [Symbol.iterator]: function* () { if (released) yield { lane: "eporner" } as T; },
+            };
+          }
+          return { one: () => null, [Symbol.iterator]: function* () {} };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const acquire = async (leaseId: string) => coordinator.fetch(new Request("https://coordinator/acquire", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner", leaseId }),
+  }));
+  const firstId = "11111111-1111-4111-8111-111111111111";
+  const secondId = "22222222-2222-4222-8222-222222222222";
+  const first = await acquire(firstId);
+  assert.deepEqual(await first.json(), { acquired: true, leaseId: firstId });
+  const blocked = await acquire(secondId);
+  const blockedPayload = await blocked.json() as { acquired: boolean; retryAt: number };
+  assert.equal(blockedPayload.acquired, false);
+  assert.ok(blockedPayload.retryAt > 0);
+
+  const released = await coordinator.fetch(new Request("https://coordinator/release", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner", leaseId: firstId }),
+  }));
+  assert.deepEqual(await released.json(), { released: true });
+  const second = await acquire(secondId);
+  assert.deepEqual(await second.json(), { acquired: true, leaseId: secondId });
+});
+
+
 test("accepts Eporner's sequential API lane with one-second spacing", async () => {
   const bindings: Array<string | number | null>[] = [];
   const ctx = {
