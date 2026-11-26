@@ -4093,3 +4093,8 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 ### Scope note — scholarly metadata APIs
 - Crossref and OpenAlex both publish public scholarly-metadata APIs with documented rate limits; Crossref says almost all REST API metadata is not subject to copyright and may be used for any purpose, while OpenAlex offers a free-to-start API and free keys for higher budgets.
 - These services index scholarly works, authors, institutions, and research outputs rather than the current product's media/resource categories. Do not force them into the existing `general` category or inflate the current source inventory. Revisit them only if an academic/research discovery category is explicitly added to the product taxonomy; then define its UX and data provenance separately.
+- References: Crossref REST API and access/rate-limit guidance: https://www.crossref.org/documentation/retrieve-metadata/rest-api/ and https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/; OpenAlex API and current authentication/rate-limit guidance: https://docs.openalex.org/ and https://help.openalex.org/api/authentication/.
+
+- Steam references: https://store.steampowered.com/search/ and https://partner.steamgames.com/doc/webapi_overview?language=english
+- Spotify references: https://developer.spotify.com/documentation/web-api and https://developer.spotify.com/terms
+- Apple Music references: https://developer.apple.com/documentation/applemusicapi and https://developer.apple.com/support/terms/apple-developer-program-license-agreement/ and https://developer.apple.com/help/account/membership/program-enrollment/
