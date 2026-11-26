@@ -3014,3 +3014,79 @@ The source catalog now marks Eporner as a built-in Provider candidate. Its sourc
 - The site's own announcement labels `mikanime.tv` as a new domain for mainland-China use. It is a first-party announced domain, not a guessed mirror; however, this does not establish that it should be used as a regional-access workaround by this project.
 
 **Decision:** keep Mikan Project as a user-initiated external search destination only. Do not add Worker HTML scraping, shared RSS polling, or a search Provider until the operator publishes a supported public interface and applicable automation/data-use terms or grants explicit permission. Never use a personal MyBangumi token as a shared source. No login automation, proxying, or regional restriction evasion.
+
+## JAV source revalidation — seventeenth batch (2026-11-26)
+
+This batch rechecked AV01, BestJavPorn, JAV.sb, JAVCL, and JavDoe. It separates operator-published material from third-party technical observations. A reachable homepage, domain registration, or third-party scanner result is not an automated-access contract.
+
+### Decision summary
+
+| Source | New evidence | Current decision | Worker action |
+|---|---|---|---|
+| AV01 | Operator-controlled `av01tv/url` repository publishes `mirrors.json` for automated mirror-link discovery; its README says the mirrors address regional network interference/censorship | **Official mirror-list integration is permitted for mirror discovery only; no content-search or metadata permission established** | Keep original user-initiated `av01.tv` destination; do not auto-select a regional mirror, proxy, or fetch content |
+| BestJavPorn | Third-party scan dated 2026-11-20 observed a challenge-style URL pattern; no first-party Terms/API or metadata-aggregation permission verified | **Automation policy unresolved; challenge evidence is third-party only** | Homepage-only; no Worker fetch, HTML extraction, or challenge handling |
+| JAV.sb | Third-party observations report HTTP 403 with Cloudflare challenge indicators; no first-party Terms/API/RSS or metadata permission verified | **Challenge-gated in observed requests; first-party policy unresolved** | Homepage-only; no Worker fetch or challenge bypass in the current phase |
+| JAVCL | Existing research fetch returned HTTP 403; no first-party Terms, API/RSS, or stable supported search contract verified | **Policy and interface unresolved** | Homepage-only; no Worker fetch or HTML extraction |
+| JavDoe | `.to` domain registration is active, but no first-party canonical-service confirmation, Terms, or supported API/RSS contract was found; third-party reports of regional blocking do not establish source policy | **Canonical service and automation permission unresolved** | Retain existing candidate record; no Worker fetch, mirror substitution, or regional routing |
+
+### Source-specific findings
+
+#### AV01
+
+The operator-controlled repository at https://github.com/av01tv/url identifies itself as the AV01 new-URL announcement page. Its README states that the original `https://www.av01.tv` may be inaccessible in some regions due to network interference/censorship, and that the operator publishes a machine-readable `mirrors.json` for tools that need to integrate mirror links. The current JSON contains one entry, `https://www.av01.media`, with an update date of 2026-04-18.
+
+This is first-party evidence that automated mirror-list discovery is permitted. It is **not** a search API, metadata feed, or permission to crawl the destination. Because the mirror list is explicitly intended to address regional interference/censorship, this project will not automatically switch users to a mirror, proxy around a regional restriction, or make Worker requests to AV01 content. Keep the original user-initiated external destination and preserve the mirror-list repository as provenance/research evidence only.
+
+References:
+- https://github.com/av01tv/url
+- https://github.com/av01tv/url/blob/master/mirrors.json
+
+#### BestJavPorn
+
+A third-party PCrisk scan dated 2026-11-20 describes a challenge-style URL pattern in the site's observed links. This is a point-in-time third-party technical observation, not first-party documentation of the site's automation policy. No canonical first-party Terms, official API/RSS, or explicit permission for third-party metadata aggregation was verified in this review.
+
+Decision: retain the homepage-only candidate. Do not infer permission from homepage reachability or the absence of malware detections. No Worker fetching, HTML extraction, or challenge handling in the current phase.
+
+References:
+- https://bestjavporn.com/
+- https://scanner.pcrisk.com/scan-results/bestjavporn.com
+
+#### JAV.sb
+
+Third-party technical observations report HTTP 403 responses with Cloudflare challenge indicators, including a response captured on 2026-03-01. Another third-party scan in October 2026 also recorded HTTP 403. These reports do not establish the site's first-party Terms, a supported public search contract, or permission for metadata aggregation. No first-party API/RSS documentation or written authorization was found.
+
+Decision: retain the homepage-only candidate. Treat challenge-gated requests as a current-phase blocker; do not solve, replay, proxy around, or otherwise defeat the challenge. Keep the source in the future research inventory under Principle 11.
+
+References:
+- https://jav.sb/
+- https://jav.sb.clearwebstats.com/
+- https://zh.gridinsoft.com/online-virus-scanner/url/jav-sb
+
+#### JAVCL
+
+The existing research fetch returned HTTP 403. That response alone does not prove a site-wide prohibition or identify whether the response was generated by the origin, CDN, or an access-control layer. No current first-party Terms, official API/RSS, or stable supported search contract was verified.
+
+Decision: retain the homepage-only candidate. Do not probe undocumented endpoints, attempt alternate request identities, or configure the generic HTML adapter without a verified supported interface and applicable permission.
+
+Reference:
+- https://javcl.com/
+
+#### JavDoe
+
+The `javdoe.to` registration record is active through 2028-03-18, but domain registration is not evidence that the current site is operator-controlled, that the catalog domain is the canonical service, or that automated access is permitted. Third-party monitoring reports regional blocking in mainland China; that is not a first-party access policy and does not authorize this project to route around regional restrictions. Similarly named `.us` and `.fun` domains were not confirmed by the operator as canonical successors and must not be substituted.
+
+Decision: retain the existing candidate record and its provenance. No Worker fetching, search-template restoration, alternate-domain substitution, or regional routing.
+
+References:
+- https://javdoe.to/
+- https://www.whois.com/whois/javdoe.to
+- https://en.greatfire.org/domain/javdoe.to
+
+### Batch outcome
+
+- Zero Provider promotions and zero new search templates.
+- No source was deleted or silently dropped; all five remain in the source inventory.
+- AV01's official mirror-list repository is now recorded as a first-party discovery reference, but it is not treated as a content source or automatic regional fallback.
+- BestJavPorn and JAV.sb challenge observations remain clearly labeled as third-party evidence.
+- No Worker fetch, HTML scraping, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
+- No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.

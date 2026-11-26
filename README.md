@@ -95,7 +95,7 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment.
 - [x] Runtime Provider interface and compile-time adapter registry
 - [x] Content-category model and category-filtered search
 - [x] API, RSS, and configurable HTML acquisition mechanisms
-- [x] Nine site-specific API/RSS Providers plus reusable HTML adapter; code registration, KV configuration, enablement, and Hosted Cloudflare verification are tracked separately
+- [x] Ten site-specific API/RSS Providers plus reusable HTML adapter; code registration, KV configuration, enablement, and Hosted Cloudflare verification are tracked separately
 - [ ] Per-source HTML selector review and live Cloudflare connectivity verification
 - [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
 - [x] Frontend aggregated-search page, result presentation, and resource-link actions

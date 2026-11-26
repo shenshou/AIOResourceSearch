@@ -21,6 +21,8 @@ The product does not host media, manage personal libraries, provide accounts, sa
 9. Do not deploy production resources, change production KV, merge the feature PR, or enable unreviewed sources as part of ordinary implementation work.
 10. Treat live Cloudflare connectivity, real HTMLRewriter behavior, and source-specific access permission as separate verification gates; unit tests alone cannot prove them.
 
+The project-wide source governance rules are defined in [source-catalog-policy.md](./source-catalog-policy.md). In particular, Principle 11 makes access-control work a phase-based deferral: the current phase does not implement or enable such paths, while later phases may explicitly research and assess them; no future implementation is pre-approved.
+
 ## Phase 0 — Product and architecture baseline
 
 **Status: Complete**
@@ -109,13 +111,13 @@ Acceptance:
 Deliverables:
 - [x] Provider registry and shared result contract.
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
-- [x] Eight site-specific Provider implementations (including the metadata-only MangaDex and MusicBrainz Providers) and the reusable generic-html adapter.
+- [x] Ten site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, and Eporner Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
 - [x] Define the authenticated-source boundary: source-scoped Worker Secret bindings are injected only into the matching Provider; missing secrets fail closed. Free-account authentication is allowed only where ordinary authenticated access is permitted.
-- [x] Create a deferred-source backlog for sources that require access-control bypass; reconsider only after the source changes its access method or grants explicit authorization.
+- [x] Create a deferred-source backlog for sources whose current acquisition path requires addressing access controls. Current-phase implementation remains deferred; later phases may explicitly research technical approaches under Principle 11, subject to source-specific legal, contractual, authorization, security, privacy, and operational review.
 - [x] Implement the SQLite-backed Durable Object rate-limit coordinator, Worker binding contract, per-Provider lane opt-in, cancellation-aware wait, cooldown handling, and fail-closed fetch wrapper. Keep it dormant until a Provider opts in; see [provider-rate-limiting.md](./provider-rate-limiting.md).
 - [x] Add a dedicated Workers Vitest integration suite against the existing Wrangler configuration; verify SQLite concurrency, lane isolation, cooldown revalidation, upstream 429 cooldown persistence, and Durable Object eviction/recovery in the local workerd runtime while retaining the existing Node test suite unchanged.
 - [ ] Verify hosted Cloudflare binding behavior and Free-plan quota accounting in a separate non-production environment before enabling MangaDex or implementing/enabling MusicBrainz.
@@ -131,7 +133,7 @@ Deliverables:
 Acceptance:
 - A catalog entry is never represented as an implemented Provider unless its adapter is registered and tested.
 - No paid API is introduced.
-- No login, paywall, CAPTCHA, anti-bot challenge, geo restriction, rate limit, or other access control is bypassed.
+- In the current development phase, no login, paywall, CAPTCHA, anti-bot challenge, geo restriction, rate limit, or other access-control bypass path is implemented or enabled. Any later research or implementation requires an explicit phase decision and source-specific review under Principle 11.
 - Source-specific permissions, attribution, removal/takedown procedures, and content/legal scope are reviewed before enabling.
 - New content categories are supported by actual source coverage, not merely by a category selector or generic type definitions.
 
@@ -146,7 +148,7 @@ Deliverables:
 - [ ] Verify public API, admin CRUD, ETag conflicts, CORS, KV propagation, and source-scoped Worker Secret injection end to end.
 - [ ] Verify the real Cloudflare HTMLRewriter runtime with representative HTML fixtures and at least one reviewed source configuration.
 - [ ] Test live Provider connectivity individually, recording success, failure, response behavior, and any source-side restrictions.
-- [ ] Keep providers disabled when ordinary Worker requests are blocked or terms/permissions remain unclear; do not attempt bypasses.
+- [ ] Keep providers disabled when ordinary Worker requests are blocked or terms/permissions remain unclear; do not attempt access-control workarounds in the current phase.
 
 Acceptance:
 - Tests run against the actual Cloudflare runtime, not only mocks.

@@ -31,7 +31,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 - 102 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 13；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。它们都只是用户主动打开的外部入口；DMHY 和 AniBT 另外有独立 Provider 实现。
-- 当前 9 个具体 Provider：Sukebei RSS、DMHY RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
+- 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 
@@ -188,8 +188,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 ## 暂缓开发的来源
 
-- 需要绕过验证码、反机器人挑战、Cloudflare Challenge、付费墙、地区/IP 限制或访问频率限制才能获取的来源，不进入当前 Provider 开发和启用范围。
-- 这些来源统一登记在 [备用开发需求](./deferred-source-backlog.md)，记录阻断原因及重新评估条件。
+- 当前开发阶段，必须通过处理或绕过验证码、反机器人挑战、Cloudflare Challenge、付费墙、地区/IP 限制、速率限制等访问控制才能获取的来源，不进入 Provider 实施和启用范围。
+- 这属于阶段性暂缓，不是永久排除。来源和技术方案继续登记在 [备用开发需求](./deferred-source-backlog.md)，记录具体阻断、证据和未来重新评估条件；后续阶段可按第 11 条原则单独立项研究并进行来源级审查。
 - 普通免费账号登录、官方 API Token 或合法 Cookie 不因“需要登录”而自动排除；仍须确认站点允许自动化访问。
 
 ## 登记和启用规则
@@ -200,7 +200,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 4. 所有目录条目默认禁用；启用前必须确认访问规则和目标站点仍可正常访问。
 5. 外部搜索入口不需要 Provider，也不会向 Worker 增加抓取请求。
 6. 只有公开访问且允许自动化、并且经过实际测试的来源，才考虑实现 Provider。
-7. 不使用付费元数据 API；不绕过验证码、反爬、登录、付费墙或其他访问控制。
+7. 当前开发阶段不实施必须绕过验证码、反爬、登录、付费墙或其他访问控制的自动获取路径；这不是永久禁区，未来阶段的研究和实施须遵循第 11 条原则并经过单独审查。不使用付费元数据 API。
 
 ## 上游参考
 
