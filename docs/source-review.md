@@ -4171,3 +4171,28 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Game Jolt was reviewed but not admitted to the catalog because its first-party Terms prohibit adult content and its API is not a catalogue search API.
 - Catalog now contains 157 unique candidates (JAV 28, torrent 30, forum 16, other-index 83); AIOResourceSearch provenance tags: 52 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
+
+
+## 音乐目录与开放音乐平台补充审查（2026-11-27，第五批）
+
+### Audius — homepage-only; creator-level API rights require further review
+- First-party API reference documents read-only track, user, and playlist search; most read endpoints work without credentials, while an API key raises rate limits. The API is intended for music discovery applications.
+- Audius Terms of Use (last updated 2025-10-05) incorporate separate API Terms and the Open Music License. Creator content is subject to creator-selected settings and licensing; creators can disable API access. The reviewed Terms do not establish a blanket right for this project to persist and republish all catalogue metadata/artwork independent of each creator's restrictions. The service licence itself is personal and non-redistributive, so do not infer that broad platform availability means unrestricted third-party republication.
+- **Decision:** retain Audius as a music candidate with homepage-only navigation. Revisit API use only after reviewing the current API Terms and Open Music License at field/content level, with creator opt-outs and access restrictions honored. No API polling, metadata/artwork ingestion, or streaming.
+- References: https://docs.audius.co/api/ ; https://audius.co/documents/TermsOfUse.pdf ; https://blog.audius.co/posts/audius-terms-of-service-update
+
+### Jamendo — homepage-only; API free tier is non-commercial and content-specific
+- First-party API v3 documents search across tracks, albums, and artists. The developer portal advertises up to 35,000 API requests/month for non-commercial apps. API Terms state that API use is free only for non-commercial purposes; any commercial use, including advertising or affiliate revenue, requires contacting its licensing/sales team and may be quoted. Jamendo may also impose limits or begin charging.
+- Every item accessed through the API is published under a Creative Commons licence, and the developer must comply with each item's licence, credit the creator and Jamendo, and provide a direct backlink to the item page. API use also requires application registration and credentials.
+- **Decision:** retain Jamendo as a music candidate with homepage-only navigation. The product's future monetization status is not established and paid API access is not accepted; no API credentials or metadata ingestion until the non-commercial scope and all attribution/licence requirements are confirmed.
+- References: https://developer.jamendo.com/v3.0/docs ; https://developer.jamendo.com/v3.0/tracks ; https://devportal.jamendo.com/api_terms_of_use
+
+### Free Music Archive — homepage-only; former API shut down
+- FMA's first-party app-developer page says its API has been shut down due to server load. It expressly disallows forwarding users' search queries to its search engine and scraping returned HTML without explicit approval, and disallows hotlinking its hosted music. CC licensing remains item-specific.
+- **Decision:** retain FMA as a music candidate with homepage-only user navigation. No API integration, search-query forwarding, HTML scraping, hotlinking, or media hosting.
+- Reference: https://freemusicarchive.org/app-developers
+
+### Batch outcome
+- Added three project-owned music candidates: Audius, Jamendo, and Free Music Archive. All are homepage-only; no search templates or automated acquisition paths were added.
+- Catalog now contains 160 unique candidates (JAV 28, torrent 30, forum 16, other-index 88); AIOResourceSearch provenance tags: 55 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, KV configuration, source enablement, or deployment changed.
