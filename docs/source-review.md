@@ -3553,3 +3553,43 @@ References:
 - Third-party scripts, domain records, monitoring scans, and subtitle-tool support lists remain technical/discovery evidence only.
 - AV01's narrow mirror-list integration permission is not expanded into permission to fetch content or route users around regional restrictions.
 - No access-control bypass, account/session reuse, proxying, undocumented endpoint probing, Worker fetch, KV change, source enablement, Cloudflare deployment, or production setting was introduced.
+
+
+
+## JAV source revalidation — twenty-fourth batch (2026-11-26)
+
+This focused follow-up revalidates the existing `r/JAV` external-search entry against Reddit's current first-party platform policies. It distinguishes a user-initiated navigation link from project-operated collection of Reddit content.
+
+### Decision summary
+
+| Candidate | Current first-party evidence | Decision |
+|---|---|---|
+| r/JAV | Reddit's Data API Terms were last revised 2026-07-20. The current Responsible Builder Policy requires explicit approval before accessing Reddit data through its API; Reddit's anti-scraping guidance prohibits scraping without an authorized agreement. API use also requires accurate identification/OAuth access information, compliance with API limits, and adherence to content-use, removal, privacy, and attribution obligations. | Keep the existing user-initiated external search link only. No Reddit HTML fetching, undocumented endpoint use, RSS/API polling, post/comment metadata collection, or Provider implementation. |
+
+### Source-specific findings
+
+#### r/JAV
+
+Reddit's first-party Data API Terms (last revised 2026-07-20) state that API access requires identification information and that clients must use the access information specified in the Developer Documentation, including OAuth credentials, without masking the user agent or OAuth identity. Reddit may impose API limits at its discretion. The terms permit copying and displaying user content through the Data API only as necessary to operate the approved app, subject to user-content rights and other applicable restrictions; they do not grant general rights to reuse the content for unrelated purposes. They also require an app privacy policy and impose removal/deletion obligations.
+
+The first-party Responsible Builder Policy, updated in November 2026, says explicit approval is required before accessing Reddit data through its API. Reddit's current anti-abuse guidance separately prohibits scraping without an authorized agreement and bypassing technical guardrails. Reddit's developer access guidance states that commercial use, including monetized products/services and publishing Reddit content on monetized sites/apps, requires Reddit's permission and a contract. These requirements are materially more specific than the older general note and make clear that a public subreddit/search page is not permission for automated collection.
+
+The project does not have an approved Reddit API integration or written authorization for this metadata-search product. The existing catalog template points users to Reddit's own search page; it does not cause the Worker to fetch Reddit or collect its results. The current availability/status of the `r/JAV` community itself could not be independently confirmed in this review: a third-party 2025 discussion about a temporary ban is stale and is not evidence of the current state.
+
+Decision: preserve `https://reddit.com/r/jav/search?q={query}` as a user-initiated external-navigation option, subject to ordinary destination availability. Do not add a Reddit Provider, fetch HTML, poll RSS, call undocumented endpoints, reuse browser sessions, or collect Reddit posts/comments. Any future API proposal must first obtain explicit Reddit approval for the exact product use case and review current API terms, OAuth/identity requirements, app privacy disclosures, content display and removal duties, attribution, retention/deletion, rate limits, and any commercial-use contract or fees.
+
+References:
+- https://redditinc.com/policies/data-api-terms (first-party Data API Terms; last revised 2026-07-20)
+- https://support.reddithelp.com/hc/en-us/articles/42728983564564-Responsible-Builder-Policy (first-party policy; explicit approval requirement)
+- https://support.reddithelp.com/hc/en-us/articles/360043512931-Don-t-break-the-site (first-party anti-scraping and platform-integrity guidance)
+- https://support.reddithelp.com/hc/en-us/articles/14945211791892-Developer-Platform-Accessing-Reddit-Data (first-party developer access and commercial-use guidance)
+- https://www.reddit.com/dev/api/ (first-party API documentation for subreddit search and rules endpoints)
+- https://www.reddit.com/r/BannedSubs/comments/1ii88m0/ (third-party 2025 discussion only; not used to establish current community status)
+
+### Batch outcome
+
+- Zero Provider promotions and zero search-template changes.
+- The existing r/JAV external-search template is retained as user-initiated navigation only.
+- Reddit's current API approval, OAuth identity, content-use, removal, privacy, rate-limit, attribution, and commercial-use gates are recorded.
+- The current subreddit availability was not inferred from stale third-party reports.
+- No Reddit HTML/API/RSS request, scraping, account/session reuse, access-control workaround, KV mutation, source enablement, Cloudflare deployment, or production setting was introduced.
