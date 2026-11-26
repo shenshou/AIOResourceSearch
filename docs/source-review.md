@@ -3168,3 +3168,86 @@ References:
 - Third-party technical records for JAVHDPorn and historical JAVOut headers were recorded as technical observations only, not permission.
 - No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
 - No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+## JAV source revalidation — nineteenth batch (2026-11-26)
+
+This batch rechecked JavBus, JAVSeen, JAVTsunami, MissAV, and SupJAV. It distinguishes a source's own terms from third-party availability observations and records the explicit jurisdictional restriction published by MissAV.
+
+### Decision summary
+
+| Source | Evidence found | Current decision | Worker action |
+|---|---|---|---|
+| JavBus | The site returned an age-verification page in the third-party browser scan dated 2026-10-15. That scan reports the site's own `robots.txt` asks automated tools not to load its privacy-policy URL. The canonical policy itself was therefore not reviewed; no API/RSS or aggregation permission verified. | **Age gate and policy review unresolved; no access-gate handling** | Keep original homepage as user-initiated external destination; no Worker fetch, no age-gate automation, and no attempt to load the robots-excluded policy |
+| JAVSeen | Its homepage links to a Terms page whose text identifies Sun Media Limited as operator of Javhd.today, not clearly Javseen.tv. The linked terms (last revised 2015-03-19) restrict use to personal purposes and prohibit automated systems from using the service or obtaining information; the scope mismatch remains unresolved. Homepage also tells users in blocked countries to use a backup domain. | **Treat automated access as disallowed pending scope clarification; backup domain is not an approved regional fallback** | Keep the original JAVSeen homepage only; no Worker fetch, no terms-based assumption of permission, and no automatic switch to Javseenz.TV |
+| JAVTsunami | A third-party browser privacy scan dated 2026-10-22 observed a live homepage and linked privacy policy, but did not establish first-party Terms, an API/RSS contract, or metadata-aggregation permission. The current research fetch timed out. | **Technically observed as live; automation policy and supported interface unresolved** | Retain original homepage link; no Worker fetch or HTML extraction |
+| MissAV | The exact `missav.ws` site exposes a public search form and a Terms page. The Terms explicitly say United States visitors are not allowed to browse, view videos, or click advertisements, and instruct US visitors to leave. No permission for third-party metadata aggregation was found. | **Explicit US jurisdiction restriction; do not expose to US users unless a lawful, reliable jurisdiction gate and launch review are in place** | No Worker fetch or search template. Retain the candidate in inventory, but do not configure it as a generally visible external-search source while the product has no jurisdiction-aware visibility control |
+| SupJAV | The exact homepage returned 403 to the research fetch. A third-party GreatFire record reports the domain blocked in mainland China as of 2026-10-03; this does not establish an operator policy or authorize routing around the block. No first-party Terms/API/RSS permission verified. | **Availability and policy unresolved; regional block is not permission to route around it** | Retain original homepage candidate; no Worker fetch, mirror substitution, proxying, or regional routing |
+
+### Source-specific findings
+
+#### JavBus
+
+The exact catalog domain is `https://www.javbus.com`. A third-party browser scan dated 2026-10-15 received an age-verification page at `/doc/driver-verify`. The same scan reports that the site's robots policy asks automated tools not to load `/doc/privacy`; it therefore did not read the privacy policy. This is a path-specific robots observation, not evidence that every site path is disallowed, but it prevents treating the unreviewed policy as evidence of permission. No official public API/RSS contract or third-party metadata-aggregation permission was established.
+
+Decision: retain the original homepage as a user-initiated destination. Do not automate age verification, load the robots-excluded policy, or configure Worker retrieval without a supported public interface and a source-specific permission review.
+
+References:
+- https://www.javbus.com/
+- https://www.javbus.com/robots.txt
+- https://whogetsmydata.com/website/javbus.com
+
+#### JAVSeen
+
+The exact homepage `https://javseen.tv` is reachable in the research fetch and links to `/static/terms/`. The homepage says some countries have blocked the site and directs users to a backup domain, `javseenz.tv`. The linked Terms page, however, describes an agreement between the user and Sun Media Limited as operator of Javhd.today, says the terms govern Javhd.today and other services provided by that operator, and was last revised on 2015-03-19. It requires personal use, prohibits automated systems/software/devices from using the service or obtaining information, and prohibits defeating or interfering with security features. The Terms page is linked from JAVSeen, but it does not clearly identify JAVSeen.tv in its defined service scope.
+
+Decision: do not implement automated retrieval. Treat the linked prohibition as a blocker unless the operator clarifies its applicability to JAVSeen.tv. Keep the original user-initiated JAVSeen destination; do not automatically follow the backup-domain recommendation because it is explicitly framed as a response to country-level blocking.
+
+References:
+- https://javseen.tv/
+- https://javseen.tv/static/terms/
+
+#### JAVTsunami
+
+The exact homepage `https://javtsunami.com` timed out in the current research fetch. A third-party browser privacy scan dated 2026-10-22 reports that it observed the homepage and several linked pages, including a privacy policy. A privacy policy is not an automated-access permission, and the scan does not establish a stable supported search API/RSS contract or first-party permission for third-party metadata aggregation.
+
+Decision: retain the original homepage candidate. Do not infer permission from the third-party scan or configure generic HTML parsing without current first-party terms, a supported search contract, and a source-specific review.
+
+References:
+- https://javtsunami.com/
+- https://javtsunami.com/privacy-policy
+- https://whogetsmydata.com/website/javtsunami.com
+
+#### MissAV
+
+The exact catalog domain `https://missav.ws` is reachable and exposes a public search interface. Its own Terms page at `/en/terms` states that United States visitors are not allowed to browse the site or click/view videos and advertisements, describes IP-address blocking and warning dialogs, and instructs US visitors to leave immediately. The Terms also describe the service as a user-uploaded video-sharing site and provide a copyright complaint process. The presence of a public search form does not grant this project permission to aggregate metadata, and no such permission was found.
+
+The similarly named `missavweb.com` privacy-policy result is a different domain and is not used as policy evidence for `missav.ws`.
+
+Decision: do not implement Worker retrieval or restore a search template. Because the product currently has no jurisdiction-aware source visibility control and the Terms expressly exclude US visitors, do not configure MissAV as a generally visible external-search source for a US launch. Keep its catalog record for future jurisdiction-specific review; no global deletion or blanket adult-category filtering.
+
+References:
+- https://missav.ws/
+- https://missav.ws/en/terms
+- https://www.whois.com/whois/missav.ws
+- https://missavweb.com/privacy-policy/ (different domain; not applicable to missav.ws)
+
+#### SupJAV
+
+The exact catalog domain `https://supjav.com` returned 403 to the current research fetch. A third-party GreatFire record reports that the domain was blocked in mainland China, with its latest listed test dated 2026-10-03. This is a third-party regional availability observation, not a first-party access policy or permission to use a proxy, alternate domain, or other route around the block. A WHOIS record shows registration and DNS data only. No first-party Terms, official API/RSS contract, or metadata-aggregation permission was verified.
+
+Decision: retain the exact candidate and original homepage. Do not substitute a similarly named domain, route around regional blocking, or configure Worker retrieval.
+
+References:
+- https://supjav.com/
+- https://www.whois.com/whois/supjav.com
+- https://en.greatfire.org/domain/supjav.com
+
+### Batch outcome
+
+- Zero Provider promotions and zero search templates added or restored.
+- All five candidates remain in the inventory; none was deleted or replaced with a backup/similarly named domain.
+- MissAV's explicit US visitor restriction is recorded as a jurisdiction-specific visibility gate, not a reason to hide adult sources globally.
+- JAVSeen's linked automated-access prohibition is recorded with its unresolved domain-scope mismatch; its backup-domain prompt is not treated as authorization to route around country blocking.
+- Third-party privacy scans, WHOIS records, and regional availability observations are not treated as first-party automation permission.
+- No Worker fetch, HTML scraping, age-gate automation, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
+- No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
