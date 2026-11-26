@@ -192,7 +192,7 @@ Current branch implementation snapshot:
 | Local Workers / Durable Object runtime integration tests | Implemented; the prior suite passed CI, but the new AniBT lane extension still awaits a current verification run |
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
-| Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
+| Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane plus exclusive request lease, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
 | Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 
