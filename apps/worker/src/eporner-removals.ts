@@ -128,6 +128,10 @@ export async function syncEpornerRemovalFeed(
       throw new Error("Eporner removal feed redirected to an unexpected host.");
     }
   }
+  const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
+    throw new Error("Eporner removal feed exceeded the response size limit.");
+  }
   if (!(response.headers.get("Content-Type") ?? "").toLowerCase().includes("application/json")) {
     throw new Error("Eporner removal feed returned an unexpected content type.");
   }

@@ -355,6 +355,35 @@ test("accepts the dedicated AniBT lane for coordinated public Torznab requests",
 });
 
 
+test("accepts Eporner's sequential API lane with one-second spacing", async () => {
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner" }),
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 1_000);
+  assert.equal(bindings[1]?.[3], 1_000);
+  assert.equal(bindings[1]?.[4], 1_000);
+});
+
+
 test("accepts The RarBg anonymous lane with a conservative 2.1-second interval", async () => {
   const statements: string[] = [];
   const bindings: Array<string | number | null>[] = [];

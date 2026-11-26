@@ -188,3 +188,29 @@ test("rejects redirects, unexpected content types, and upstream 503 responses", 
     /HTTP 503/i,
   );
 });
+
+test("caches only the allowlisted metadata fields, never embed or image fields", async () => {
+  const stored: string[] = [];
+  const cache = {
+    match: async () => undefined,
+    put: async (_key: Request, response: Response) => {
+      stored.push(await response.text());
+    },
+  } as unknown as Cache;
+  const fetcher: typeof fetch = async (input) => {
+    const url = new URL(String(input));
+    return new Response(JSON.stringify(url.pathname.endsWith("/video/search/")
+      ? searchPayload
+      : statusPayload), {
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+  await epornerApiProvider.search(
+    { query: "sample", mode: "keyword" },
+    context(fetcher, cache),
+  );
+  assert.equal(stored.length, 2);
+  assert.equal(stored.some((value) => value.includes("embed")), false);
+  assert.equal(stored.some((value) => value.includes("default_thumb")), false);
+  assert.equal(stored.some((value) => value.includes("static-ca-cdn")), false);
+});

@@ -73,6 +73,35 @@ function parseSearchResults(payload: unknown): EpornerVideo[] {
   return payload.videos as EpornerVideo[];
 }
 
+function sanitizeSearchPayload(payload: unknown): unknown {
+  return {
+    videos: parseSearchResults(payload).slice(0, 50).map((video) => ({
+      id: video.id,
+      title: video.title,
+      url: video.url,
+      keywords: video.keywords,
+      views: video.views,
+      rate: video.rate,
+      length_sec: video.length_sec,
+      added: video.added,
+    })),
+  };
+}
+
+function sanitizeStatusPayload(payload: unknown): unknown {
+  if (typeof payload !== "object" || payload === null ||
+      !("videos" in payload) || !Array.isArray(payload.videos)) {
+    throw new Error("Eporner API returned an invalid status response.");
+  }
+  return {
+    videos: payload.videos.map((video: unknown) => {
+      if (typeof video !== "object" || video === null) return video;
+      const record = video as Record<string, unknown>;
+      return { id: record.id, status: record.status };
+    }),
+  };
+}
+
 function parseStatuses(payload: unknown, expectedIds: string[]): Set<string> {
   if (typeof payload !== "object" || payload === null ||
       !("videos" in payload) || !Array.isArray(payload.videos)) {
@@ -96,7 +125,12 @@ function parseStatuses(payload: unknown, expectedIds: string[]): Set<string> {
   return new Set(expectedIds.filter((id) => statuses.get(id) === "active"));
 }
 
-async function fetchJson(url: URL, context: ProviderContext, cacheTtlSeconds: number): Promise<unknown> {
+async function fetchJson(
+  url: URL,
+  context: ProviderContext,
+  cacheTtlSeconds: number,
+  sanitizeForCache?: (payload: unknown) => unknown,
+): Promise<unknown> {
   throwIfAborted(context.signal);
   const cacheKey = new Request(url.toString(), { method: "GET" });
   let cached: Response | undefined;
@@ -152,9 +186,10 @@ async function fetchJson(url: URL, context: ProviderContext, cacheTtlSeconds: nu
     throw error;
   }
 
+  const cachePayload = sanitizeForCache ? sanitizeForCache(payload) : payload;
   if (context.cache) {
     try {
-      await context.cache.put(cacheKey, new Response(text, {
+      await context.cache.put(cacheKey, new Response(JSON.stringify(cachePayload), {
         status: 200,
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -165,7 +200,7 @@ async function fetchJson(url: URL, context: ProviderContext, cacheTtlSeconds: nu
       // A cache write failure must not discard valid upstream results.
     }
   }
-  return payload;
+  return cachePayload;
 }
 
 /** Metadata-only integration; search results are status-checked before return. */
@@ -196,19 +231,22 @@ export const epornerApiProvider: ProviderAdapter = {
     searchUrl.searchParams.set("format", "json");
     searchUrl.searchParams.set("gay", "1");
 
-    const searchPayload = await fetchJson(searchUrl, context, SEARCH_CACHE_TTL_SECONDS);
+    const searchPayload = await fetchJson(searchUrl, context, SEARCH_CACHE_TTL_SECONDS, sanitizeSearchPayload);
     const rawVideos = parseSearchResults(searchPayload).slice(0, 50);
+    const seenIds = new Set<string>();
     const validVideos = rawVideos.flatMap((video) => {
       const id = typeof video.id === "string" && /^[A-Za-z0-9]{11}$/.test(video.id) ? video.id : "";
       const title = typeof video.title === "string" ? video.title.trim() : "";
       const url = id ? safeVideoUrl(video.url, id) : null;
-      return id && title && title.length <= 500 && url ? [{ video, id, title, url }] : [];
+      if (!id || !title || title.length > 500 || !url || seenIds.has(id)) return [];
+      seenIds.add(id);
+      return [{ video, id, title, url }];
     });
     if (!validVideos.length) return [];
 
     const statusUrl = new URL(STATUS_ENDPOINT);
     statusUrl.searchParams.set("id", validVideos.map((item) => item.id).join(","));
-    const statusPayload = await fetchJson(statusUrl, context, STATUS_CACHE_TTL_SECONDS);
+    const statusPayload = await fetchJson(statusUrl, context, STATUS_CACHE_TTL_SECONDS, sanitizeStatusPayload);
     const activeIds = parseStatuses(statusPayload, validVideos.map((item) => item.id));
 
     throwIfAborted(context.signal);
