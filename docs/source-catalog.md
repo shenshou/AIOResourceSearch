@@ -1,5 +1,7 @@
 # Source Catalog
 
+目录的保留、来源归属、完整性核对和状态管理遵循[数据源目录管理规范](./source-catalog-policy.md)。候选记录不代表自动化授权、Provider 已实现或来源已启用。
+
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
 <badge>共 102 个去重候选</badge>

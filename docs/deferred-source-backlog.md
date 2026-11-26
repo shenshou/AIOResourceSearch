@@ -1,5 +1,7 @@
 # Deferred source development backlog
 
+本清单遵循[数据源目录管理规范](./source-catalog-policy.md)。暂缓表示当前不开发自动获取路径，不代表从来源目录删除；每项应保留具体阻碍和可核验的重新评估条件。
+
 This document tracks sources or acquisition techniques that are intentionally **not being developed now** because normal permitted access is not available or the source requires bypassing an access control.
 
 A backlog entry is not an approval, implementation promise, or indication that the source is currently reachable.
