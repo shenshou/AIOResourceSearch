@@ -19,7 +19,7 @@
 
 ## 来源目录
 
-## 当前审查快照（2026-11-25）
+## 当前审查快照（2026-11-26）
 
 ## Atlas multi-category review completion (2026-11-25)
 
@@ -31,7 +31,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 - 102 条去重候选：Atlas 标签 57、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 13；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。它们都只是用户主动打开的外部入口；DMHY 和 AniBT 另外有独立 Provider 实现。
-- 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
+- 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 
