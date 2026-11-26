@@ -68,6 +68,8 @@ const emptyForm = (): SourceDefinition => ({
   type: "provider",
   adapterId: "",
   searchUrlTemplate: "",
+  externalSearchUrlTemplate: "",
+  externalSearchBaseUrl: "",
   providerSearchUrlTemplate: "",
   htmlSelectors: { result: "", title: "", link: "", fields: {} },
   enabled: true,
@@ -148,6 +150,8 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     type: entry.type ?? "external-search",
     adapterId: entry.adapterId ?? "",
     searchUrlTemplate: entry.searchUrlTemplate ?? "",
+    externalSearchUrlTemplate: entry.externalSearchUrlTemplate ?? "",
+    externalSearchBaseUrl: entry.externalSearchBaseUrl ?? "",
     baseUrl: entry.baseUrl ?? "",
     enabled: false,
     searchModes: [...entry.searchModes],
@@ -175,6 +179,8 @@ function beginEdit(source: SourceDefinition) {
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
     searchUrlTemplate: source.searchUrlTemplate ?? "",
+    externalSearchUrlTemplate: source.externalSearchUrlTemplate ?? "",
+    externalSearchBaseUrl: source.externalSearchBaseUrl ?? "",
     providerSearchUrlTemplate: source.providerSearchUrlTemplate ?? "",
     htmlSelectors: source.htmlSelectors ? { ...source.htmlSelectors } : { result: "", title: "", link: "" },
     searchModes: [...source.searchModes],
@@ -224,8 +230,12 @@ async function submitForm() {
     name: form.name.trim(),
     ...(form.type === "provider" ? { adapterId: form.adapterId?.trim() ?? "" } : { adapterId: undefined }),
     ...(form.type === "external-search"
-      ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined }
-      : { searchUrlTemplate: undefined }),
+      ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined, externalSearchUrlTemplate: undefined, externalSearchBaseUrl: undefined }
+      : {
+          searchUrlTemplate: undefined,
+          externalSearchUrlTemplate: form.externalSearchUrlTemplate?.trim() || undefined,
+          externalSearchBaseUrl: form.externalSearchBaseUrl?.trim() || undefined,
+        }),
     ...(form.type === "provider" && form.adapterId === "generic-html"
       ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: { ...form.htmlSelectors!, fields: htmlFields } }
       : { providerSearchUrlTemplate: undefined, htmlSelectors: undefined }),
@@ -374,6 +384,8 @@ async function deleteSource(source: SourceDefinition) {
             </div>
             <p v-if="source.baseUrl" class="source-url">{{ source.baseUrl }}</p>
             <p v-if="source.searchUrlTemplate" class="source-url">{{ source.searchUrlTemplate }}</p>
+            <p v-if="source.externalSearchUrlTemplate" class="source-url">外部搜索：{{ source.externalSearchUrlTemplate }}</p>
+            <p v-else-if="source.externalSearchBaseUrl" class="source-url">外部站点：{{ source.externalSearchBaseUrl }}</p>
             <div v-if="(source.type ?? 'provider') === 'provider'" class="source-test-tools">
               <div class="source-test-actions">
                 <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'connection')">
@@ -447,6 +459,14 @@ async function deleteSource(source: SourceDefinition) {
             <label v-if="form.type === 'external-search'" class="wide">搜索 URL 模板（可选；必须包含 {query}，留空则使用基础 URL）
               <input v-model="form.searchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
             </label>
+            <template v-if="form.type === 'provider'">
+              <label class="wide">外部搜索 URL 模板（可选；用户主动打开，不由 Worker 请求；必须包含一个 {query}）
+                <input v-model="form.externalSearchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
+              </label>
+              <label class="wide">外部站点首页（可选；仅在未配置外部搜索模板时显示）
+                <input v-model="form.externalSearchBaseUrl" type="url" maxlength="2048" placeholder="https://example.com" />
+              </label>
+            </template>
             <template v-if="form.type === 'provider' && form.adapterId === 'generic-html'">
               <label class="wide">Worker 搜索 URL 模板（必须包含且仅包含一个 {query}，并与基础 URL 同域）
                 <input v-model="form.providerSearchUrlTemplate" type="text" maxlength="2048" required placeholder="https://example.com/search?q={query}" />
