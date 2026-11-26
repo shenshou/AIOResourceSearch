@@ -356,4 +356,4 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Audius：官方 API 支持公开只读曲目/用户/播放列表搜索，但内容受创作者选择的 API 开关、Open Music License 和具体许可约束；没有确认可对整个目录进行持久化再发布的统一授权。仅保留首页入口，后续须逐字段审查 API Terms 和 OML。
 - Jamendo：官方 API v3 支持曲目/专辑/艺人搜索，非商业免费层标示每月最多 35,000 次请求；API Terms 要求遵守每项内容的 Creative Commons 许可、署名创作者和 Jamendo 并提供作品页回链，商业用途（包括广告/联盟收入）需联系授权团队，可能收费。当前仅保留首页入口，不配置 API。
 - Free Music Archive：官方说明旧 API 已关闭；未经明确批准不得转发用户搜索词并抓取返回 HTML，也不得热链其音乐文件。仅保留首页入口。
-- 本批新增 3 个候选，目录更新为 160 条去重候选（JAV 28、torrent 30、forum 16、other-index 88）；AIOResourceSearch 自有来源标签 55（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。没有新增自动获取路径。
+- 本批新增 3 个候选，目录更新为 160 条去重候选（JAV 28、torrent 30、forum 16、other-index 86）；AIOResourceSearch 自有来源标签 55（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。没有新增自动获取路径。
