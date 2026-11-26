@@ -3476,3 +3476,80 @@ References:
 - JAV Ass Lover remains a candidate with unresolved first-party terms and interface evidence.
 - All five candidates remain in the durable source inventory.
 - No access-control bypass, account/session reuse, proxying, undocumented endpoint probing, Worker fetch, KV change, source enablement, or Cloudflare deployment was introduced.
+
+
+## JAV source revalidation — twenty-third batch (2026-11-26)
+
+This batch reviewed five additional JAV catalog entries: JAV.sb, JAVCL, JavDoe, BestJavPorn, and AV01. The review distinguishes first-party operator evidence from third-party observations, userscript routes, domain-registration records, and upstream mirror-list tooling.
+
+### Decision summary
+
+| Candidate | Evidence found | Decision |
+|---|---|---|
+| JAV.sb | Third-party monitoring describes the site as an adult-video index and reports HTTP 403 in one scanner. No first-party Terms, privacy policy, API/RSS contract, or third-party metadata-collection permission was verified. | Retain the existing candidate as an external homepage reference only; no Worker fetch, alternate route, or challenge handling. |
+| JAVCL | A community userscript documents a /search/{query}/ route, and a third-party subtitle tool currently lists javcl.com. Neither is an operator-controlled search/API contract or permission for metadata aggregation. No first-party current Terms or automation permission was verified. | Keep homepage-only; do not restore a search template or copy third-party extraction behavior. |
+| JavDoe | WHOIS confirms the javdoe.to registration record is active through 2028, but domain registration does not establish the operator's current service, terms, or automated-access permission. Third-party regional-block measurements are not operator policy. | Preserve the existing candidate and canonical-domain uncertainty; no alternate-domain substitution, Worker fetching, or regional routing. |
+| BestJavPorn | A third-party privacy scan of the homepage and linked category/performer pages found no privacy policy. It does not establish terms, API/RSS, or permission for third-party metadata aggregation. A third-party challenge-style scan is not first-party policy evidence. | Keep homepage-only; no Worker fetching, HTML extraction, or challenge handling. |
+| AV01 | The operator-associated av01tv/url repository says its JSON mirror list may be consumed by automated tools, but the stated purpose is mirror discovery because the original site may be inaccessible in some regions. It does not authorize content search or metadata extraction. | Retain only the original user-initiated destination. Do not automatically switch to mirrors, proxy users, or fetch site content. |
+
+### Source-specific findings
+
+#### JAV.sb
+
+Third-party reports identify jav.sb as a JAV streaming/index site. One scan reported HTTP 403; another reports a valid certificate and active domain. These are technical observations and do not establish an operator identity, current Terms, a supported public search contract, or permission for this project to collect metadata. A successful or failed third-party scan is not authorization.
+
+Decision: preserve the existing candidate and provenance. No Worker requests, alternate-route probing, cookies, browser-session reuse, HTML extraction, or challenge handling.
+
+References:
+- https://jav.sb/
+- https://tools.malwaretips.com/url-scan/jav.sb
+- https://gridinsoft.com/online-virus-scanner/url/jav-sb
+
+#### JAVCL
+
+A third-party userscript lists https://javcl.com/search/{code}/ as a search route. A separate subtitle-tool directory lists javcl.com as a supported site. Neither is controlled by the operator, and neither establishes that the route is stable, permitted for third-party aggregation, or suitable for Worker automation. No first-party current Terms/API/RSS or explicit metadata-use permission was verified.
+
+Decision: keep the source homepage-only. Do not add the community userscript route as a catalog search template and do not reuse its extraction logic.
+
+References:
+- https://javcl.com/
+- https://sleazyfork.org/en/scripts/443200-onejavoneweb-revise/code
+- https://miraisub.com/en/supported-sites/
+
+#### JavDoe
+
+A WHOIS record shows javdoe.to registered since 2022 and currently set to expire in 2028. This is domain-registration evidence only; it does not prove a currently operated canonical service, operator identity, current Terms, or permission for automated metadata access. A third-party regional measurement reports mainland-China blocking, but that is not a first-party access policy and cannot justify alternate routing.
+
+Decision: retain the existing javdoe.to candidate. Do not substitute similarly named .us or .fun domains, use proxies, or implement automated retrieval.
+
+References:
+- https://www.whois.com/whois/javdoe.to
+- https://en.greatfire.org/domain/javdoe.to
+
+#### BestJavPorn
+
+A third-party privacy scan dated 2026-11-06 reviewed the homepage and several linked pages and reported that it found no privacy policy. The scan is not a legal review and does not establish whether other terms exist; it also does not grant or deny permission for metadata aggregation. No first-party API/RSS contract or express automation permission was verified. Third-party challenge-style observations are not permission to solve or bypass a challenge.
+
+Decision: retain the homepage candidate only. No Worker fetch, HTML extraction, challenge handling, or undocumented endpoint probing pending first-party terms and a supported public interface.
+
+References:
+- https://www.bestjavporn.com/
+- https://whogetsmydata.com/scan/157908
+
+#### AV01
+
+The operator-associated public repository av01tv/url states that the original site may be inaccessible in some regions and publishes a synchronized mirrors.json for developers or users wishing to integrate mirror links into automated tools. This is a narrow permission to consume the mirror-link list, not permission to automatically route end users around regional restrictions, proxy requests, search or extract site content, or aggregate metadata. The project's current source-catalog policy separately prohibits routing users to mirrors as a way around regional restrictions.
+
+Decision: retain only the original https://www.av01.tv user-initiated external destination. Do not fetch AV01 content or automatically switch to any listed mirror. If a future phase considers mirror-list metadata for display, it must be separately reviewed for jurisdiction, user choice, and product-policy compatibility; it is not approved by this review.
+
+References:
+- https://github.com/av01tv/url
+- https://github.com/av01tv/url/blob/main/mirrors.json
+
+### Batch outcome
+
+- Zero Provider promotions and zero search templates added or restored.
+- All five sources remain in the durable candidate inventory.
+- Third-party scripts, domain records, monitoring scans, and subtitle-tool support lists remain technical/discovery evidence only.
+- AV01's narrow mirror-list integration permission is not expanded into permission to fetch content or route users around regional restrictions.
+- No access-control bypass, account/session reuse, proxying, undocumented endpoint probing, Worker fetch, KV change, source enablement, Cloudflare deployment, or production setting was introduced.
