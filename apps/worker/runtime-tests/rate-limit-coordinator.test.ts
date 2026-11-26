@@ -16,14 +16,14 @@ const coordinator = (env as unknown as {
   RATE_LIMIT_COORDINATOR: CoordinatorNamespace;
 }).RATE_LIMIT_COORDINATOR;
 
-function createStub(lane: "mangadex" | "musicbrainz"): CoordinatorStub {
+function createStub(lane: "mangadex" | "musicbrainz" | "eporner"): CoordinatorStub {
   const id = coordinator.idFromName(lane + "-" + crypto.randomUUID());
   return coordinator.get(id);
 }
 
 async function post(
   stub: CoordinatorStub,
-  path: "reserve" | "validate" | "cooldown",
+  path: "reserve" | "validate" | "cooldown" | "acquire" | "release",
   body: Record<string, string | number>,
 ): Promise<Record<string, unknown>> {
   const response = await stub.fetch(new Request("https://coordinator/" + path, {
@@ -103,6 +103,49 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
     for (let index = 1; index < ordered.length; index += 1) {
       expect(ordered[index] - ordered[index - 1]).toBeGreaterThanOrEqual(1_000);
     }
+  });
+
+  it("holds the global Eporner lease until the complete upstream body is buffered", async () => {
+    const id = coordinator.idFromName("eporner-runtime-" + crypto.randomUUID());
+    const stub = coordinator.get(id);
+    const namespace = {
+      idFromName: () => id,
+      get: () => stub,
+    };
+    let releaseBody!: () => void;
+    const bodyGate = new Promise<void>((resolve) => { releaseBody = () => resolve(); });
+    let markFetchStarted!: () => void;
+    const fetchStarted = new Promise<void>((resolve) => { markFetchStarted = resolve; });
+    const upstreamBody = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        markFetchStarted();
+        await bodyGate;
+        controller.enqueue(new TextEncoder().encode("ok"));
+        controller.close();
+      },
+    });
+    const coordinatedFetch = createCoordinatedFetch(
+      namespace,
+      "eporner",
+      new AbortController().signal,
+      async () => new Response(upstreamBody, { headers: { "Content-Type": "application/json" } }),
+    );
+
+    const pending = coordinatedFetch("https://www.eporner.com/api/v2/video/search/");
+    await fetchStarted;
+
+    const secondLease = crypto.randomUUID();
+    const blocked = await post(stub, "acquire", { lane: "eporner", leaseId: secondLease });
+    expect(blocked.acquired).toBe(false);
+
+    releaseBody();
+    const response = await pending;
+    expect(await response.text()).toBe("ok");
+
+    const acquired = await post(stub, "acquire", { lane: "eporner", leaseId: secondLease });
+    expect(acquired.acquired).toBe(true);
+    const released = await post(stub, "release", { lane: "eporner", leaseId: secondLease });
+    expect(released.released).toBe(true);
   });
 
   it("persists a real upstream 429 cooldown through the coordinated fetch path", async () => {
