@@ -213,7 +213,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 ## 补充影视元数据候选（2026-11-26）
 
 - TVmaze：公开节目名搜索 API，数据采用 CC BY-SA；先完成来源字段溯源、署名和 ShareAlike 兼容性设计，再评估 Provider。
-- Wikidata：结构化数据采用 CC0；文本搜索应优先评估 `wbsearchentities`，WDQS 仅用于范围明确的关系查询，暂不做批量下载或 Provider。
+- Wikidata：结构化数据采用 CC0；文本搜索应优先评估 `wbsearchentities`，WDQS 仅用于范围明确的关系查询，暂不做批量下载或 Provider。2026 年 Wikimedia API 新限流基线为合规 User-Agent 未认证请求 200 次/分钟、并发不超过 3，429/503 必须遵循 `Retry-After`；实施前需复核实时政策。
 - TMDB：官方 API 法律声明禁止将其数据/图片用于色情内容相关场景，与本项目 JAV 核心功能冲突；仅保留用户主动访问的官网入口，不集成 API。
 - IMDb：公开 TSV 数据集许可仅限个人非商业用途，并禁止复用数据建立影视数据库；仅保留官网外部入口。
 - 上述来源均未新增 Provider、搜索模板、KV 配置或启用状态。
