@@ -2941,3 +2941,47 @@ Decision: approve the documented API as an eligible acquisition path, limited to
 - No search templates were added for JAVGG or JavyNow.
 - No mirror switching, age-gate automation, account/session reuse, challenge bypass, or HTML scraping was introduced.
 - No Provider code, KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+
+## Individual source audit — sixteenth batch (2026-11-26)
+
+This batch revalidated XNXX, XVideos, and YouPorn. The review distinguishes first-party policy text from third-party policy archives and records the European Commission's preliminary DSA findings without presenting them as final adjudications.
+
+### Decision summary
+
+| Source | First-party / policy evidence | Current decision | Worker action |
+|---|---|---|---|
+| XNXX | Current Terms effective 2026-11-11; section 7(B) prohibits automated mechanisms including scrapers, offline readers, spiders, and robots absent express written authorization; personal/non-commercial use restrictions also apply | **Automated extraction prohibited absent written authorization** | External homepage only; no Worker fetch or HTML parsing |
+| XVideos | Canonical Terms could not be independently retrieved; ToS;DR's archived terms record an approved prohibition on spidering, crawling, and automated access; no official API/RSS or written permission verified | **Treat automation as prohibited; first-party confirmation remains outstanding** | External homepage only; no Worker fetch or scraping |
+| YouPorn | Official Terms PDF last modified 2025-06-30; personal-use-only license; robots/spiders/automatic access require prior written consent; third-party linking/reproduction of Website and Works is restricted absent express permission | **No third-party aggregation permission; remove clickable destination pending written permission** | Name-only; no Worker fetch, HTML scraping, or deep links |
+
+### Source-specific findings
+
+#### XNXX
+
+The current Terms are published at https://info.xnxx.com/legal/TOS. The captured 2026-11-11 version explicitly prohibits use of computerized or automatic mechanisms, including web scrapers, offline readers, spiders, or robots, to access, extract, or download any content from the Website unless NKL Associates expressly authorizes it in writing (section 7(B)). The Terms also state that Website content is provided for personal and non-commercial use and restrict third-party exploitation of Website content absent prior written consent. No public API/RSS contract or written permission for this aggregator was found.
+
+The European Commission's 2026-03-26 announcement stated that it had preliminarily found XNXX and XVideos, among other services, in breach of the DSA for failing to protect minors from exposure to pornography. These were preliminary findings; the Commission explicitly stated that the providers could examine the investigation files and respond. This is a material child-safety risk signal, not a final adjudication: https://digital-strategy.ec.europa.eu/en/news/commission-preliminarily-finds-pornhub-stripchat-xnxx-and-xvideos-breach-digital-services-act
+
+Decision: retain only the existing homepage reference for user-initiated access. Do not use generic HTML parsing, unofficial scraper packages, or undocumented endpoints.
+
+#### XVideos
+
+The exact current Terms page could not be independently retrieved during this review. ToS;DR's archived Terms entry records a prohibition on using computerized/automatic mechanisms, including web scrapers, offline readers, spiders, or robots, to access, extract, or download Website content unless expressly authorized in writing. This is third-party policy evidence, not a substitute for direct first-party retrieval; however, absent contrary first-party documentation or written permission, the project must not automate access. No official public API/RSS or metadata aggregation authorization was found.
+
+The European Commission's 2026-03-26 preliminary DSA findings also include XVideos. The finding remains preliminary and is recorded as an age-protection risk signal, not a final ruling.
+
+Decision: retain the existing homepage reference only. Do not implement Worker fetching, HTML scraping, or unofficial wrappers. Reconsider only if the operator publishes a supported public interface and expressly permits the intended metadata use.
+
+#### YouPorn
+
+The official Terms PDF at https://fi1.ypncdn.com/static/cb/bundles/youpornwebfront/docs/ToS-YP-June30.pdf is marked last modified 2025-06-30. It applies to registered and unregistered visitors. Section "Ability to Accept Terms of Service" requires users to be adults and allows the operator to require age-verification information. The license in sections 65–78 is personal-use-only and restricts reproducing, distributing, publicly communicating, linking to, or publicly displaying the Website and Works absent an express exception. Section "Prohibited Uses" expressly bars robots, spiders, and other automatic devices/processes/means used to access the Website for any purpose, including monitoring or copying material, without prior written consent (section 198). No official public API/RSS or third-party metadata aggregation permission was found.
+
+Decision: remove the clickable catalog destination and retain a name-only record pending written permission. Do not implement a Worker Provider, generic HTML adapter configuration, or deep links.
+
+### Batch outcome
+
+- No Provider or search template was added.
+- XNXX and XVideos remain external-homepage-only candidates; YouPorn becomes name-only because its Terms expressly restrict linking absent permission.
+- No unofficial scraper, HTML extraction, account/session reuse, or access-control workaround was introduced.
+- No source activation, KV configuration, Cloudflare deployment, or production setting was changed.
