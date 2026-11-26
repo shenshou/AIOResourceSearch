@@ -74,13 +74,9 @@ For local admin API testing, create `apps/worker/.dev.vars` with:
 ADMIN_API_TOKEN=replace-with-a-long-random-local-secret
 ```
 
-The file is ignored by Git. Configure the production token with:
+The file is ignored by Git and is used only by local Wrangler development. The hosted Cloudflare verification environment has not yet been provisioned. Do not run `wrangler secret put`, `wrangler deploy`, or create/update production KV resources as part of local setup: `wrangler secret put` creates a new Worker version and deploys it immediately. Hosted credentials and bindings must be configured only after a dedicated non-production Worker and test KV namespace have been designated; production rollout is a separate, explicitly approved phase.
 
-```bash
-npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.jsonc
-```
-
-Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the Worker environment. The checked-in value is for local Vite development only.
+Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the relevant Worker environment. The checked-in value is for local Vite development only.
 
 ## Current implementation status
 
