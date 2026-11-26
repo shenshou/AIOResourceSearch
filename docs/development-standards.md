@@ -146,4 +146,18 @@ For each implementation task:
 - Update [architecture](./architecture.md) when system boundaries, data flow, runtime responsibilities, or security architecture change.
 - Update [development roadmap](./development-roadmap.md) when phase status, deliverables, acceptance criteria, or project sequencing changes.
 - Keep Provider-specific behavior in focused files under `docs/providers/`.
+- Treat [source-catalog-policy.md](./source-catalog-policy.md) as the canonical source-inventory governance policy; keep the catalog, review log, and deferred backlog consistent with it.
 - Do not use the roadmap as a chronological work log; record implementation details in code, tests, and focused documentation.
+
+
+## 11. Source catalog governance
+
+- The source inventory is a durable record of candidate sources, not a list of currently approved or operational Providers. Follow the eight principles in [source-catalog-policy.md](./source-catalog-policy.md) for every source discovery, review, status change, and removal.
+- Never delete a source solely because it is unreachable, lacks a documented API/RSS, has unresolved terms, is blocked by ordinary network controls, or is deferred. Retain it with an evidence-based disposition and a concrete reconsideration condition.
+- Preserve provenance from Atlas, Lustpress, FetchJAV, and other discovery paths. Reconcile raw upstream entries at source level, documenting deduplication, multi-category identities, exclusions, and unresolved gaps; do not infer completeness from tag counts.
+- Record first-party evidence separately from third-party reports and observations. Never guess canonical domains, aliases, successor sites, mirrors, endpoints, or feed contracts.
+- Assess source reachability, permission for automated access, metadata/image/link reuse rights, Provider implementation, KV configuration, enabled state, deployment, and Hosted Cloudflare verification as separate facts.
+- Investigate supported acquisition methods individually (official API, RSS/Atom, documented JSON/feed, permitted HTML, or user-opened external navigation). A missing API does not justify deleting the source or assuming scraping is permitted.
+- Do not implement or enable access paths requiring authentication/paywall/CAPTCHA/anti-bot/Cloudflare challenge/geo-IP/rate-limit or other access-control bypass. Keep blocked candidates in the catalog and [deferred-source-backlog.md](./deferred-source-backlog.md); record the exact blocker and reconsideration condition.
+- Preserve permitted external links independently from Worker automation. External Search must remain user-initiated HTTPS navigation and must never become a hidden Worker fetch.
+- Keep [source-review.md](./source-review.md), [source-catalog.md](./source-catalog.md), and [deferred-source-backlog.md](./deferred-source-backlog.md) aligned with the canonical policy. A documentation status must never be represented as a runtime capability unless the code and configuration actually provide it.
