@@ -2,7 +2,7 @@
 
 本审核日志必须遵循[数据源目录管理规范](./source-catalog-policy.md)：保留来源资产与证据链，区分第一方证据/第三方报告，并分别记录自动化许可、实现、配置、启用和线上验证状态。
 
-Last reviewed: 2026-11-26
+Last reviewed: 2026-11-27
 
 This document records evidence-based triage, not a blanket approval to crawl a site. A candidate is not an executable Provider until its public interface, access conditions, data fields, and deployment behavior have been reviewed.
 
@@ -4098,3 +4098,31 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Steam references: https://store.steampowered.com/search/ and https://partner.steamgames.com/doc/webapi_overview?language=english
 - Spotify references: https://developer.spotify.com/documentation/web-api and https://developer.spotify.com/terms
 - Apple Music references: https://developer.apple.com/documentation/applemusicapi and https://developer.apple.com/support/terms/apple-developer-program-license-agreement/ and https://developer.apple.com/help/account/membership/program-enrollment/
+
+
+## 游戏与音乐平台补充审查（2026-11-27，第二批）
+
+### GOG — homepage-only; automated interaction expressly restricted
+- GOG's first-party User Agreement prohibits bots, spiders, scripts, extraction tools, and unauthorized third-party programs that interact with GOG services or collect information about them. The reviewed official Galaxy SDK is developer-oriented; no general public third-party catalogue-search API or metadata-reuse permission was established.
+- **Decision:** retain GOG as a game candidate with homepage navigation only. No Worker requests, reverse engineering, third-party API proxy, or catalogue extraction.
+- Reference: https://support.gog.com/hc/en-us/articles/212632089-GOG-User-Agreement
+
+### Epic Games Store — homepage/browse navigation only
+- The first-party Store Browse page exposes catalogue browsing and genre navigation. The reviewed first-party Terms govern service use and reserve rights not expressly granted; this review did not establish a documented public third-party catalogue-search API or metadata-reuse grant. No specific scraping permission was established either; absence of an identified clause is not affirmative authorization.
+- **Decision:** retain Epic Games Store as a game candidate with homepage/browse navigation only. No Worker scraping, undocumented endpoint use, or metadata copying.
+- References: https://store.epicgames.com/browse?lang=en-US and https://legal.epicgames.com/epicgames/tos?lang=en-US
+
+### Deezer — homepage-only; current API access not established
+- Historical first-party Deezer for Developers terms describe Search and catalogue APIs but require online applications to be submitted to Deezer for approval before use. In October 2025, a Deezer Community Manager stated that new API access for private individuals had been disabled due to abuse. November 2026 community reports also describe current search behavior as unstable; these community reports are operational signals, not a substitute for first-party API status.
+- **Decision:** retain Deezer as a music candidate with homepage navigation only. No API integration, credentials, undocumented endpoints, or metadata/artwork ingestion until current first-party access and written use permission are established.
+- References: https://cdns-content.dzcdn.net/pdf/CGV-ww.pdf and https://en.deezercommunity.com/features-feedback-44/api-access-83418
+
+### Bandcamp — homepage-only; automated extraction expressly prohibited
+- Bandcamp's first-party Acceptable Use Policy explicitly prohibits scraping text, media, or other data through bots/crawlers and prohibits text/data mining. Its Terms limit the general user licence to personal, non-commercial use and require written permission for other exploitation. The documented API is for labels and merchandise fulfillment partners, with individually issued OAuth credentials; it is not a general public catalogue-search API.
+- **Decision:** retain Bandcamp as a music candidate with homepage navigation only. No automated collection, API credential reuse, metadata/artwork copying, or indexing.
+- References: https://bandcamp.com/developer, https://bandcamp.com/terms_of_use, and https://get.bandcamp.help/en/articles/15263124-bandcamp-s-acceptable-use-and-moderation-policy
+
+### Batch outcome
+- Added four project-owned candidates: GOG, Epic Games Store, Deezer, and Bandcamp. All four are homepage-only; no search templates or automated acquisition paths were added.
+- Catalog count: 153 unique candidates (JAV 28, torrent 30, forum 16, other-index 79); project-owned provenance tags: 48 (overlapping tags). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, KV configuration, source enablement, or deployment changed.
