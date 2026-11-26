@@ -157,6 +157,28 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | XNXX | Lustpress | 仅首页入口或 URL 待补 |
 | XVideos | Lustpress | 仅首页入口或 URL 待补 |
 | YouPorn | Lustpress | 仅首页入口或 URL 待补 |
+| Bangumi | Atlas / AIOResourceSearch | 官方 subject 搜索 API 存在；第三方元数据复用许可待确认，暂仅首页入口 |
+| MyAnimeList | Atlas / AIOResourceSearch | API v2 与 Client ID 要求存在，但第一方条款/配额/再利用许可待核验 |
+| AniDB | Atlas / AIOResourceSearch | HTTP/UDP API 规范存在；当前自动化政策与第三方聚合许可未核实 |
+| Kitsu | Atlas / AIOResourceSearch | 公开 GET 搜索接口存在；R18 门槛及数据复用许可待确认 |
+| LiveChart | Atlas / AIOResourceSearch | 未核实第一方公开 API/RSS 或元数据复用许可；仅首页入口 |
+| Douban (Anime/Film) | Atlas / AIOResourceSearch | 第一方条款要求书面许可；仅外部入口 |
+| Notify.moe | Atlas / AIOResourceSearch | 第一方 API 存在，但第三方聚合许可与配额不明；仅外部入口 |
+| AniList | Atlas / AIOResourceSearch | 第一方条款限制同类竞争性服务和大规模收集；仅外部入口 |
+| TVmaze | AIOResourceSearch | CC BY-SA API；署名、ShareAlike 和限流要求待产品级处理 |
+| The Movie Database (TMDB) | AIOResourceSearch | API 条款与 JAV/成人内容核心范围冲突；不接入 API |
+| IMDb | AIOResourceSearch | 数据集许可限个人非商业用途且禁止建立影视数据库；仅官网入口 |
+| Wikidata · Film / TV | AIOResourceSearch | CC0 结构化数据；待查询范围与质量测试 |
+| Trakt | AIOResourceSearch | API 政策禁止用于推广侵权/盗版的应用；仅外部入口 |
+| TheTVDB | AIOResourceSearch | API 法律声明与成人内容范围冲突；不接入 API |
+| Letterboxd | AIOResourceSearch | API 需申请且未获批准；仅官网入口 |
+| OMDb API | AIOResourceSearch | API Terms 限制未经书面许可建立索引；仅外部入口 |
+| RAWG | AIOResourceSearch | API 数据分发限制及成人内容限制冲突；仅官网入口 |
+| Giant Bomb | AIOResourceSearch | 第一方 API 当前不可用；仅官网入口 |
+| Discogs | AIOResourceSearch | 部分字段 CC0，但字段级许可/署名/外链限制待书面澄清 |
+| MangaDex | AIOResourceSearch | Provider 已实现但禁用；仅公开标题元数据，受免费无广告条件约束 |
+| MusicBrainz | AIOResourceSearch | Provider 已实现但禁用；仅非商业 release-group 元数据 |
+| Perverzija DB | AIOResourceSearch | Provider 已实现但禁用；公开 JSON 场景元数据，待 Hosted 验证 |
 | Z-Library | Atlas | 官方域名线索已核验；仅外部首页入口，无公开元数据 API |
 | Anna's Archive | Atlas | 仅外部首页入口；不使用会员 API 或批量数据库 |
 | 知轩藏书（用户整理存档） | Atlas | 明确标注非原站官方；仅外部入口，不抓取 |
