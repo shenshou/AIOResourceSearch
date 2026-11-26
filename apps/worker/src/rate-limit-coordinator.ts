@@ -26,6 +26,7 @@ const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
 const MAX_COOLDOWN_MS = 86_400_000;
 const EPORNER_LOCK_LEASE_MS = 60_000;
 const EPORNER_LOCK_RETRY_MS = 500;
+const EPORNER_MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
 function boundedCooldownUntil(timestamp: number, now: number): number {
   return Math.min(Math.max(now + 1_000, timestamp), now + MAX_COOLDOWN_MS);
@@ -230,6 +231,56 @@ function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
+async function bufferEpornerResponse(response: Response): Promise<Response> {
+  if (response.url) {
+    const finalUrl = new URL(response.url);
+    if (finalUrl.protocol !== "https:" || finalUrl.hostname !== "www.eporner.com") {
+      throw new Error("Eporner API redirected to an unexpected host.");
+    }
+  }
+  const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > EPORNER_MAX_RESPONSE_BYTES) {
+    throw new Error("Eporner API response exceeded the size limit.");
+  }
+  if (!response.body) {
+    return new Response(null, { status: response.status, statusText: response.statusText, headers: response.headers });
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > EPORNER_MAX_RESPONSE_BYTES) {
+        await reader.cancel("Eporner API response exceeded the size limit.");
+        throw new Error("Eporner API response exceeded the size limit.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const body = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const headers = new Headers(response.headers);
+  headers.delete("Content-Length");
+  headers.delete("Content-Encoding");
+  headers.delete("Transfer-Encoding");
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 async function coordinatorRequest(
   namespace: RateLimitCoordinatorNamespace,
   path: "reserve" | "validate" | "cooldown" | "acquire" | "release",
@@ -339,7 +390,8 @@ export function createCoordinatedFetch(
     }
 
     try {
-      const response = await fetchImpl(input, init);
+      let response = await fetchImpl(input, init);
+      if (lane === "eporner") response = await bufferEpornerResponse(response);
       const cooldownUntil = parseCooldownUntil(response, Date.now());
       if (cooldownUntil !== null) {
         // Persist upstream throttling even if the initiating client disconnects

@@ -422,6 +422,54 @@ test("serializes Eporner requests with an expiring exclusive lease", async () =>
 });
 
 
+test("holds the Eporner exclusive lease until the upstream response body is fully consumed", async () => {
+  const events: string[] = [];
+  const namespace = {
+    idFromName: (name: string) => name,
+    get: () => ({
+      fetch: async (request: Request) => {
+        const path = new URL(request.url).pathname;
+        const body = await request.json() as { scheduledAt?: number; leaseId?: string };
+        if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+        if (path === "/validate") return Response.json({ scheduledAt: body.scheduledAt });
+        if (path === "/acquire") {
+          events.push("acquire");
+          return Response.json({ acquired: true, leaseId: body.leaseId });
+        }
+        if (path === "/release") {
+          events.push("release");
+          return Response.json({ released: true });
+        }
+        return Response.json({ until: Date.now() + 1000 });
+      },
+    }),
+  };
+  let releaseBody!: () => void;
+  const bodyGate = new Promise<void>((resolve) => { releaseBody = resolve; });
+  const upstreamBody = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      await bodyGate;
+      controller.enqueue(new TextEncoder().encode("ok"));
+      controller.close();
+    },
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    namespace,
+    "eporner",
+    new AbortController().signal,
+    async () => new Response(upstreamBody, { headers: { "Content-Type": "application/json" } }),
+  );
+
+  const pending = coordinatedFetch("https://www.eporner.com/api/v2/video/search/");
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(events, ["acquire"]);
+  releaseBody();
+  const response = await pending;
+  assert.equal(await response.text(), "ok");
+  assert.deepEqual(events, ["acquire", "release"]);
+});
+
+
 test("accepts Eporner's sequential API lane with one-second spacing", async () => {
   const bindings: Array<string | number | null>[] = [];
   const ctx = {
