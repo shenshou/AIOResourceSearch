@@ -124,6 +124,8 @@ Deliverables:
 - [ ] Keep Bangumi keyword search deferred while its public subject-search endpoint remains marked experimental; use only stable public endpoints or external-search.
 - [ ] Add per-source fixtures and tests; keep uncertain sources as disabled candidates or external-search entries.
 - [ ] Implement Provider-specific authentication only after reviewing the source terms, credential type, canonical host, expiry/rotation behavior, and redirect handling.
+- [ ] Define and implement project-level age assurance for adult-content discovery based on the jurisdictions in which the public app is made available; do not assume a simple self-declaration satisfies every applicable requirement. Keep adult-only Providers disabled until this gate is resolved.
+- [ ] Implement Eporner only through its documented public API, and only after age assurance is addressed. The integration must synchronize the official removed-video feed at least daily, suppress removed IDs, respect API cache headers and sequential paging, and exclude images, embeds, players, downloads, and machine-learning use. If removal-feed freshness cannot be established, fail closed for Eporner results.
 
 Acceptance:
 - A catalog entry is never represented as an implemented Provider unless its adapter is registered and tested.
