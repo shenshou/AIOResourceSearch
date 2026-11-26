@@ -82,6 +82,7 @@ const emptyForm = (): SourceDefinition => ({
 });
 
 const form = reactive<SourceDefinition>(emptyForm());
+let previousFormType: SourceDefinition["type"] = "provider";
 const isEditing = computed(() => editingId.value !== null);
 const unregisteredCatalogEntries = computed(() => {
   const registeredIds = new Set(manager.sources.value.map((source) => source.id));
@@ -158,6 +159,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     capabilities: [...(entry.capabilities ?? [])],
     notes: `候选来源：${entry.projects.join("、")}。 ${entry.note}`,
   });
+  previousFormType = form.type ?? "provider";
   editingId.value = null;
   showEditor.value = true;
   manager.clearMessages();
@@ -166,6 +168,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
 function beginCreate() {
   htmlFieldsJson.value = "{}";
   Object.assign(form, emptyForm());
+  previousFormType = form.type ?? "provider";
   editingId.value = null;
   showEditor.value = true;
   manager.clearMessages();
@@ -186,9 +189,27 @@ function beginEdit(source: SourceDefinition) {
     searchModes: [...source.searchModes],
     capabilities: [...source.capabilities],
   });
+  previousFormType = form.type ?? "provider";
   editingId.value = source.id;
   showEditor.value = true;
   manager.clearMessages();
+}
+
+function handleSourceTypeChange() {
+  const nextType = form.type ?? "provider";
+  if (nextType === "external-search" && previousFormType === "provider") {
+    const originalSource = editingId.value
+      ? manager.sources.value.find((item) => item.id === editingId.value)
+      : undefined;
+    const currentBaseUrl = form.baseUrl?.trim() ?? "";
+    const originalProviderBaseUrl = originalSource?.baseUrl?.trim() ?? "";
+    const hasUserEditedBaseUrl = !originalSource || currentBaseUrl !== originalProviderBaseUrl;
+    form.baseUrl = form.externalSearchBaseUrl?.trim() ||
+      (hasUserEditedBaseUrl ? currentBaseUrl : "");
+  } else if (nextType === "provider" && previousFormType === "external-search") {
+    form.externalSearchBaseUrl = form.baseUrl?.trim() ?? "";
+  }
+  previousFormType = nextType;
 }
 
 function closeEditor() {
@@ -239,13 +260,13 @@ async function submitForm() {
           searchUrlTemplate: navigationTemplate,
           externalSearchUrlTemplate: undefined,
           externalSearchBaseUrl: undefined,
-          baseUrl: form.externalSearchBaseUrl?.trim() || form.baseUrl?.trim() || undefined,
+          baseUrl: form.baseUrl?.trim() || undefined,
         }
       : {
           searchUrlTemplate: undefined,
           externalSearchUrlTemplate: navigationTemplate,
           externalSearchBaseUrl: form.externalSearchBaseUrl?.trim() ||
-            (originalSource?.type === "external-search" && !navigationTemplate ? form.baseUrl?.trim() : undefined),
+            (originalSource?.type === "external-search" ? form.baseUrl?.trim() : undefined),
         }),
     ...(form.type === "provider" && form.adapterId === "generic-html"
       ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: { ...form.htmlSelectors!, fields: htmlFields } }
@@ -455,7 +476,7 @@ async function deleteSource(source: SourceDefinition) {
               </select>
             </label>
             <label>来源类型
-              <select v-model="form.type">
+              <select v-model="form.type" @change="handleSourceTypeChange">
                 <option v-for="type in SOURCE_TYPES" :key="type" :value="type">{{ sourceTypeLabels[type] }}</option>
               </select>
             </label>
