@@ -191,7 +191,7 @@ Current branch implementation snapshot:
 | Worker entry-point modularization | Initial responsibility split implemented; follow-up review ongoing |
 | Frontend maintainability improvements | Initial shared login component and manager request-race guards implemented; ongoing review |
 | Non-JAV category source coverage | Requires source discovery and review |
-| Local Workers / Durable Object runtime integration tests | Implemented; the prior suite passed CI, but the new AniBT lane extension still awaits a current verification run |
+| Local Workers / Durable Object runtime integration tests | Implemented; CI run [#45785271608](https://github.com/shenshou/AIOResourceSearch/actions/runs/45785271608) passed the current branch head, including the Durable Object runtime suite and AniBT lane extension; hosted Cloudflare verification remains pending |
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
 | Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane plus exclusive request lease, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
