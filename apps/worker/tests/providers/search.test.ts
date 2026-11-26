@@ -142,6 +142,58 @@ test("builds external search destinations without invoking a provider", async ()
   }]);
 });
 
+test("returns an external search link for a Provider without changing Worker execution", async () => {
+  let providerCalls = 0;
+  const configuredProvider = source({
+    id: "dual-mode-source",
+    name: "Dual-mode source",
+    externalSearchUrlTemplate: "https://example.com/search?q={query}",
+    externalSearchBaseUrl: "https://example.com",
+  });
+  const result = await executeSearch(
+    { query: "ABP 123", mode: "number" },
+    sourceConfig(configuredProvider),
+    adapters,
+    resolve(provider(async () => {
+      providerCalls += 1;
+      return [resource({ url: "https://example.com/provider-result" })];
+    })),
+  );
+
+  assert.equal(providerCalls, 1);
+  assert.equal(result.sources[0]?.status, "ok");
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(result.externalSearches, [{
+    sourceId: "dual-mode-source",
+    sourceName: "Dual-mode source",
+    category: "jav",
+    kind: "search",
+    url: "https://example.com/search?q=ABP%20123",
+  }]);
+});
+
+test("returns a homepage link for a Provider when only an external homepage is configured", async () => {
+  const configuredProvider = source({
+    id: "provider-with-homepage",
+    name: "Provider with homepage",
+    externalSearchBaseUrl: "https://example.com",
+  });
+  const result = await executeSearch(
+    request,
+    sourceConfig(configuredProvider),
+    adapters,
+    resolve(provider()),
+  );
+  assert.equal(result.sources[0]?.status, "ok");
+  assert.deepEqual(result.externalSearches, [{
+    sourceId: "provider-with-homepage",
+    sourceName: "Provider with homepage",
+    category: "jav",
+    kind: "homepage",
+    url: "https://example.com/",
+  }]);
+});
+
 test("returns a homepage link for a browse-only external source", async () => {
   const external = source({
     id: "browse-only",
