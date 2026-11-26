@@ -67,7 +67,7 @@ export function validateSource(input: unknown): SourceDefinition | null {
   if (type === "provider" && value.externalSearchUrlTemplate !== undefined) {
     if (typeof value.externalSearchUrlTemplate !== "string" ||
         value.externalSearchUrlTemplate.length > 2048 ||
-        (value.externalSearchUrlTemplate.match(/\\{query\\}/g) ?? []).length !== 1) return null;
+        (value.externalSearchUrlTemplate.match(/\{query\}/g) ?? []).length !== 1) return null;
     try {
       const templateUrl = new URL(value.externalSearchUrlTemplate.replace("{query}", "AIO_QUERY_TOKEN"));
       if (templateUrl.protocol !== "https:" || templateUrl.username || templateUrl.password ||
