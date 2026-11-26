@@ -3090,3 +3090,81 @@ References:
 - BestJavPorn and JAV.sb challenge observations remain clearly labeled as third-party evidence.
 - No Worker fetch, HTML scraping, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
 - No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+## JAV source revalidation — eighteenth batch (2026-11-26)
+
+This batch rechecked JAV Desu, JAV Subtitle, JAV Subtitled, JAVHDPorn.net, and JAVOut. The review keeps exact catalog domains separate from similarly named domains and distinguishes current first-party evidence from historical or third-party technical observations.
+
+### Decision summary
+
+| Source | Evidence found | Current decision | Worker action |
+|---|---|---|---|
+| JAV Desu | Catalog domain `javdesu.tv` could not be fetched in this review (502 from the research fetch). Search results for `jav-desu.com` refer to a different domain and do not establish the identity or policy of `javdesu.tv`. No first-party Terms, API/RSS contract, or metadata-aggregation permission verified. | **Canonical site and automation policy unresolved** | Retain the exact catalog homepage candidate; no Worker fetch, HTML extraction, or substitute-domain use |
+| JAV Subtitle | Catalog domain `javsubtitle.xyz` could not be fetched. Search results surfaced `jav-subtitles.com`, a different domain selling digital subtitle files; its terms are not applicable to `javsubtitle.xyz`. No first-party policy or supported public search/feed contract for the catalog domain verified. | **Canonical site and automation policy unresolved; similarly named commercial site is not evidence** | Retain the exact catalog homepage candidate; no Worker fetch, HTML extraction, or domain substitution |
+| JAV Subtitled | The exact domain could not be opened in this review. WHOIS shows a registration record for `javsubtitled.com` through 2027-08-08, but registration and DNS metadata do not establish current site operation, operator identity, automation permission, or a search contract. | **Site operation and automation policy unresolved** | Retain the exact catalog homepage candidate; no Worker fetch or HTML extraction |
+| JAVHDPorn.net | A third-party browser privacy scan dated 2026-10-15 reports a live homepage, a linked privacy policy, and a redirect to `www.javhdporn.net`; Cloudflare Radar shows recent certificate records. These are technical observations, not first-party authorization. No current first-party Terms, public API/RSS contract, or permission for third-party metadata aggregation was verified. | **Site appears technically active; automation policy and supported interface unresolved** | Retain the exact catalog homepage candidate; no Worker fetch, HTML extraction, or generic-HTML configuration |
+| JAVOut | The exact catalog domain `javout.co` could not be opened. A third-party historical report for `javout.net` reproduces 2020 HTTP headers referencing WordPress REST endpoints on `javout.co`; this is stale, indirect evidence and does not establish a current supported API, operator authorization, or data-use permission. | **Current canonical operation, interface, and automation policy unresolved** | Retain the exact catalog homepage candidate; do not restore a search template or probe undocumented endpoints |
+
+### Source-specific findings
+
+#### JAV Desu
+
+The catalog entry is `https://javdesu.tv`. The current research fetch returned 502. Search results for `jav-desu.com` identify a separate domain with a parked-domain/WHOIS record; there is no verified first-party statement connecting it to `javdesu.tv`. No canonical Terms, official API/RSS documentation, stable public search contract, or written metadata-aggregation permission was established.
+
+Decision: keep the exact `javdesu.tv` candidate and its provenance. Do not substitute `jav-desu.com`, restore a search template, or attempt Worker retrieval.
+
+References:
+- https://javdesu.tv/
+- https://www.whois.com/whois/jav-desu.com
+
+#### JAV Subtitle
+
+The catalog entry is `https://javsubtitle.xyz`, which could not be opened in this review. Search results surfaced `https://www.jav-subtitles.com/`, a similarly named but different service selling downloadable subtitle files. Its Terms describe personal-use licensing and restrictions on redistribution of purchased files; those terms cannot be attributed to `javsubtitle.xyz` and do not establish an automation policy for the catalog domain.
+
+Decision: preserve `javsubtitle.xyz` as the candidate; do not replace it with `jav-subtitles.com`, add a search template, or configure automated extraction.
+
+References:
+- https://javsubtitle.xyz/
+- https://www.jav-subtitles.com/terms-and-conditions/
+- https://www.jav-subtitles.com/faq/
+
+#### JAV Subtitled
+
+The exact catalog domain `https://javsubtitled.com` could not be opened in this review. A WHOIS record shows a domain registration through 2027-08-08 and Cloudflare nameservers. This establishes only registration/DNS facts; it does not prove the current site is operated by the expected service or that automated access is allowed. No first-party Terms, API/RSS contract, or metadata-aggregation permission was verified.
+
+Decision: retain the exact candidate and do not infer permission from domain registration or DNS configuration. No Worker fetch, HTML extraction, or search-template restoration.
+
+References:
+- https://javsubtitled.com/
+- https://www.whois.com/whois/javsubtitled.com
+
+#### JAVHDPorn.net
+
+The exact catalog domain is `https://javhdporn.net`. A third-party privacy scan dated 2026-10-15 reports that the homepage redirected to `https://www.javhdporn.net/` and that a privacy policy was linked. Cloudflare Radar records recent certificates for the domain. Neither a privacy policy nor TLS/DNS activity is an automated-access license. The reviewed search material did not establish current first-party Terms, an official public API/RSS, a stable supported search contract, or permission for third-party metadata aggregation.
+
+Decision: retain the homepage candidate, but keep it out of Worker automation. Do not treat the existence of a privacy policy, active certificate, or homepage response as permission to scrape; do not configure generic HTML parsing without a source-supported contract and policy review.
+
+References:
+- https://javhdporn.net/
+- https://www.javhdporn.net/privacy-policy/
+- https://whogetsmydata.com/website/javhdporn.net
+- https://radar.cloudflare.com/domains/domain/javhdporn.net
+
+#### JAVOut
+
+The catalog entry is `https://javout.co`, which could not be opened in this review. A third-party historical page for `javout.net` reproduces HTTP headers from 2020 that referenced `https://javout.co/wp-json/` and a WordPress page endpoint. The report is old, indirect, and associated with a different host; it does not establish that those endpoints remain available, are intended as a search API, or may be used for third-party aggregation. No current first-party Terms or API/RSS/data-use permission was verified.
+
+Decision: retain the exact `javout.co` candidate. Do not restore a search template or call undocumented WordPress endpoints based on historical third-party headers.
+
+References:
+- https://javout.co/
+- https://javout.net.clearwebstats.com/
+
+### Batch outcome
+
+- Zero Provider promotions and zero search templates restored.
+- All five exact catalog candidates remain in the source inventory; none was deleted or replaced by a similarly named domain.
+- The `jav-subtitles.com` Terms were explicitly kept separate from the unrelated `javsubtitle.xyz` catalog candidate.
+- Third-party technical records for JAVHDPorn and historical JAVOut headers were recorded as technical observations only, not permission.
+- No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
+- No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
