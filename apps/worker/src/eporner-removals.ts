@@ -4,6 +4,7 @@ const API_HOST = "www.eporner.com";
 const REMOVAL_ENDPOINT = "https://www.eporner.com/api/v2/video/removed/";
 const STATE_KEY = "eporner:removal-sync:v1";
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
+const REMOVAL_PAGE_SIZE = 250;
 const DEFAULT_LOOKBACK_MS = 24 * 60 * 60 * 1000;
 export const EPORNER_SYNC_MAX_AGE_MS = 36 * 60 * 60 * 1000;
 
@@ -109,7 +110,7 @@ export async function syncEpornerRemovalFeed(
   const since = existing?.since ?? new Date(scheduledTime - DEFAULT_LOOKBACK_MS).toISOString();
 
   const url = new URL(REMOVAL_ENDPOINT);
-  url.searchParams.set("per_page", "1000");
+  url.searchParams.set("per_page", String(REMOVAL_PAGE_SIZE));
   if (existing?.after) url.searchParams.set("after", existing.after);
   else url.searchParams.set("since", since);
 
@@ -146,7 +147,7 @@ export async function syncEpornerRemovalFeed(
   if (!isRecord(payload) ||
       typeof payload.has_more !== "boolean" ||
       !Array.isArray(payload.removed) ||
-      payload.removed.length > 1000 ||
+      payload.removed.length > REMOVAL_PAGE_SIZE ||
       (payload.has_more && (typeof payload.next !== "string" || !payload.next || payload.next.length > 128))) {
     throw new Error("Eporner removal feed returned an invalid response envelope.");
   }

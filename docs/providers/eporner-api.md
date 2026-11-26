@@ -28,7 +28,7 @@ The legacy added-time value has no timezone offset in the API contract. It is re
 
 ## Removal-feed synchronization
 
-A Worker Cron Trigger runs hourly and consumes one page per invocation from \`GET https://www.eporner.com/api/v2/video/removed/\`, using \`since\` for a new window and the opaque \`after\` cursor for continuation. It uses \`per_page=1000\`, validates every removal record, and commits the cursor only after the entire page is validated.
+A Worker Cron Trigger runs every 15 minutes and consumes one page per invocation from \`GET https://www.eporner.com/api/v2/video/removed/\`, using \`since\` for a new window and the opaque \`after\` cursor for continuation. It uses \`per_page=1000\`, validates every removal record, and commits the cursor only after the entire page is validated.
 
 The sync state is stored as one small record in the existing \`SOURCES_KV\` namespace under \`eporner:removal-sync:v1\`. It contains only the feed cursor, timestamps, and last-page count. It does not store removed IDs, search results, user data, or media. If a page fails, the cursor is not advanced; the next scheduled invocation safely retries that page. A completed sync is considered fresh for 36 hours. While a continuation cursor is pending, the Provider fails closed.
 

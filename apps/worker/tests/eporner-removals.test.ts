@@ -59,6 +59,7 @@ test("persists the continuation cursor after one page and completes on the next 
     }), { headers: { "Content-Type": "application/json" } });
   }, now);
   assert.equal(new URL(requested).searchParams.get("since"), "2026-11-25T03:00:00.000Z");
+  assert.equal(new URL(requested).searchParams.get("per_page"), "250");
   assert.equal(first.complete, false);
   assert.equal(first.removedCount, 1);
   const pending = JSON.parse(memory.values.get(KEY)!);
@@ -86,7 +87,7 @@ test("does not advance the cursor when the upstream feed fails", async () => {
     after: "cursor-1",
     lastCompleteAt: "2026-11-25T04:00:00.000Z",
     lastAttemptAt: "2026-11-25T04:00:00.000Z",
-    lastPageCount: 1000,
+    lastPageCount: 250,
   };
   const memory = memoryEnv(JSON.stringify(existing));
   await assert.rejects(
