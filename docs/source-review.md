@@ -4150,3 +4150,24 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added three project-owned candidates: itch.io, TIDAL, and Qobuz. All are homepage-only; no search templates or automated acquisition paths were added. itch.io's documented RSS is recorded as a future candidate, not implemented.
 - Catalog count: 156 unique candidates (JAV 28, torrent 30, forum 16, other-index 82); project-owned provenance tags: 51 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
+
+
+## 音乐平台与独立游戏平台补充审查（2026-11-27，第四批）
+
+### SoundCloud — homepage-only; API incompatible with current product scope
+- First-party API documentation confirms search endpoints for tracks, users, and playlists. API access requires a registered application and SoundCloud-issued client credentials; current API access is described as free, but SoundCloud reserves the right to introduce charges.
+- API Terms prohibit scraping or similar techniques to copy, aggregate, repurpose, or republish platform data outside legitimate API access. More importantly, they expressly prohibit use of the API or User Content for an app that depicts sexually explicit images or engages in the sale or advertisement of pornography. Because JAV/adult content is a core product category, API integration is not compatible with the current product scope. The ordinary User Terms also prohibit scraping/aggregation of Content.
+- **Decision:** retain SoundCloud as a music candidate with homepage-only user navigation. No API credentials, automated search, metadata/artwork ingestion, playback, or user-data collection.
+- References: https://developers.soundcloud.com/docs/api/guide ; https://developers.soundcloud.com/docs/api/terms-of-use ; https://soundcloud.com/terms-of-use ; https://help.soundcloud.com/hc/en-us/articles/115003446727-SoundCloud-Public-APIs
+
+### Game Jolt — not admitted to the source catalog; platform/product scope conflict
+- The official Game Jolt API is for game-integrated functions such as data stores, scores, sessions, trophies, and user features; it is not a public game-catalogue search API.
+- Game Jolt's first-party Terms limit the service licence to personal use, prohibit scraping/copying content and data, and prohibit adult content on the service. Given the project's JAV/adult core category, it is not a suitable catalogue source for this product even as a user-facing discovery integration.
+- **Decision:** do not add Game Jolt to the durable source catalog. This is a documented scope incompatibility, not a temporary technical blocker. Reconsider only if the platform's terms and the product's content scope materially change.
+- References: https://ssr.gamejolt.net/game-api/doc ; https://gamejolt.com/terms
+
+### Batch outcome
+- Added SoundCloud as one project-owned music candidate, homepage-only. No search template or automated acquisition path was added.
+- Game Jolt was reviewed but not admitted to the catalog because its first-party Terms prohibit adult content and its API is not a catalogue search API.
+- Catalog now contains 157 unique candidates (JAV 28, torrent 30, forum 16, other-index 83); AIOResourceSearch provenance tags: 52 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, KV configuration, source enablement, or deployment changed.
