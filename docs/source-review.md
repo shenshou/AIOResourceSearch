@@ -3251,3 +3251,83 @@ References:
 - Third-party privacy scans, WHOIS records, and regional availability observations are not treated as first-party automation permission.
 - No Worker fetch, HTML scraping, age-gate automation, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
 - No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+## JAV source revalidation — twentieth batch (2026-11-26)
+
+This batch reviewed DMM/FANZA, JavDB, JAVLeak, JavLibrary, and JavMost. The review distinguishes official API availability from the right to use the API for this project's particular product, and distinguishes a public search UI from permission to aggregate its results.
+
+### Decision summary
+
+| Source | Evidence found | Current decision | Worker action |
+|---|---|---|---|
+| DMM / FANZA | Official FANZA help says DMM Web Services requires a DMM member account, DMM Affiliate registration, and API-use registration; the API ID is issued after registration. The official API endpoint redirected the current research fetch to a regional unavailability page. Full current API terms and whether this non-affiliate metadata-search product fits the permitted use were not verified. | **Official affiliate API exists, but project eligibility and use restrictions are unresolved** | Do not implement or configure credentials until the complete current API terms and project use case are reviewed; no assumption that registration alone authorizes general metadata aggregation |
+| JavDB | First-party Terms prohibit collecting/harvesting information about users and prohibit using the site to promote or operate a service without prior written consent. They do not, in the reviewed text, clearly grant or separately define permission for this project's metadata aggregation. | **Prior written consent is a project integration gate** | No Worker fetch or metadata extraction absent written consent that covers this service |
+| JAVLeak | Exact homepage is live and exposes a search input, an Advanced Search link, and paginated metadata. No Terms, Privacy policy, official API/RSS contract, stable supported search URL, or explicit third-party aggregation permission was found in the retrieved homepage. | **Public search UI observed; data-use permission and supported interface unresolved** | Homepage-only; no Worker scraping, undocumented endpoint probing, or generic HTML adapter configuration |
+| JavLibrary | Exact `www.javlibrary.com` homepage returned 403 to the current research fetch. No current first-party Terms, official API/RSS contract, or metadata-aggregation permission was verified. A fetcher-side 403 does not establish the site's global availability or access policy. | **Current site policy and supported interface unresolved** | Keep existing candidate; no Worker fetch, cookie/session reuse, or alternate-route probing |
+| JavMost | The previously recorded `javmost.com` redirect to `javmost.ws` remains unverified as a canonical operator-controlled migration. Current research could not retrieve `javmost.ws`. The previously reviewed Legal page was a 18 U.S.C. §2257 compliance statement, not Terms or an automation policy. | **Canonical domain, current terms, and supported interface unresolved** | Keep original catalog record and provenance; no domain substitution, search-template restoration, or Worker fetch |
+
+### Source-specific findings
+
+#### DMM / FANZA
+
+The official FANZA help article says product data for affiliate use is available through DMM Web Services and explicitly lists three prerequisites: DMM membership, DMM Affiliate registration, and API-use registration. A separate official help article says API registration issues an API ID. These establish an official affiliate API and its registration prerequisites; they do not by themselves establish that a general-purpose third-party metadata search aggregator is an allowed use.
+
+The official API landing page redirected this research fetch to DMM's regional-unavailability notice. Therefore the current full Web Service Terms, permitted display/use cases, credit requirements, retention rules, and any restrictions on combining DMM data with other sources could not be independently checked in this review. A third-party article discussing the September 2026 terms is not treated as a substitute for the official terms.
+
+Decision: keep DMM/FANZA as a candidate, but do not implement it yet. Before implementation, obtain and review the current official API terms and confirm whether this project must become an affiliate site, display DMM-specific credits/links, or segregate DMM-derived results from other providers. Do not treat "API registration available" as blanket authorization. No paid third-party API is being proposed; the unresolved point is the official affiliate program's eligibility and usage conditions.
+
+References:
+- https://support.fanza.jp/affiliate/article/44538
+- https://support.fanza.jp/affiliate/article/48053
+- https://affiliate.dmm.com/api/ (research fetch redirected to a regional unavailability notice)
+- https://adafi-tips.com/posts/00078/ (third-party discussion only; not used as authoritative permission)
+
+#### JavDB
+
+The first-party Terms at `https://javdb.com/terms` prohibit collecting or harvesting information about other users and prohibit using the site or its facilities to promote or operate a service without the operator's prior written consent. The Terms also prohibit commercial use of the service/content. These clauses are directly relevant to a public multi-source search service, even though they are not a blanket statement that every form of automated access is prohibited.
+
+Decision: do not add a JavDB Provider, HTML adapter, or search template. Written permission must explicitly cover operating this metadata-search service and the intended collection/display of JavDB metadata. The research fetch of the Terms page returned 403 after search indexing, but the first-party indexed Terms text was available and is recorded as the source of the clauses above.
+
+References:
+- https://javdb.com/terms
+- https://javdb.com/privacy
+
+#### JAVLeak
+
+The exact homepage `https://javleak.com/` is retrievable. It displays a search input, an Advanced Search link, studio navigation, and paginated title/metadata listings. The retrieved page did not contain Terms or Privacy links/text, and no official API/RSS documentation or stable, source-documented search URL was established. The visible search form is evidence of a user-facing feature, not permission for automated third-party aggregation.
+
+Decision: retain the original homepage candidate and existing provenance. Do not infer a query URL from the form or use undocumented WordPress/search endpoints. No Worker fetching, HTML extraction, or generic HTML adapter configuration.
+
+References:
+- https://javleak.com/
+
+#### JavLibrary
+
+The exact catalog URL `https://www.javlibrary.com/` returned 403 to the current research fetch. No current first-party Terms, official API/RSS documentation, supported public search contract, or permission for third-party metadata aggregation was established. The fetch result is a property of this research access path and is not proof of a universal block or a site policy.
+
+Decision: retain the candidate and existing provenance; do not try alternate paths, cookies, browser sessions, or challenge handling to obtain access. No Worker fetching or metadata extraction.
+
+References:
+- https://www.javlibrary.com/
+
+#### JavMost
+
+The catalog record currently points to `https://javmost.com`; previous review observed a redirect toward `javmost.ws` / `www.javmost.ws`, but the redirect was not verified as a canonical operator-controlled migration. The current research fetch could not retrieve `https://javmost.ws/`. The previously reviewed Legal page was a U.S. 18 U.S.C. §2257 compliance statement; that statement is not Terms of Service, an API contract, or an automation permission.
+
+Decision: keep the original `javmost.com` candidate and its provenance. Do not silently rewrite it to `.ws`, restore a search template, or automate retrieval.
+
+References:
+- https://javmost.com/
+- https://javmost.ws/
+- https://www.javmost.ws/
+
+### Batch outcome
+
+- Zero Provider promotions and zero search templates added or restored.
+- All five candidates remain in the source inventory.
+- DMM/FANZA is recorded as an official affiliate API candidate with registration and use-condition gates, not as an immediately usable generic public API.
+- JavDB's prior-written-consent requirement is recorded precisely; no broader blanket scraping prohibition is inferred.
+- JAVLeak's visible search UI is not treated as permission to aggregate its results.
+- JavLibrary/JavMost fetch failures are not misrepresented as site-wide blocks or permission evidence.
+- No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
+- No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
