@@ -4071,3 +4071,25 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added six project-owned novel-platform candidates, all external-only.
 - Wuxiaworld's current Terms explicitly prohibit automated extraction without written permission; WebNovel's terms reserve platform rights and limit use; other platforms remain unverified for API/data reuse.
 - No Provider, KV configuration, source enablement, chapter/file retrieval, or Cloudflare deployment was added.
+
+
+## 游戏与音乐平台补充审查（2026-11-27）
+
+### Steam Store — verified user-opened search, no general catalogue API established
+- The first-party Steam Store search page is publicly accessible. A direct first-party query URL using `https://store.steampowered.com/search/?term=portal` was opened and returned results for Portal, verifying the `term` search route for a browser-initiated external link.
+- Steamworks Web API documentation describes public and protected methods for Steamworks features, including publisher-oriented and user/stat/news methods. The reviewed first-party overview does not establish a general public catalogue-search endpoint suitable for this aggregator. Do not infer that undocumented Storefront endpoints are an approved API.
+- **Decision:** add Steam Store as a game candidate with one user-opened external search template. No Worker fetch, HTML scraping, undocumented endpoint probing, API-key harvesting, or source enablement.
+
+### Spotify — API search exists, but indexing restriction is incompatible
+- Spotify's first-party Web API supports artist, album, track, and show metadata/search. Its current getting-started page states that a Spotify Premium account and app credentials are needed to use the Web API.
+- Spotify Developer Terms prohibit robots, spiders, site-search/retrieval applications, or other tools from retrieving, duplicating, or indexing portions of Spotify Service or Spotify Content except as expressly permitted. This product's cross-source catalogue search is not established as a permitted use. Do not use the Web API to build or mirror a Spotify index, and do not copy cover art or content.
+- **Decision:** retain Spotify as homepage-only external navigation. No API credentials, automated search, metadata ingestion, or artwork reuse.
+
+### Apple Music — catalogue API exists, but access and purpose do not fit this phase
+- Apple's first-party Apple Music API documentation confirms catalogue search for albums, songs, artists, and other catalogue resources. Requests require a developer token signed with a Media Services private key; Apple documents creating a Media ID and key in Certificates, Identifiers & Profiles. Apple Developer Program membership is USD 99/year.
+- Apple's Developer Program terms limit MusicKit API/JS use to purposes related to facilitating end users' access to Apple Music subscriptions and prohibit charging or indirectly monetizing access to Apple Music services. This project is a multi-source metadata/resource search product, not an Apple Music subscription client; a compliant use has not been established. The user also does not accept paid third-party API/service costs.
+- **Decision:** retain Apple Music as homepage-only external navigation. No developer account/key purchase, API integration, catalogue harvesting, artwork reuse, or user-library access.
+
+### Scope note — scholarly metadata APIs
+- Crossref and OpenAlex both publish public scholarly-metadata APIs with documented rate limits; Crossref says almost all REST API metadata is not subject to copyright and may be used for any purpose, while OpenAlex offers a free-to-start API and free keys for higher budgets.
+- These services index scholarly works, authors, institutions, and research outputs rather than the current product's media/resource categories. Do not force them into the existing `general` category or inflate the current source inventory. Revisit them only if an academic/research discovery category is explicitly added to the product taxonomy; then define its UX and data provenance separately.
