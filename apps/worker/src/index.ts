@@ -1,4 +1,6 @@
 export { RateLimitCoordinator } from "./rate-limit-coordinator";
+import { createCoordinatedFetch } from "./rate-limit-coordinator";
+import { syncEpornerRemovalFeed } from "./eporner-removals";
 import { executeSearch } from "./providers/search";
 import { CONTENT_CATEGORIES } from "@aio-resource-search/shared";
 import type { Env } from "./env";
@@ -80,6 +82,14 @@ async function route(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
+  async scheduled(controller: { scheduledTime: number }, env: Env): Promise<void> {
+    if (!env.RATE_LIMIT_COORDINATOR) {
+      throw new Error("Eporner removal sync requires the shared rate-limit coordinator.");
+    }
+    const signal = new AbortController().signal;
+    const coordinatedFetch = createCoordinatedFetch(env.RATE_LIMIT_COORDINATOR, "eporner", signal);
+    await syncEpornerRemovalFeed(env, coordinatedFetch, controller.scheduledTime);
+  },
   async fetch(request: Request, env: Env): Promise<Response> {
     const cors = getCorsHeaders(request, env);
     if (cors instanceof Response) return cors;

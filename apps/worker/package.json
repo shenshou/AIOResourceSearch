@@ -7,7 +7,7 @@
     "dev": "wrangler dev --config wrangler.jsonc",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/providers/search.test.ts tests/routes/index.test.ts tests/validation/validation.test.ts tests/rate-limit-coordinator.test.ts tests/providers/mangadex-api.test.ts tests/providers/musicbrainz-api.test.ts tests/providers/dmhy-rss.test.ts",
+    "test": "tsx --test tests/providers/search.test.ts tests/routes/index.test.ts tests/validation/validation.test.ts tests/rate-limit-coordinator.test.ts tests/providers/mangadex-api.test.ts tests/providers/musicbrainz-api.test.ts tests/providers/dmhy-rss.test.ts tests/providers/eporner-api.test.ts tests/eporner-removals.test.ts",
     "test:runtime": "vitest run --config vitest.config.ts"
   },
   "dependencies": {

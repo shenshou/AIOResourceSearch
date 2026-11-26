@@ -53,6 +53,8 @@ export interface ProviderContext {
   credential?: string;
   /** Optional Cloudflare edge cache for upstream APIs with explicit cache intervals. */
   cache?: Cache;
+  /** Eporner requires a recent completed official removal-feed sync before returning results. */
+  getEpornerSyncState?: () => Promise<EpornerRemovalSyncState | null>;
   /** Cloudflare HTMLRewriter-backed parser, injected by the Worker runtime. */
   parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; metadata?: Record<string, string> }>>;
 }
@@ -60,7 +62,7 @@ export interface ProviderContext {
 export interface ProviderAdapter {
   readonly id: string;
   /** Shared upstream pacing lane; missing coordinator must fail closed. */
-  readonly rateLimitLane?: "musicbrainz" | "mangadex" | "anibt" | "therarbg";
+  readonly rateLimitLane?: "musicbrainz" | "mangadex" | "anibt" | "therarbg" | "eporner";
   readonly version: string;
   readonly mechanism?: FetchMechanism;
   readonly contentCategories?: readonly ContentCategory[];

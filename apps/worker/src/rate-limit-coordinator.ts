@@ -1,4 +1,4 @@
-type RateLimitLane = "musicbrainz" | "mangadex" | "anibt" | "therarbg";
+type RateLimitLane = "musicbrainz" | "mangadex" | "anibt" | "therarbg" | "eporner";
 
 interface SqlCursor<T> extends Iterable<T> {
   one(): T | null;
@@ -20,6 +20,8 @@ const LANE_INTERVAL_MS: Record<RateLimitLane, number> = {
   anibt: 1_100,
   // The RarBg anonymous API allows 30 requests/minute/IP; leave headroom.
   therarbg: 2_100,
+  // Eporner requests should be sequential; use a conservative shared one-second lane.
+  eporner: 1_000,
 };
 const MAX_COOLDOWN_MS = 86_400_000;
 
@@ -35,7 +37,7 @@ function json(value: unknown, status = 200): Response {
 }
 
 function isLane(value: unknown): value is RateLimitLane {
-  return value === "musicbrainz" || value === "mangadex" || value === "anibt" || value === "therarbg";
+  return value === "musicbrainz" || value === "mangadex" || value === "anibt" || value === "therarbg" || value === "eporner";
 }
 
 function parseCooldownUntil(response: Response, now: number): number | null {

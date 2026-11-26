@@ -20,6 +20,9 @@
       }
     ]
   },
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
   "exports": {
     "RateLimitCoordinator": {
       "type": "durable-object",

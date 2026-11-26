@@ -3,6 +3,7 @@ import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
 import { createCoordinatedFetch, type RateLimitCoordinatorNamespace } from "../rate-limit-coordinator";
+import { readEpornerRemovalSyncState } from "../eporner-removals";
 import { readSourceCredential, type Env } from "../env";
 
 const MAX_RESULTS_PER_SOURCE = 50;
@@ -257,7 +258,7 @@ async function searchOneSource(
 
     const providerResult = provider.search(
       { query: request.query, mode: request.mode },
-      { source, fetch: providerFetch, signal: controller.signal, cache, parseHtml: parseHtmlResults, ...(credential ? { credential } : {}) },
+      { source, fetch: providerFetch, signal: controller.signal, cache, parseHtml: parseHtmlResults, ...(credential ? { credential } : {}), ...(source.id === "eporner" && env ? { getEpornerSyncState: () => readEpornerRemovalSyncState(env) } : {}) },
     );
     const resources = await Promise.race([providerResult, timeout, cancelled]);
     if (!Array.isArray(resources)) throw new Error("Provider returned an invalid result set.");

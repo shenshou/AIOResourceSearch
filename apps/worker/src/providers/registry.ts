@@ -1,6 +1,7 @@
 import type { ProviderAdapter } from "./types";
 import { genericHtmlProvider } from "./generic-html";
 import { dmhyRssProvider } from "./dmhy-rss";
+import { epornerApiProvider } from "./eporner-api";
 import { anibtTorznabProvider } from "./anibt-torznab";
 import { mangaDexProvider } from "./mangadex-api";
 import { musicBrainzProvider } from "./musicbrainz-api";
@@ -20,6 +21,7 @@ const providerAdapters: readonly ProviderAdapter[] = [
   genericHtmlProvider,
   anibtTorznabProvider,
   dmhyRssProvider,
+  epornerApiProvider,
   sukebeiRssProvider,
   perverzijaDbProvider,
   torlockProvider,
