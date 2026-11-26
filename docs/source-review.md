@@ -3007,13 +3007,21 @@ The source catalog now marks Eporner as a built-in Provider candidate. Its sourc
 
 ## Mikan Project revalidation — 2026-11-26
 
-- The first-party homepage remains publicly accessible and indexable. It exposes a site-search form and public anime detail pages; the detail page shows series metadata, subtitle-group listings, release titles, timestamps, and torrent-related controls.
+- The first-party homepage remains publicly accessible and indexable. A current concrete keyword-search page (`https://mikanani.me/Home/Search?searchstr=Rewrite`) was directly inspected and returned public title, subtitle-group, release, size, and magnet-related UI data. This verifies the existing user-facing search template, not permission for Worker-side collection or republication.
+- The first-party homepage announcement explicitly describes `mikanime.tv` as a new domain “仅限国内使用” (domestic use only). Treat this as an operator-stated geographic scope. The project must not use that domain as a fallback, redirect users to it, proxy it, or otherwise use it to work around regional availability restrictions; retain the original `mikanani.me` destination only.
 - The public `Home/MyBangumi` page presents a personal subscription area and a login prompt. Third-party AutoBangumi documentation describes `/RSS/MyBangumi?token=...` as a user-specific subscription feed. That token represents an individual's subscription list and must not be collected, stored, or used as a shared project feed.
 - A per-series `/RSS/Bangumi?bangumiId=...&subgroupid=...` route appears in third-party tutorials and community examples, but I did not find first-party API/RSS documentation confirming its public contract or permission for third-party aggregation.
+- Third-party AniBT documentation describes an API token used by a subtitle group to publish/synchronize its own releases to Mikan. This is a publisher-side authenticated workflow, not an anonymous read/search API or permission for this project to query Mikan's catalog.
 - The current first-party pages do not expose a clear automation/data-aggregation policy in the reviewed material; the site's `robots.txt` and Terms URLs could not be independently retrieved in this pass. No permission is inferred from the fact that public pages are indexable.
-- The site's own announcement labels `mikanime.tv` as a new domain for mainland-China use. It is a first-party announced domain, not a guessed mirror; however, this does not establish that it should be used as a regional-access workaround by this project.
 
-**Decision:** keep Mikan Project as a user-initiated external search destination only. Do not add Worker HTML scraping, shared RSS polling, or a search Provider until the operator publishes a supported public interface and applicable automation/data-use terms or grants explicit permission. Never use a personal MyBangumi token as a shared source. No login automation, proxying, or regional restriction evasion.
+**Decision:** keep Mikan Project as a user-initiated external search destination only. Do not add Worker HTML scraping, shared RSS polling, or a search Provider until the operator publishes a supported public interface and applicable automation/data-use terms or grants explicit permission. Never use a personal MyBangumi token or publisher-side API credential as a shared source. No login automation, proxying, undocumented endpoint probing, or regional restriction evasion.
+
+Updated references:
+- https://mikanani.me/ (first-party homepage and domestic-only alternative-domain announcement)
+- https://mikanani.me/Home/Search?searchstr=Rewrite (current first-party public search page)
+- https://mikanani.me/robots.txt (not retrievable in this review; no policy conclusion drawn)
+- https://www.autobangumi.org/en/config/rss.html (third-party personal RSS explanation)
+- https://wiki.anibt.net/docs/site-sync/mikan (third-party publisher-side token documentation)
 
 ## JAV source revalidation — seventeenth batch (2026-11-26)
 
