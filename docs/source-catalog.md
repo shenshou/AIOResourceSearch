@@ -23,7 +23,7 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 111; the 63 reviewed Atlas rows remain unimported.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 119; the 63 reviewed Atlas rows remain unimported.
 
 
 
@@ -68,7 +68,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | r/JAV | Atlas | 有上游搜索模板，需复核 |
 | SupJAV | Atlas / FetchJAV | 有上游搜索模板，需复核 |
 
-## BT / Torrent（29）
+## BT / Torrent（30）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -124,7 +124,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（29）
+## 其他资源索引（45）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -181,6 +181,18 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Letterboxd：API 仅接受申请且不保证授权，当前明确不向若干数据分析/推荐/复刻付费功能项目开放；仅保留官网入口。
 - OMDb：API 页面标示 CC BY-NC 4.0 和每日免费额度，但其 Terms 另有禁止未经书面许可建立索引的条款；许可适用范围未澄清前不接入。
 - 上述来源均未新增 Provider、搜索模板、KV 配置或启用状态。
+
+## 补充动漫元数据候选（2026-11-26）
+
+- AniList：公开 GraphQL 元数据接口存在，但第一方条款限制大规模收集，并限制用于同类竞争性服务；未取得针对本项目的书面确认前，仅保留外部入口。
+- Bangumi：第一方文档提供 subject 关键词搜索 API，并要求非浏览器客户端使用可识别的项目 User-Agent；当前尚未确认第三方聚合展示许可和明确的数值配额，暂保留首页入口。
+- MyAnimeList：第三方技术资料提及 API v2 与 Client ID 要求，但本轮未核实当前第一方 API 条款、限额和元数据复用许可；不复用从官方 App 或第三方代码提取的 Client ID。
+- AniDB：第一方 HTTP/UDP API 规范存在，但当前政策和第三方聚合许可未核实；暂保留首页入口。
+- Kitsu：第一方文档说明公开 GET 和动漫搜索接口，但 R18 内容有访问门槛，且文档仓库许可不等于目录数据再发布许可；暂不接入。
+- LiveChart：未核实第一方公开 API/RSS 合约或元数据复用许可；仅保留首页入口，不进行网页抓取或未公开接口探测。
+- Douban：第一方法律声明要求对条目元数据、评分、评论和采集使用事先取得书面许可；仅保留外部入口。
+- Notify.moe：第一方 API 存在，条款反对 HTML 抓取并指向 API，但第三方聚合许可、配额和服务持续性尚未确认；不进行 API 批量获取。
+- 上述候选均保留在目录中，未新增 Provider、搜索模板、KV 配置或启用状态。
 
 ## 来源项目范围说明
 
