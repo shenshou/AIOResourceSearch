@@ -920,7 +920,7 @@ This batch reviewed four Lustpress-listed video-index candidates: Eporner, XNXX,
 
 | Source | Evidence reviewed | Current decision | Worker action |
 |---|---|---|---|
-| Eporner | Canonical Terms URL could not be retrieved; a third-party policy review quotes restrictions on automated/manual extraction, scraping, harvesting, downloading, or reproduction for AI-model/system purposes without prior written consent | **Policy scope unresolved; automation not approved** | External-only pending canonical Terms review and written clarification |
+| Eporner | First-party Terms updated 2026-10-09 and official API v2.1.0 docs: public API is expressly exempt from the general automated-access restriction; keyless search and daily removal feed are documented | **API use permitted within documented limits; project compliance prerequisites remain** | Eligible for metadata-only Provider after app age assurance and daily removal-feed sync; no player, images, downloads, or ML use |
 | XNXX | Official legal Terms and robots.txt exist; third-party review reports two disallowed paths and no clear public data-sharing API | **No third-party aggregation permission verified** | External-only; respect robots.txt; do not use unofficial scraper wrappers |
 | XVideos | Third-party Terms index records a clause prohibiting spidering, crawling, or automated access; canonical Terms page was not independently retrieved | **Automated access treated as prohibited pending contrary written authorization** | External-only; no Worker crawling |
 | XHamster | Current xHamster-related Terms at my.xhsocial.com prohibit scraping, redistribution, and automatic/manual monitoring or reproduction; defined scope is centered on my.xhsocial.com and company-operated related domains | **Strong restriction; exact xhamster.com scope requires clarification** | External-only; no automated access pending written clarification |
@@ -929,9 +929,11 @@ This batch reviewed four Lustpress-listed video-index candidates: Eporner, XNXX,
 
 #### Eporner
 
-The catalog entry originates from the Lustpress provider list. The canonical Terms URL at https://www.eporner.com/terms/ was blocked to the research fetcher, so the full current first-party text could not be reviewed directly. A third-party policy review quotes a clause restricting automated or manual extraction, scraping, harvesting, downloading, or reproduction of content/data for the purposes of developing, training, or operating AI models or systems without prior written consent. That quoted scope is not identical to ordinary metadata aggregation, so this review does not overstate it as a blanket prohibition on every kind of automated access. However, no public API or authorization for this project's intended reuse was established.
+The canonical Terms are now directly reviewable at https://www.eporner.com/terms/ (last updated 2026-10-09), and the first-party API documentation is published at https://www.eporner.com/api/v2/ (version 2.1.0). Section 6.2(8) generally restricts automated access and extraction, but Section 6.2 expressly states that this restriction does not apply to the documented public API when its documentation, usage limits, and the Terms are followed; no separate written permission is required for that API use. The official API exposes keyless HTTPS keyword search, pagination, a removed-video feed, and a status endpoint.
 
-Decision: keep Eporner external-only. Do not implement a Worker Provider or HTML scraper unless the canonical Terms are reviewed and the operator confirms in writing that the intended metadata aggregation is permitted.
+The API-specific terms welcome use on a website or app and require: reading the removed-video feed at least once daily and removing listed videos; compliance with applicable age-verification and child-protection rules; no use of the API/feed for machine-learning or AI training/testing; no downloading, copying, or re-hosting video files; and fair request behavior. The API documentation says to respect Cache-Control, make sequential rather than parallel page requests, and wait for Retry-After after HTTP 503. This project should consume only text metadata (title, keywords, duration, views/rating/date) and the canonical video URL. Do not consume thumbnails, embeds, player markup, or media files. The project must not treat the API as a way around Eporner's regional or age controls.
+
+Decision: Eporner is eligible for a metadata-only Provider through the official public API, not HTML scraping. Keep it unconfigured and disabled until the project implements a compliant daily removal-feed sync and confirms that its own user-facing age-assurance flow meets the applicable requirements. No API call, source activation, or deployment is part of this review.
 
 #### XNXX
 
@@ -2884,3 +2886,58 @@ This batch rechecked 5278.cc, OurSogo, Sex8.cc, 91Porn, and Hanime1. Domain acti
   - https://en.greatfire.org/domain/hanime1.me
 
 **Batch outcome:** zero Provider promotions, zero new search templates, and zero access-control workarounds. Existing catalog destinations remain unchanged.
+
+
+## Individual source audit — fourteenth batch (2026-11-26)
+
+This revalidation covers 夯鸭论坛 (Hung-Ya), 色花堂98堂 (SeHuaTang), JAVGG, JavyNow, and Eporner. First-party policy and documented interfaces take precedence over search forms, third-party scripts, or domain-directory claims.
+
+### Decision summary
+
+| Source | First-party evidence | Current decision | Worker action |
+|---|---|---|---|
+| 夯鸭论坛 (Hung-Ya) | Canonical homepage https://hung-ya.com/ displays an 18+ entry gate and legal-content warning; no current Terms, public API/RSS, or supported automated search contract was located | **Age-gated; automation policy unresolved** | Homepage-only external link; no Worker fetch or age-gate bypass |
+| 色花堂98堂 (SeHuaTang) | Existing operator-associated Telegram channel announces .net/.org domains and search availability changes, but is not a first-party Terms/API/RSS policy; current .org content/domain identity remains unverified | **Canonical domain and automation permission unresolved** | Keep existing unverified external reference; no mirror substitution, scraping, or account automation |
+| JAVGG | First-party Terms at https://javgg.net/terms-of-service/ prohibit data mining, harvesting, and extraction; no exception or official API/RSS contract was found | **Automated metadata extraction prohibited by published Terms** | Homepage-only; no Worker Provider or HTML scraper |
+| JavyNow | First-party Terms at https://javynow.com/tos prohibit scrapers, offline readers, spiders, robots, and automated extraction absent express authorization; third-party reproduction/distribution is also restricted | **Automated retrieval not authorized** | Homepage-only; remove/keep removed any search template; no Worker fetch |
+| Eporner | First-party Terms updated 2026-10-09 expressly exempt the documented public API; API v2.1.0 provides no-key search and a removed-video feed | **Documented API use permitted subject to API Terms** | Eligible for metadata-only Provider after daily removal-feed sync and project age-assurance prerequisites |
+
+### Source-specific findings
+
+#### 夯鸭论坛 (Hung-Ya)
+
+The current canonical homepage identifies itself as 洪爺影城 / Hung-Ya and presents an 18+ entry gate. The gate and accompanying legal notice establish an age boundary, not permission for automated access. No current first-party Terms, public API/RSS contract, or supported search interface was verified.
+
+Decision: retain the existing homepage-only reference. Do not automate entry-gate interaction, crawl the forum, or infer permission from the visible homepage.
+
+#### 色花堂98堂 (SeHuaTang)
+
+The operator-associated Telegram channel has published notices about the site's search availability and lists .net/.org domain references. Those notices are useful discovery evidence, but they do not provide a current first-party automation policy or public API/RSS contract. The exact existing .org catalog destination has not been verified as a functioning canonical site in this review.
+
+Decision: retain the existing unverified external reference only. Do not switch to a presumed mirror, reverse-engineer forum search, reuse user cookies, or automate account access.
+
+#### JAVGG
+
+The first-party Terms at https://javgg.net/terms-of-service/ grant a limited viewing license and expressly restrict data mining, data harvesting, and data extraction. A public search UI does not override those restrictions, and no first-party API/RSS or express permission for this aggregator was found.
+
+Decision: homepage-only external reference. Do not implement a Worker Provider, generic HTML adapter configuration, or metadata extraction.
+
+#### JavyNow
+
+The canonical homepage at https://javynow.com/ exposes a search input, but the first-party Terms at https://javynow.com/tos expressly prohibit computerized/automatic mechanisms including web scrapers, offline readers, spiders, and robots to access, extract, or download content unless expressly authorized. The Terms also restrict third-party reproduction, distribution, and exploitation of content without prior written consent.
+
+Decision: retain the homepage reference only. The search box is not an API contract or automation authorization; do not restore a search template or implement automated retrieval.
+
+#### Eporner
+
+The previous 2026-11-25 review left Eporner external-only because the canonical Terms could not then be retrieved. That conclusion is superseded by this direct first-party review. The Terms' Section 6.2 exception explicitly permits use of the documented public API without separate written permission when its documentation, limits, and the Terms are followed. The API v2.1.0 documentation specifies a no-key HTTPS search endpoint, cache behavior, sequential paging, a removed-video feed, and status checks.
+
+Decision: approve the documented API as an eligible acquisition path, limited to metadata and canonical source links. Implementation remains gated on a daily removed-video sync and confirmation of project-side age assurance. Do not consume image thumbnails, player/embed data, or media files; do not bypass regional/age controls; do not use the API/feed for AI or machine-learning training/testing.
+
+### Batch outcome
+
+- One source (Eporner) promoted from external-only to **official-API eligible**, with explicit implementation prerequisites.
+- Four sources remain external-only or homepage-only.
+- No search templates were added for JAVGG or JavyNow.
+- No mirror switching, age-gate automation, account/session reuse, challenge bypass, or HTML scraping was introduced.
+- No Provider code, KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
