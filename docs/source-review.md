@@ -3916,3 +3916,59 @@ A cross-check of the compile-time Worker registry, Provider source files, focuse
 The source model currently treats a source as either provider or external-search; it does not yet model both acquisition/navigation paths on one source record. This is an architectural limitation to address explicitly in a future coherent change if both paths must be surfaced simultaneously. Until then, preserve the existing external-search entries and do not infer that a compiled Provider automatically replaces them.
 
 **Current result:** three missing source records have been added (MangaDex, MusicBrainz, Perverzija DB). Existing external-navigation records remain unchanged. No KV adapter/source records have been written; the three new Provider candidates remain unconfigured and disabled. No Cloudflare binding, live upstream request, deployment, or production change has occurred. The catalog contains 125 unique candidates.
+
+
+## Novel / e-book catalog reconciliation and cross-category book-source review — 2026-11-26
+
+This update closes the previously documented gap between the 2026-11-25 review of the eight Atlas novel/e-book candidates and the durable source catalog. All eight candidates are now represented in `apps/web/src/modules/sources/sourceCatalog.ts`; uncertain identities remain name-only, and no candidate is represented as an automated Provider.
+
+### Atlas novel/e-book candidates
+
+| Candidate | Catalog disposition | Current acquisition decision |
+|---|---|---|
+| Z-Library | External homepage reference: `https://z-library.sk` | Official social account identified this domain among official domains in January 2026, but no first-party public third-party metadata API or applicable automation terms were verified. No account cookies, challenge handling, unofficial EAPI, or Worker scraping. |
+| Anna's Archive | External homepage reference: `https://annasarchive.io` | First-party FAQ describes its stable JSON API as member-only fast-download; custom search requires large ElasticSearch/MariaDB datasets. No member API, bulk datasets, raw torrent lists, or download endpoint. |
+| 知轩藏书 | Explicitly labelled user-created archive: `https://zxcs.zip` | First-party About page says it is not the original official site or a new official domain and discourages crawlers. No crawling or bulk dataset retrieval. |
+| 奇书网 | Name-only | The Atlas seed's `qishuxia.com` identity could not be corroborated by a current first-party operator page, API, or applicable terms. No guessed domains or mirrors. |
+| SoBooks | External homepage reference: `https://sobooks.cc` | No current first-party API, automated aggregation permission, or stable search contract verified. No scraping, unofficial API, or file download. |
+| Lunarora | Name-only | No first-party canonical identity, API documentation, or data-use terms for the seed identity verified. No domain substitution. |
+| PDFs.top | External homepage reference: `https://pdfs.top` | No first-party API contract, metadata licence, or automated collection permission verified. No crawling or file retrieval. |
+| 读书派 | External homepage reference: `https://www.dushupai.com` | Public book catalog is visible, but no first-party developer API, automation policy, or third-party metadata reuse permission verified. No scraping, metadata collection, or ebook-file fetching. |
+
+### Additional first-party book and general-archive candidates
+
+#### Open Library
+
+- Official Search API supports real-time book, work, edition, and author lookup; the public search route is suitable as a user-opened external search destination.
+- Usage guidance says to make useful time-sensitive requests on behalf of human users, cache responses, and identify the application with a descriptive User-Agent and contact email. Published pacing is 1 request/second for unidentified clients and 3 requests/second for identified clients.
+- The same first-party guidance explicitly says the APIs are not intended to be a data backend for third-party services or high-traffic commercial infrastructure, and forbids bulk metadata downloads through the API.
+- Decision: external search only. Do not add a Worker Provider or bulk metadata collection unless Open Library confirms this aggregator use or the product architecture is changed to fit the stated intended use.
+- References: https://openlibrary.org/developers/api ; https://openlibrary.org/dev/docs/api/search ; https://openlibrary.org/help/faq/using
+
+#### Google Books
+
+- The official Books API supports programmatic book search and volume metadata lookup.
+- Google states that much of the underlying Books data is licensed from third parties and is not Google's to redistribute freely. Its Books API terms prohibit charging users for the application without a separate agreement or written permission and require a content-removal process for allegedly infringing material.
+- Decision: retain the website as an external destination only. No API integration, metadata/image reuse, or API key use until the product's fee model, data rights, removal handling, and intended display are reviewed.
+- References: https://developers.google.com/books/docs/overview ; https://developers.google.com/books/terms
+
+#### Project Gutenberg
+
+- First-party documentation offers daily machine-readable XML/RDF catalog metadata, weekly CSV/MARC exports, RSS, and an OPDS discovery feed. The catalog metadata is stated to be public domain.
+- OPDS clients must provide a descriptive User-Agent and contact address, request no more than a browser-like volume (one page per search and fetch another page only as the user continues), and use stable ebook landing-page URLs rather than deep links to file paths. A JSON OPDS2 feed is currently testing-only by contact request; the existing XML OPDS feeds are expected to be sunset in 2027.
+- Decision: homepage-only for now. A bounded OPDS Provider is a plausible future task, but first verify query semantics, feed lifecycle, contact/identification requirements, and jurisdiction-specific copyright status. No bulk download, mirror, or ebook-file retrieval is introduced.
+- References: https://www.gutenberg.org/ebooks/offline_catalogs.html ; https://www.gutenberg.org/policy/terms_of_use.html ; https://www.gutenberg.org/policy/robot_access.html
+
+#### Internet Archive
+
+- First-party Help Center documents general metadata search and Advanced Search output formats including JSON, XML, CSV, and RSS. The official search documentation also describes a cursor-based search API and Lucene-like query syntax.
+- The Archive contains user-contributed items across texts/books, audio, video, software, and other media. Rights and licences are item/uploader-specific; the existence of an item or its presence in search results is not a blanket licence to reuse or redistribute its metadata or files.
+- Decision: homepage-only pending a narrow text/book scope, per-item rights handling, content filtering, and API pacing review. No bulk harvesting or file retrieval.
+- References: https://archive.org/help/aboutsearch.htm ; https://archivesupport.zendesk.com/hc/en-us/articles/360018359991-Search-A-Basic-Guide ; https://archive.org/services/docs/api/
+
+### Catalog reconciliation result
+
+- Added 8 Atlas novel/e-book candidates and 4 project-discovered book/general-archive candidates.
+- Catalog now contains **137 unique candidates**: JAV 28, torrent 30, forum 16, other-index 63. Provenance tags are Atlas 75, FetchJAV 28, Lustpress 8, and AIOResourceSearch-owned 32; provenance tags overlap and must not be summed as unique records.
+- No Provider implementation, search template beyond the user-opened Open Library search link, KV configuration, source enablement, credentials, or Cloudflare deployment was added. All new entries remain candidates and are disabled when registered.
+- The eight Atlas candidates are now preserved in the catalog even where their identity remains name-only or automated access is deferred. This closes the previous catalog omission without changing any access-control boundary.
