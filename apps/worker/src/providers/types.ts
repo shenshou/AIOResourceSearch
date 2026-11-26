@@ -1,3 +1,4 @@
+import type { EpornerRemovalSyncState } from "../eporner-removals";
 import type {
   ContentCategory,
   FetchMechanism,
