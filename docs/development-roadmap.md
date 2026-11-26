@@ -126,7 +126,7 @@ Deliverables:
 - [ ] Implement Provider-specific authentication only after reviewing the source terms, credential type, canonical host, expiry/rotation behavior, and redirect handling.
 - [ ] Complete the jurisdiction/scope assessment for the intended public launch markets. Determine whether applicable age-assurance rules cover this metadata-search service and document any required, proportionate controls. Do not treat DOB entry, an 18+ checkbox, or a browser-stored flag as statutory age verification. Do not globally disable adult discovery merely because this assessment is pending.
 - [ ] Follow the product and launch-scope decisions in [Age-assurance readiness](./age-assurance-readiness.md); apply any required controls only to the jurisdictions/features for which the review establishes an obligation.
-- [ ] Implement Eporner through its documented public API. The integration must synchronize the official removed-video feed at least daily, suppress removed IDs, respect API cache headers and sequential paging, and exclude images, embeds, players, downloads, and machine-learning use. If removal-feed freshness cannot be established, fail closed for Eporner results. Public enablement remains subject to source-specific policy review and the project's jurisdiction-specific launch assessment.
+- [x] Implement Eporner through its documented public API with metadata-only search, an active-status check for every result, and an hourly cursor-based removal-feed sync. The Worker stores only the feed cursor/timestamps in KV, not removed IDs or search results. The Provider fails closed when the feed is stale or has an incomplete cursor. Keep the source disabled until the first successful hosted sync and non-production Cloudflare verification; public enablement remains subject to source-specific policy review and the project's jurisdiction-specific launch assessment.
 
 Acceptance:
 - A catalog entry is never represented as an implemented Provider unless its adapter is registered and tested.
@@ -182,7 +182,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Eight implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
+| Site-specific Providers | Ten implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex and AniBT declare lanes but no enabled KV source invokes them; hosted concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
@@ -192,6 +192,7 @@ Current branch implementation snapshot:
 | Local Workers / Durable Object runtime integration tests | Implemented; the prior suite passed CI, but the new AniBT lane extension still awaits a current verification run |
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
+| Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane, and hourly removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
 | Real Cloudflare integration testing | Not started |
 | Production release | Not started |
 

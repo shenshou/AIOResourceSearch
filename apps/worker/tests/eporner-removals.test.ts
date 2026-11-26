@@ -41,6 +41,7 @@ test("reads and validates persisted sync state and freshness", async () => {
   assert.deepEqual(loaded, state);
   assert.equal(isEpornerRemovalSyncFresh(loaded, now), true);
   assert.equal(isEpornerRemovalSyncFresh(null, now), false);
+  assert.equal(isEpornerRemovalSyncFresh({ ...state, after: "pending-cursor" }, now), false);
   assert.equal(isEpornerRemovalSyncFresh({ ...state, lastCompleteAt: "2026-11-24T00:00:00Z" }, now), false);
 });
 

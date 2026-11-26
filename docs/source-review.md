@@ -2932,11 +2932,11 @@ Decision: retain the homepage reference only. The search box is not an API contr
 
 The previous 2026-11-25 review left Eporner external-only because the canonical Terms could not then be retrieved. That conclusion is superseded by this direct first-party review. The Terms' Section 6.2 exception explicitly permits use of the documented public API without separate written permission when its documentation, limits, and the Terms are followed. The API v2.1.0 documentation specifies a no-key HTTPS search endpoint, cache behavior, sequential paging, a removed-video feed, and status checks.
 
-Decision: approve the documented API as an eligible acquisition path, limited to metadata and canonical source links. Implementation remains gated on a daily removed-video sync and confirmation of project-side age assurance. Do not consume image thumbnails, player/embed data, or media files; do not bypass regional/age controls; do not use the API/feed for AI or machine-learning training/testing.
+Decision: approve the documented API as an eligible acquisition path, limited to metadata and canonical source links. The Worker Provider is now implemented with keyword search, an active-status check for every returned ID, and a cursor-based hourly removal-feed sync. The source and adapter remain disabled pending a successful scheduled sync and non-production Cloudflare verification. Public enablement also requires the project jurisdiction-specific launch assessment; this is not a blanket adult-content hiding rule. Do not consume image thumbnails, player/embed data, or media files; do not bypass regional/age controls; do not use the API/feed for AI or machine-learning training/testing.
 
 ### Batch outcome
 
-- One source (Eporner) promoted from external-only to **official-API eligible**, with explicit implementation prerequisites.
+- One source (Eporner) promoted from external-only to **implemented, official-API Provider**; its scheduled removal-feed sync and hosted Cloudflare verification remain outstanding.
 - Four sources remain external-only or homepage-only.
 - No search templates were added for JAVGG or JavyNow.
 - No mirror switching, age-gate automation, account/session reuse, challenge bypass, or HTML scraping was introduced.

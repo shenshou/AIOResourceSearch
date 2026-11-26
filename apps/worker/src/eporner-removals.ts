@@ -61,7 +61,7 @@ export async function readEpornerRemovalSyncState(env: Pick<Env, "SOURCES_KV">):
 }
 
 export function isEpornerRemovalSyncFresh(state: EpornerRemovalSyncState | null, now = Date.now()): boolean {
-  if (!state?.lastCompleteAt) return false;
+  if (!state?.lastCompleteAt || state.after) return false;
   const completedAt = Date.parse(state.lastCompleteAt);
   return Number.isFinite(completedAt) &&
     completedAt <= now + 60_000 &&
