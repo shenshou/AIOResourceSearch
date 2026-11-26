@@ -2,7 +2,7 @@
 
 本审核日志必须遵循[数据源目录管理规范](./source-catalog-policy.md)：保留来源资产与证据链，区分第一方证据/第三方报告，并分别记录自动化许可、实现、配置、启用和线上验证状态。
 
-Last reviewed: 2026-11-25
+Last reviewed: 2026-11-26
 
 This document records evidence-based triage, not a blanket approval to crawl a site. A candidate is not an executable Provider until its public interface, access conditions, data fields, and deployment behavior have been reviewed.
 
