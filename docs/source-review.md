@@ -3640,7 +3640,7 @@ References:
 
 ### DMHY — existing Provider retained; no duplicate implementation
 
-- The first-party FAQ remains explicit about the public RSS endpoint `https://share.dmhy.org/topics/rss/rss.xml` and keyword-filtered RSS via `?keyword=`; it also documents team, category, and uploader-specific feed variants.
+- The first-party FAQ lists the public RSS endpoint as `http://share.dmhy.org/topics/rss/rss.xml` and documents keyword-filtered RSS via `?keyword=`; it also documents team, category, and uploader-specific feed variants. The FAQ prints HTTP URLs; the existing Provider's HTTPS request behavior is an implementation choice, not a separately documented endpoint guarantee.
 - The same FAQ describes the service as free and says publications should focus on anime, tokusatsu, and Japanese drama; it prohibits real-person adult pornography. Keep DMHY classified as anime, not JAV.
 - The existing `dmhy-rss` v1.0.0 implementation and its bounded RSS parsing, BTIH validation, and canonical detail-link handling remain the appropriate implementation. Do not create a second adapter or expand it to undocumented endpoints.
 - The FAQ documents RSS subscription behavior, but this alone is not a comprehensive third-party aggregation licence. No numeric quota was established by the FAQ.
