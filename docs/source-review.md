@@ -3407,3 +3407,72 @@ References:
 - FetchJAV's list remains useful as source-discovery provenance, but its downloader adapters are not treated as authorization or copied into this metadata-only project.
 - No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
 - No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+
+## JAV source revalidation — twenty-second batch (2026-11-26)
+
+This batch rechecked five remaining JAV candidates or previously reviewed entries where first-party terms, current site behavior, or regional constraints materially affect the project's external-link and metadata-search decisions.
+
+### Decision summary
+
+| Candidate | New evidence | Decision |
+|---|---|---|
+| JAV.guru | First-party Terms are available. They limit use to personal purposes, prohibit unauthorized framing/linking and commercial use absent approval, prohibit copying/redistribution of site content without prior written consent, and expressly permit links to site materials for personal, non-commercial purposes. | Retain the existing user-initiated external search entry only. Do not implement Worker fetching, metadata extraction, or content reuse. The Terms do not grant general-purpose aggregation rights. |
+| JAVDatabase | First-party March 2026 site update says movie data is sourced from Japanese sites and manually edited; it also states traffic from the UK, Australia, and France is blocked because the operator does not intend to implement the age-verification requirements there. No first-party public API/feed or third-party aggregation permission was verified. | Retain homepage-only external access. Do not use third-party Stash/FetchJAV scrapers or paid javinfo API. Do not route around regional restrictions. |
+| JableTV | First-party Terms (last revised 2019-03-28) permit links to site materials for personal, non-commercial purposes, while restricting unauthorized linking/framing and copying/redistribution. The Terms do not document a public metadata API/feed or authorize third-party metadata aggregation. | Keep the current external destination only; no Worker fetching or metadata extraction. Do not restore an unverified search template. |
+| Jable.org | Current third-party domain monitoring reports HTTP 401, a generated `ww547.jable.org` redirect host, and robots disallowing the site. These are third-party observations, not first-party canonical identity, mirror authorization, or a supported interface. | Keep name-only. Do not substitute JableTV, follow generated redirect hosts, or attempt to bypass the 401. |
+| JAV Ass Lover | Current research fetch still could not retrieve the canonical homepage (HTTP 403); no first-party current Terms, API/RSS, or supported search contract was verified. A third-party scan/WHOIS record is not operator permission. | Retain the original homepage candidate; no Worker fetching, HTML extraction, or search template until first-party terms and a supported interface are established. |
+
+### Source-specific evidence
+
+#### JAV.guru
+
+The first-party Terms describe the service as personal-use and prohibit commercial use absent specific approval. They prohibit unauthorized framing/linking and copying, reproduction, distribution, or other exploitation of site content without prior written consent. A separate clause permits links to materials for personal, non-commercial purposes. This supports a narrow user-initiated external-link use, not a Worker metadata collector or redistribution of site content.
+
+References:
+- https://jav.guru/terms/
+
+#### JAVDatabase
+
+The first-party site update dated 2026-03-12 says its movie data is sourced from Japanese sites and manually edited. It also explicitly says traffic from the UK, Australia, and France has been blocked because the operator considered the relevant age-verification requirements unsustainable. The project must preserve that restriction and must not use alternate routes, proxies, or other means to reach blocked users. The first-party page does not publish an API/feed contract or grant third-party metadata aggregation permission.
+
+A third-party Stash scraper documents a search URL and XPath selectors, but this is implementation evidence only. It does not establish permission or a stable first-party API. A third-party paid API is excluded under the no-paid-services rule.
+
+References:
+- https://www.javdatabase.com/2026/03/12/site-update-data-improvements-improved-homepage-better-image-galleries-international-blocking/
+- https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/JavDatabase.yml
+- https://javinfo.dev/zh/blog/javdatabase-provider (third-party paid service; not eligible)
+
+#### JableTV
+
+The first-party Terms page is dated 2019-03-28. It allows linking to site materials for personal, non-commercial purposes, but also prohibits unauthorized linking/framing and content copying/redistribution. No first-party API/RSS contract or permission for third-party metadata aggregation was established in this review. The existence of a user-facing search field does not, by itself, authorize Worker collection or establish a durable search-template contract.
+
+References:
+- https://jable.tv/terms/
+
+#### Jable.org
+
+A third-party monitor currently reports HTTP 401, a redirect to a generated `ww547.jable.org` hostname, and a robots rule disallowing the entire site. These observations do not establish an operator-controlled canonical domain or permitted public interface. FetchJAV's inherited adapter is not first-party authorization.
+
+References:
+- https://siteinfo.verkosta.info/jable.org
+- https://github.com/FetchJAV/FetchJAV_Public
+
+#### JAV Ass Lover
+
+The current research fetch could not retrieve `https://javass.love/` or its attempted Terms path. No current first-party Terms, API/RSS documentation, or stable supported search route was found. Third-party domain and hosting records only indicate historical or technical metadata; they do not establish an active permitted automation interface.
+
+References:
+- https://javass.love/
+- https://javass.love/terms/
+
+### Batch outcome
+
+- Zero Provider promotions and zero new search templates.
+- JAV.guru remains a user-initiated external-search candidate under its narrow personal/non-commercial linking terms; no automated collection or content reuse.
+- JAVDatabase remains homepage-only; its stated UK/Australia/France blocking is preserved as an explicit restriction, not a problem to route around.
+- JableTV remains an external destination only; no metadata automation.
+- Jable.org remains name-only and separate from JableTV.
+- JAV Ass Lover remains a candidate with unresolved first-party terms and interface evidence.
+- All five candidates remain in the durable source inventory.
+- No access-control bypass, account/session reuse, proxying, undocumented endpoint probing, Worker fetch, KV change, source enablement, or Cloudflare deployment was introduced.
