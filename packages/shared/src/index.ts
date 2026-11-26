@@ -71,7 +71,7 @@ export interface SourceDefinition {
   category: SourceCategory;
   /** User-facing content category. Missing legacy values are interpreted by the Worker. */
   contentCategory?: ContentCategory;
-  /** provider calls a Worker implementation; external-search only builds a destination URL. */
+  /** Selects Worker acquisition or external-search-only; Provider navigation is configured independently. */
   type?: SourceType;
   adapterId?: string;
   /** HTTPS search URL template for external-search-only sources; exactly one {query}. */
