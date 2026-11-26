@@ -64,6 +64,29 @@ export function validateSource(input: unknown): SourceDefinition | null {
   if (type === "provider" && value.adapterId !== "generic-html" &&
       (value.providerSearchUrlTemplate !== undefined || value.htmlSelectors !== undefined)) return null;
   if (type === "external-search" && (value.providerSearchUrlTemplate !== undefined || value.htmlSelectors !== undefined)) return null;
+  if (type === "provider" && value.externalSearchUrlTemplate !== undefined) {
+    if (typeof value.externalSearchUrlTemplate !== "string" ||
+        value.externalSearchUrlTemplate.length > 2048 ||
+        (value.externalSearchUrlTemplate.match(/\\{query\\}/g) ?? []).length !== 1) return null;
+    try {
+      const templateUrl = new URL(value.externalSearchUrlTemplate.replace("{query}", "AIO_QUERY_TOKEN"));
+      if (templateUrl.protocol !== "https:" || templateUrl.username || templateUrl.password ||
+          templateUrl.hostname.toLowerCase().includes("aio_query_token")) return null;
+    } catch {
+      return null;
+    }
+  }
+  if (type === "provider" && value.externalSearchBaseUrl !== undefined) {
+    if (typeof value.externalSearchBaseUrl !== "string" || value.externalSearchBaseUrl.length > 2048) return null;
+    try {
+      const homepage = new URL(value.externalSearchBaseUrl);
+      if (homepage.protocol !== "https:" || homepage.username || homepage.password || homepage.search || homepage.hash) return null;
+    } catch {
+      return null;
+    }
+  }
+  if (type === "external-search" &&
+      (value.externalSearchUrlTemplate !== undefined || value.externalSearchBaseUrl !== undefined)) return null;
   if (type === "external-search" && value.searchUrlTemplate !== undefined) {
     if (typeof value.searchUrlTemplate !== "string" ||
         value.searchUrlTemplate.length > 2048 ||
@@ -128,6 +151,8 @@ export function validateSource(input: unknown): SourceDefinition | null {
     type: type as SourceDefinition["type"],
     ...(typeof value.adapterId === "string" ? { adapterId: value.adapterId } : {}),
     ...(typeof value.searchUrlTemplate === "string" ? { searchUrlTemplate: value.searchUrlTemplate } : {}),
+    ...(typeof value.externalSearchUrlTemplate === "string" ? { externalSearchUrlTemplate: value.externalSearchUrlTemplate } : {}),
+    ...(typeof value.externalSearchBaseUrl === "string" ? { externalSearchBaseUrl: value.externalSearchBaseUrl } : {}),
     ...(typeof value.providerSearchUrlTemplate === "string" ? { providerSearchUrlTemplate: value.providerSearchUrlTemplate } : {}),
     ...(value.htmlSelectors && typeof value.htmlSelectors === "object" ? { htmlSelectors: value.htmlSelectors as SourceDefinition["htmlSelectors"] } : {}),
     enabled: value.enabled,
