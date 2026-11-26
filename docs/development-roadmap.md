@@ -53,6 +53,7 @@ Deliverables:
 - [x] Frontend source and adapter management screens.
 - [x] Add administrator-only source connection smoke checks and query-based Provider test searches with timeout, error, elapsed-time, result-count, and capped-sample feedback; external-search destinations are never fetched. See [source-testing.md](./source-testing.md).
 - [x] External-search URL generation without fetching the destination.
+- [x] Support independent user-opened external search/homepage links on Provider source records without coupling them to Worker requests.
 - [ ] Verify KV propagation and management flows in a non-production Cloudflare environment.
 
 Acceptance:
