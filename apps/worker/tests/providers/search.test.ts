@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import { listProviderAdapters } from "../../src/providers/registry.ts";
 import type { Env } from "../../src/env.ts";
 import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
@@ -16,6 +17,23 @@ import { anibtTorznabProvider } from "../../src/providers/anibt-torznab.ts";
 import { yourBittorrentProvider } from "../../src/providers/yourbittorrent-json.ts";
 import { theRarBgProvider } from "../../src/providers/the-rarbg-json.ts";
 import type { NormalizedResource, ProviderAdapter } from "../../src/providers/types.ts";
+
+test("compile-time Provider registry contains the expected adapter allowlist", () => {
+  const registeredIds = listProviderAdapters().map((adapter) => adapter.id).sort();
+  assert.deepEqual(registeredIds, [
+    "anibt-torznab",
+    "dmhy-rss",
+    "eporner-api",
+    "generic-html",
+    "mangadex-api",
+    "musicbrainz-api",
+    "perverzija-db",
+    "sukebei-rss",
+    "the-rarbg-json",
+    "torlock-torznab",
+    "yourbittorrent-json",
+  ]);
+});
 
 const adapterMetadata: AdapterDefinition = {
   id: "test-adapter",
