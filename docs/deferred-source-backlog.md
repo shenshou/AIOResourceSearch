@@ -2,16 +2,16 @@
 
 本清单遵循[数据源目录管理规范](./source-catalog-policy.md)。暂缓表示当前不开发自动获取路径，不代表从来源目录删除；每项应保留具体阻碍和可核验的重新评估条件。
 
-This document tracks sources or acquisition techniques that are intentionally **not being developed now** because normal permitted access is not available or the source requires bypassing an access control.
+This document tracks sources or acquisition techniques that are intentionally **not being developed in the current phase** because normal permitted access is not available or the source currently requires addressing an access control.
 
-A backlog entry is not an approval, implementation promise, or indication that the source is currently reachable.
+A backlog entry is not an approval, implementation promise, or indication that the source is currently reachable. Deferral is phase-based, not permanent exclusion.
 
 
 ## Long-term development commitment
 
 This backlog is not a parking lot for sources that will never be revisited. Every in-scope source in the catalog that does not yet have a working acquisition implementation remains part of the long-term development inventory. Review and prioritize these sources in batches, including research into techniques used by Atlas, Lustpress, FetchJAV, and other relevant open-source projects. The absence of an official API does not end technical investigation: evaluate ordinary public-page parsing and other viable approaches as separate options.
 
-This commitment does not authorize bypassing access controls or ignoring source terms. If the only currently known path requires such a bypass, keep that path deferred, document the exact blocker, and continue to look for a compliant alternative or a change in authorization/conditions. Do not silently remove the source from future consideration. Track prioritization and progress in the roadmap or source review records rather than treating every backlog entry as an immediate implementation task.
+During the current development phase, paths requiring access-control bypass remain deferred and must not be implemented or enabled. This is not a permanent ban: a later phase may explicitly research technical approaches for addressing these blockers, including approaches observed in other projects. Such research and any proposed implementation must be separately planned and reviewed for applicable law, platform rules, source terms, authorization, security, privacy, reliability, and operational impact. A technique demonstrated by a third party is not permission, and this backlog does not pre-authorize its use. Do not silently remove sources from future consideration. Track prioritization and progress in the roadmap or source review records rather than treating every backlog entry as an immediate implementation task.
 
 ## Reconsideration criteria
 
@@ -22,19 +22,19 @@ Reopen an item only when at least one of the following becomes true:
 - The source removes the relevant access restriction and its current terms permit normal automated access.
 - A legitimate account/API credential is issued to the operator and the source permits its use by this service.
 
-Do not reconsider an item merely because a third-party project demonstrates a challenge solver, proxy, TLS fingerprint, cookie import, or other bypass technique.
+A third-party project demonstrating a challenge solver, proxy, TLS fingerprint, cookie import, or other technique is not, by itself, sufficient authorization or a reason to begin implementation. It may be recorded as a future technical research reference; any later work requires an explicit phase decision and source-specific review.
 
 ## Deferred techniques and candidate classes
 
 | Candidate / technique | Current blocker | Reconsideration condition |
 |---|---|---|
-| Lustpress challenge-solver path | Requires solving anti-bot/Cloudflare challenges; bypass logic is explicitly excluded from this project | A target source provides an ordinary permitted API/RSS/feed or explicitly authorizes automated access |
-| FetchJAV proxy, TLS-fingerprint, Cloudflare-cookie, or challenge-bypass paths | These mechanisms are not imported; they can defeat source-side access controls | A target source exposes a permitted ordinary endpoint or grants explicit authorization |
-| CAPTCHA-protected sources | Automated CAPTCHA solving would bypass an access control | Source offers a permitted API or normal account session without CAPTCHA automation |
-| Paywall / paid-membership-only sources | Access requires payment or bypass; paid services are not accepted for this project | A free, authorized public endpoint becomes available |
-| Geo/IP-restricted sources | Routing around a source's geographic or IP restriction is not allowed | Source explicitly permits the Worker deployment region/IP or offers an authorized endpoint |
-| Sources blocking ordinary Worker requests with anti-bot controls | Do not add challenge solvers, proxy rotation, forged browser fingerprints, or cookie replay to force access | Source approves the Worker/service or exposes an allowed integration endpoint |
-| Sources whose published request limits cannot be met | Do not evade throttling or rotate identities to bypass limits | A compliant request schedule fits the published limits, or the source authorizes a higher quota |
+| Lustpress challenge-solver path | Requires solving anti-bot/Cloudflare challenges; implementation is deferred in the current phase and retained as a future research candidate | A target source provides an ordinary permitted API/RSS/feed or explicitly authorizes automated access |
+| FetchJAV proxy, TLS-fingerprint, Cloudflare-cookie, or challenge-bypass paths | These mechanisms are not imported in the current phase; they may be studied in a separately approved future research phase | A target source exposes a permitted ordinary endpoint or grants explicit authorization |
+| CAPTCHA-protected sources | Automated CAPTCHA handling is deferred in the current phase; future research requires separate review | Source offers a permitted API or normal account session without CAPTCHA automation |
+| Paywall / paid-membership-only sources | Current acquisition path would require paywall access or bypass; paid third-party services remain excluded by the no-paid-services requirement | A free, authorized public endpoint becomes available |
+| Geo/IP-restricted sources | Addressing a source's geographic or IP restriction is deferred in the current phase | Source explicitly permits the Worker deployment region/IP or offers an authorized endpoint |
+| Sources blocking ordinary Worker requests with anti-bot controls | Do not add challenge solvers, proxy rotation, forged browser fingerprints, or cookie replay in the current phase; preserve relevant techniques for separately reviewed future research | Source approves the Worker/service or exposes an allowed integration endpoint |
+| Sources whose published request limits cannot be met | Do not evade throttling or rotate identities in the current phase; preserve the technical problem for future research | A compliant request schedule fits the published limits, or the source authorizes a higher quota |
 
 ## Review workflow
 
@@ -44,14 +44,15 @@ For each newly discovered candidate:
 2. Identify whether the blocker is authentication, a technical challenge, a paywall, a geographic restriction, or a rate limit. Do not conflate normal login with bypass.
 3. Capture the source's official terms/API policy and the exact observed behavior.
 4. Keep the source as external-search only or unregistered if opening the original site is permitted; do not create a Worker Provider that attempts the blocked path.
-5. Reassess only when a documented reconsideration condition is met.
+5. Keep the path deferred throughout the current phase. A later phase may open a separately approved research task; reassess source-specific permission, applicable rules, security, privacy, and operational impact before any implementation.
 
 ## Current project rule
 
 - Ordinary free-account authentication is allowed when the source permits automated use and the operator legitimately controls the credential.
 - Worker credentials use source-scoped Secret bindings; they are never stored in KV or browser storage.
 - Personal subscription feeds/tokens are not shared search APIs.
-- No CAPTCHA solving, anti-bot challenge bypass, paywall bypass, geo/IP evasion, rate-limit evasion, forged sessions, or unauthorized credential reuse.
+- Current-phase implementation must not include CAPTCHA solving, anti-bot challenge bypass, paywall bypass, geo/IP evasion, rate-limit evasion, forged sessions, or unauthorized credential reuse.
+- These topics are not permanently removed from the project: future phases may research and evaluate solutions through an explicit approval and review process. No blanket authorization is implied.
 
 
 ## Named candidates currently deferred

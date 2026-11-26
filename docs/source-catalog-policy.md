@@ -8,7 +8,7 @@ The source catalog is a long-lived inventory of candidate upstream sources and i
 
 These rules apply to every source category, including JAV/adult metadata, anime, film/TV, manga, novels, games, music, torrent indexes, forums, and general resource indexes. Do not apply a blanket category exclusion where a source-specific assessment is required.
 
-## The ten governing principles
+## The eleven governing principles
 
 ### 1. The catalog is a durable source-asset inventory
 
@@ -32,11 +32,11 @@ For each source, investigate applicable supported mechanisms rather than assumin
 
 ### 6. Access restrictions and data-use permission are hard implementation gates
 
-Public visibility, a working browser page, a robots.txt entry, an open-source scraper, or a successful HTTP response does not by itself grant permission to automate access, aggregate metadata, republish fields, or display images. Do not implement or enable an acquisition path that requires bypassing authentication, paywalls, CAPTCHA, anti-bot/Cloudflare challenges, geo/IP restrictions, rate limits, or other access controls. Do not rotate identities, forge browser fingerprints/sessions, replay private cookies, or evade published quotas.
+Public visibility, a working browser page, a robots.txt entry, an open-source scraper, or a successful HTTP response does not by itself grant permission to automate access, aggregate metadata, republish fields, or display images. **During the current development phase, do not implement or enable an acquisition path that requires bypassing authentication, paywalls, CAPTCHA, anti-bot/Cloudflare challenges, geo/IP restrictions, rate limits, or other access controls.** Do not rotate identities, forge browser fingerprints/sessions, replay private cookies, or evade published quotas as part of current implementation work.
 
 Ordinary free-account authentication may be considered only when the source permits this service's automation, the operator legitimately controls the credential, and the flow does not defeat another access control. Keep credentials in source-scoped Worker Secret bindings, never in the catalog, KV values, repository files, browser storage, public responses, or logs. Personal/private RSS tokens are not shared public data sources. Paid third-party APIs or scraping services remain excluded under the project's no-paid-services requirement.
 
-When evidence is incomplete or contradictory, keep the source disabled and record the uncertainty. A future investigation may seek first-party permission, a documented supported endpoint, a compliant request schedule, or another lawful alternative; it must not be treated as advance approval to bypass restrictions.
+When evidence is incomplete or contradictory, keep the source disabled and record the uncertainty. These are current-phase implementation gates, not a declaration that the topic is permanently out of scope. Future phases may research and evaluate technical approaches for addressing such restrictions, subject to the separate future-stage review and approval requirements in Principle 11; this policy does not itself authorize access or bypass.
 
 ### 7. External navigation is distinct from automated acquisition
 
@@ -57,10 +57,17 @@ Adult/JAV-related search, metadata, source discovery, source management, and ext
 
 Do not make the existence of an official API, official RSS feed, or vendor-recommended integration the only permitted subject of technical research. Study and learn from other open-source projects and real-world implementations, including their adapter architecture, public-page search flows, HTML/JSON parsing, metadata normalization, pagination, caching, error handling, and other acquisition techniques. Evaluate whether a technique can be independently adapted to this project and whether it can operate reliably with our architecture and cost constraints.
 
-Separate **technical feasibility**, **source access conditions**, and **data-use permission**. A third-party implementation or publicly observable request flow is a research reference, not proof of authorization. Borrowing an implementation pattern does not itself authorize access, republication, or bypassing a site's controls. Do not implement a path that requires defeating authentication, paywalls, CAPTCHA, anti-bot/Cloudflare challenges, geo/IP restrictions, rate limits, or other access controls. Where ordinary public-page or other non-official acquisition is technically viable, assess the applicable terms, data scope, request impact, and legal constraints rather than rejecting it solely because it is not an official API. Record unresolved cases and investigate compliant alternatives.
+Separate **technical feasibility**, **source access conditions**, and **data-use permission**. A third-party implementation or publicly observable request flow is a research reference, not proof of authorization. Borrowing an implementation pattern does not itself authorize access, republication, or bypassing a site's controls. Do not implement such a path during the current development phase. Future-stage research and implementation are governed by Principle 11 and must not be treated as pre-approved. Where ordinary public-page or other non-official acquisition is technically viable, assess the applicable terms, data scope, request impact, and legal constraints rather than rejecting it solely because it is not an official API. Record unresolved cases and investigate compliant alternatives.
 
 The catalog is also the long-term development inventory, not merely an archive. Progressively assess and implement its in-scope, not-yet-implemented sources in planned batches, using prioritization based on user value, feasibility, reliability, maintenance cost, and applicable constraints. Do not silently abandon unimplemented entries. Keep blocked entries visible in the backlog, revisit them when conditions or viable approaches change, and report genuine exclusions with reasons. This is a staged development commitment, not a promise that every third-party site can be integrated regardless of its restrictions or technical condition.
 
+### 11. Access-control handling is deferred work, not a permanent exclusion
+
+The current development phase retains a strict boundary: do not implement or enable automatic acquisition paths that require overcoming login/authentication gates, paywalls, CAPTCHA, anti-bot/Cloudflare challenges, geographic or IP restrictions, rate limits, or other source-side access controls. Such sources and techniques remain recorded in the catalog and deferred backlog; they are not to be silently deleted or treated as permanently abandoned.
+
+This is a **phase-based deferral**, not a permanent prohibition or a statement that the project will never research solutions. Later development phases may explicitly investigate the technical approaches, operational trade-offs, and possible ways to address these blockers, including methods learned from other projects. That work must be planned as a separate research/development task, with source-specific assessment of applicable law, platform rules, source terms, authorization, security, privacy, reliability, and impact on the source. Technical feasibility and the existence of a technique do not establish permission. Any later implementation requires an explicit phase decision and review; this principle does not grant blanket authorization, require bypassing a control, or guarantee that every blocked source will ultimately be integrated.
+
+Until that later phase is explicitly approved, the current-phase no-implementation boundary remains in force. Continue to preserve each blocked source, its exact blocker, evidence, and conditions for future reassessment in the backlog.
 ## Required source record and review outcomes
 
 For every candidate, retain as much of the following as is known:
