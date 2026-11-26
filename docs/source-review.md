@@ -3634,3 +3634,40 @@ References:
 - Reddit's current API approval, OAuth identity, content-use, removal, privacy, rate-limit, attribution, and commercial-use gates are recorded.
 - The current subreddit availability was not inferred from stale third-party reports.
 - No Reddit HTML/API/RSS request, scraping, account/session reuse, access-control workaround, KV mutation, source enablement, Cloudflare deployment, or production setting was introduced.
+
+
+## Anime-source revalidation — 2026-11-26
+
+### DMHY — existing Provider retained; no duplicate implementation
+
+- The first-party FAQ remains explicit about the public RSS endpoint `https://share.dmhy.org/topics/rss/rss.xml` and keyword-filtered RSS via `?keyword=`; it also documents team, category, and uploader-specific feed variants.
+- The same FAQ describes the service as free and says publications should focus on anime, tokusatsu, and Japanese drama; it prohibits real-person adult pornography. Keep DMHY classified as anime, not JAV.
+- The existing `dmhy-rss` v1.0.0 implementation and its bounded RSS parsing, BTIH validation, and canonical detail-link handling remain the appropriate implementation. Do not create a second adapter or expand it to undocumented endpoints.
+- The FAQ documents RSS subscription behavior, but this alone is not a comprehensive third-party aggregation licence. No numeric quota was established by the FAQ.
+- **Decision:** retain the existing Provider as implemented but disabled. Before any enablement, complete current Terms/robots review, conservative pacing validation, source/content review, and live non-production Cloudflare Worker connectivity verification. No source activation, KV write, or deployment is authorized by this review.
+
+### Shana Project — public feed is latest-only, not keyword search
+
+- First-party RSS help states that the main public feed contains only the most recent 50 releases.
+- The user's public feed contains the most recent 20 items added to that user's follows; the secure private feed contains up to 50 not-yet-downloaded follow items and marks an item downloaded when fetched.
+- First-party follows help says follows are available only to registered users. The private feed is explicitly intended for the account holder's torrent client.
+- These feeds are not a public keyword-search API or a general catalogue feed. Do not reuse private or account-bound feeds, request user tokens, or treat the latest-50 feed as complete search.
+- **Decision:** retain the existing homepage-only external entry. No Provider, RSS polling, search template, account integration, or private-feed access.
+
+### AnimeBytes — private tracker; external destination only
+
+- The official AnimeBytes status site is live and exposes a linked JSON status endpoint. That endpoint reports service status only; it is not evidence of a public catalogue/search API.
+- A current specialist tracker reference describes AnimeBytes as a closed private anime tracker with recruitment-based admission. This is third-party context, not a substitute for AnimeBytes' own terms or admission policy.
+- A third-party autobrr indexer list identifies AnimeBytes as a private tracker using IRC announcements; that is technical integration context, not authorization for AIOResourceSearch to consume its member-only data.
+- No first-party public search API, public RSS contract, or permission for third-party metadata aggregation was verified. Do not use account credentials, passkeys, private RSS, IRC member feeds, or invite-only endpoints in the shared Worker.
+- **Decision:** retain AnimeBytes as a catalog candidate with its canonical homepage for user-initiated navigation only. No Provider, search template, credential handling, feed ingestion, or access-control workaround. Reconsider only if first-party public documentation or explicit written authorization establishes an appropriate public integration path.
+
+### First-party and supporting references
+
+- DMHY official FAQ: https://share.dmhy.org/cms/page/name/faq.html
+- Shana Project official RSS help: https://www.shanaproject.com/help/feeds/
+- Shana Project official follows help: https://www.shanaproject.com/help/follows/
+- AnimeBytes official status page: https://status.animebytes.tv/
+- AnimeBytes linked status JSON (service status only): https://status.animebytes.tv/api/status
+- The Wiki private-tracker overview (third-party): https://thewiki.moe/sourcing/private-trackers/
+- autobrr supported indexers (third-party): https://autobrr.com/configuration/indexers
