@@ -3001,3 +3001,14 @@ The Eporner public API integration has now been implemented in the feature branc
 - Added focused Provider, removal-sync, metadata-cache, and rate-lane tests. They have been added to the Worker test command but have not yet been executed in CI for the current branch head.
 
 The source catalog now marks Eporner as a built-in Provider candidate. Its source and adapter remain unconfigured and disabled: no production KV writes, source activation, Cloudflare deployment, or PR merge has occurred. Before enablement, the 15-minute Cron Trigger and first successful removal-feed sync must be verified in a non-production Cloudflare environment, along with ordinary API connectivity and the project's jurisdiction-specific launch assessment.
+
+
+## Mikan Project revalidation — 2026-11-26
+
+- The first-party homepage remains publicly accessible and indexable. It exposes a site-search form and public anime detail pages; the detail page shows series metadata, subtitle-group listings, release titles, timestamps, and torrent-related controls.
+- The public `Home/MyBangumi` page presents a personal subscription area and a login prompt. Third-party AutoBangumi documentation describes `/RSS/MyBangumi?token=...` as a user-specific subscription feed. That token represents an individual's subscription list and must not be collected, stored, or used as a shared project feed.
+- A per-series `/RSS/Bangumi?bangumiId=...&subgroupid=...` route appears in third-party tutorials and community examples, but I did not find first-party API/RSS documentation confirming its public contract or permission for third-party aggregation.
+- The current first-party pages do not expose a clear automation/data-aggregation policy in the reviewed material; the site's `robots.txt` and Terms URLs could not be independently retrieved in this pass. No permission is inferred from the fact that public pages are indexable.
+- The site's own announcement labels `mikanime.tv` as a new domain for mainland-China use. It is a first-party announced domain, not a guessed mirror; however, this does not establish that it should be used as a regional-access workaround by this project.
+
+**Decision:** keep Mikan Project as a user-initiated external search destination only. Do not add Worker HTML scraping, shared RSS polling, or a search Provider until the operator publishes a supported public interface and applicable automation/data-use terms or grants explicit permission. Never use a personal MyBangumi token as a shared source. No login automation, proxying, or regional restriction evasion.
