@@ -4,7 +4,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 125 个去重候选</badge>
+<badge>共 137 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -29,7 +29,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 125 条去重候选：Atlas 标签 67、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 28；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- 137 条去重候选：Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 32；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；外部链接仍只由浏览器打开，Worker 不会请求目标站点。
 - 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -124,7 +124,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（51）
+## 其他资源索引（63）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -157,6 +157,18 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | XNXX | Lustpress | 仅首页入口或 URL 待补 |
 | XVideos | Lustpress | 仅首页入口或 URL 待补 |
 | YouPorn | Lustpress | 仅首页入口或 URL 待补 |
+| Z-Library | Atlas | 官方域名线索已核验；仅外部首页入口，无公开元数据 API |
+| Anna's Archive | Atlas | 仅外部首页入口；不使用会员 API 或批量数据库 |
+| 知轩藏书（用户整理存档） | Atlas | 明确标注非原站官方；仅外部入口，不抓取 |
+| 奇书网 | Atlas | 名称保留；当前无可确认的官方域名 |
+| SoBooks | Atlas | 仅外部首页入口；自动化许可未核验 |
+| Lunarora | Atlas | 名称保留；当前无可确认的官方身份/域名 |
+| PDFs.top | Atlas | 仅外部首页入口；不抓取或取文件 |
+| 读书派 | Atlas | 仅外部首页入口；不抓取目录或文件 |
+| Open Library | AIOResourceSearch | 官方搜索 API 存在，但明确不建议作为第三方服务后端；仅用户主动搜索 |
+| Google Books | AIOResourceSearch | API 数据涉及第三方许可且 API 条款限制收费；仅外部入口 |
+| Project Gutenberg | AIOResourceSearch | 公共领域目录和 OPDS 可用；暂仅首页入口，后续可评估有界 OPDS Provider |
+| Internet Archive | AIOResourceSearch | 官方元数据搜索 API 存在；条目权利因上传者而异，暂仅首页入口 |
 
 ## 补充跨分类来源
 
@@ -194,6 +206,15 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Notify.moe：第一方 API 存在，条款反对 HTML 抓取并指向 API，但第三方聚合许可、配额和服务持续性尚未确认；不进行 API 批量获取。
 - 上述候选均保留在目录中，未新增 Provider、搜索模板、KV 配置或启用状态。
 
+## 补充小说与电子书候选（2026-11-26）
+
+- Z-Library、Anna's Archive、知轩藏书、奇书网、SoBooks、Lunarora、PDFs.top、读书派：将已审查的 8 个 Atlas 小说/电子书候选补入持久目录；其中身份不明的条目保持 name-only，明确为用户创建的知轩藏书存档不冒充原站。所有条目均无 Worker 自动获取路径。
+- Open Library：官方 Search API 面向实时人工检索，但明确不建议作为第三方服务的数据后端；只提供用户主动打开的搜索链接。
+- Google Books：API 数据涉及第三方授权，且条款限制收费应用并要求侵权内容移除流程；只保留官网入口。
+- Project Gutenberg：机器可读公共领域目录和 OPDS 发现接口存在；OPDS 有 User-Agent、联系地址、请求节奏和 landing-page 链接要求，后续再评估有界 Provider。
+- Internet Archive：官方元数据搜索 API 存在，但内容权利随具体上传项目变化；在权利筛选和内容范围设计前仅保留官网入口。
+- 上述来源均未新增 Provider、KV 配置、来源启用或文件获取功能。
+
 ## 补充游戏与音乐元数据候选（2026-11-26）
 
 - RAWG：官方游戏 API 有免费层，但 API 条款限制数据进一步分发，并禁止将数据/图片用于色情或淫秽内容场景；与本项目成人内容核心范围存在产品级冲突，仅保留官网外部入口。
@@ -205,7 +226,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 ## 来源项目范围说明
 
 ### Atlas
-- 已纳入 Atlas `database/seeds/003_search_sources.sql` 中与 JAV、Torrent、Community 相关的 56 个默认源（动漫、影视、漫画、小说类不纳入本项目）。
+- 已纳入 Atlas `database/seeds/003_search_sources.sql` 中与 JAV、Torrent、Community 相关的 56 个默认源；另将已逐项审查的 8 个小说/电子书候选补入目录。动漫、影视、漫画候选仍按各自审查结果单独管理。
 - 另纳入 README 提及的 DMM/FANZA 元数据候选。
 - Atlas 的源列表支持自定义 URL 模板；这里收录的是公开仓库中的默认 seed，不代表生产环境当前全部数据源。
 
