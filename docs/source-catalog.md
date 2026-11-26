@@ -4,7 +4,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 111 个去重候选</badge>
+<badge>共 115 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -29,7 +29,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 111 条去重候选：Atlas 标签 67、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 14；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- 115 条去重候选：Atlas 标签 67、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 18；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。它们都只是用户主动打开的外部入口；DMHY 和 AniBT 另外有独立 Provider 实现。
 - 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -165,6 +165,14 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Nyaa：动漫 BT 索引入口，仅提供用户主动访问的首页链接；未完成精确域名的自动化访问政策、robots 与 Worker 可达性审查，不实现抓取。
 - Shana Project：官网帮助页公开说明其站点 RSS 只包含最近 50 条发布；个人私有 RSS 是账户持有人的安全订阅，不得作为共享数据源。由于公开 RSS 不是关键词检索接口，暂只提供原站入口。
 - AniBT：官方公开 Torznab 文档明确支持 Sonarr/Radarr/Prowlarr，无需登录或 API Key；已实现独立 Provider，按官方 60 次/分钟/IP 限制使用共享 1.1 秒限流通道，不缓存 Torznab 响应，仍保持禁用等待 Hosted 验证。
+
+## 补充影视元数据候选（2026-11-26）
+
+- TVmaze：公开节目名搜索 API，数据采用 CC BY-SA；先完成来源字段溯源、署名和 ShareAlike 兼容性设计，再评估 Provider。
+- Wikidata：结构化数据采用 CC0；文本搜索应优先评估 `wbsearchentities`，WDQS 仅用于范围明确的关系查询，暂不做批量下载或 Provider。
+- TMDB：官方 API 法律声明禁止将其数据/图片用于色情内容相关场景，与本项目 JAV 核心功能冲突；仅保留用户主动访问的官网入口，不集成 API。
+- IMDb：公开 TSV 数据集许可仅限个人非商业用途，并禁止复用数据建立影视数据库；仅保留官网外部入口。
+- 上述来源均未新增 Provider、搜索模板、KV 配置或启用状态。
 
 ## 来源项目范围说明
 
