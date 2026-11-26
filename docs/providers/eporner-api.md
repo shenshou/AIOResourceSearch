@@ -30,9 +30,25 @@ The legacy added-time value has no timezone offset in the API contract. It is re
 
 A Worker Cron Trigger runs every 15 minutes and consumes one page per invocation from \`GET https://www.eporner.com/api/v2/video/removed/\`, using \`since\` for a new window and the opaque \`after\` cursor for continuation. It uses \`per_page=1000\`, validates every removal record, and commits the cursor only after the entire page is validated.
 
-The sync state is stored as one small record in the existing \`SOURCES_KV\` namespace under \`eporner:removal-sync:v1\`. It contains only the feed cursor, timestamps, and last-page count. It does not store removed IDs, search results, user data, or media. If a page fails, the cursor is not advanced; the next scheduled invocation safely retries that page. A completed sync is considered fresh for 36 hours. While a continuation cursor is pending, the Provider fails closed.
+The sync state is stored as one small record in the existing \`SOURCES_KV\` namespace under \`eporner:removal-sync:v1\`. It contains only the feed cursor, timestamps, and last-page count. The 250-record page size is deliberately bounded for the Workers Free Cron CPU budget; verify actual CPU use in the hosted test environment. It does not store removed IDs, search results, user data, or media. If a page fails, the cursor is not advanced; the next scheduled invocation safely retries that page. A completed sync is considered fresh for 36 hours. While a continuation cursor is pending, the Provider fails closed.
 
 The Provider also checks the status of every search result before returning it, so removed IDs are not returned from stale search responses. Search results are never persisted by this project.
+
+## Administrator registration
+
+The built-in adapter is identified by:
+
+| Field | Value |
+|---|---|
+| Adapter ID | `eporner-api` |
+| Mechanism | `api` |
+| Version | `1.0.0` |
+| Source category | `other-index` |
+| Content category | `jav` |
+| Capabilities | `metadata` |
+| Search modes | `keyword` |
+
+The source catalog entry uses source ID `eporner` and points to adapter `eporner-api`. In the administrator UI, register the adapter first and enable the adapter only after the Worker version containing this Provider is deployed to a non-production environment. Then register the catalog source and leave the source itself disabled until the scheduled sync and hosted checks pass. No source or adapter KV record is created by this code change.
 
 ## Enablement requirements
 
