@@ -3911,11 +3911,11 @@ A cross-check of the compile-time Worker registry, Provider source files, focuse
 
 - **MangaDex** (mangadex-api) and **MusicBrainz** (musicbrainz-api) were implemented and registered in Worker code but had no source-catalog records. Both now have dedicated Provider-type candidate records with their exact adapter IDs, metadata-only capabilities, category/content-category, and policy/operational gates.
 - **Perverzija DB** (perverzija-db) was implemented and documented but had no source-catalog record. A dedicated Provider-type candidate record has now been added.
-- **Sukebei**, **DMHY**, **AniBT**, **Torlock**, and **YourBittorrent** already have source-catalog entries that represent user-initiated external navigation (and, where documented, external search templates). Their Worker Provider implementations are documented separately. They deliberately remain external-search catalog entries in this phase; changing them to Provider type would make the current single-type source model drop their user-initiated external links. No such conversion was retained.
+- **Sukebei**, **DMHY**, **AniBT**, **Torlock**, and **YourBittorrent** initially existed as external-navigation candidates alongside compiled Worker Providers. The later 2026-11-26 dual-mode update converted these records to Provider type while preserving their user-initiated homepage/search destinations in independent navigation fields.
 
-The source model currently treats a source as either provider or external-search; it does not yet model both acquisition/navigation paths on one source record. This is an architectural limitation to address explicitly in a future coherent change if both paths must be surfaced simultaneously. Until then, preserve the existing external-search entries and do not infer that a compiled Provider automatically replaces them.
+The earlier single-type source-model limitation is superseded by the dual-mode implementation documented in [architecture.md](./architecture.md) and [source-catalog-policy.md](./source-catalog-policy.md). Provider acquisition and browser-opened navigation are independent capabilities; the Worker never fetches the external navigation destination.
 
-**Current result:** three missing source records have been added (MangaDex, MusicBrainz, Perverzija DB). Existing external-navigation records remain unchanged. No KV adapter/source records have been written; the three new Provider candidates remain unconfigured and disabled. No Cloudflare binding, live upstream request, deployment, or production change has occurred. The catalog contains 125 unique candidates.
+**Result at the time of this reconciliation:** three missing source records were added (MangaDex, MusicBrainz, Perverzija DB). Existing external-navigation records were then unchanged. No KV adapter/source records were written; the three new Provider candidates remained unconfigured and disabled. No Cloudflare binding, live upstream request, deployment, or production change occurred. The catalog contained 125 unique candidates at that point; later catalog reconciliations are recorded below.
 
 
 ## Novel / e-book catalog reconciliation and cross-category book-source review — 2026-11-26
@@ -3972,3 +3972,13 @@ This update closes the previously documented gap between the 2026-11-25 review o
 - Catalog now contains **137 unique candidates**: JAV 28, torrent 30, forum 16, other-index 63. Provenance tags are Atlas 75, FetchJAV 28, Lustpress 8, and AIOResourceSearch-owned 32; provenance tags overlap and must not be summed as unique records.
 - No Provider implementation, search template beyond the user-opened Open Library search link, KV configuration, source enablement, credentials, or Cloudflare deployment was added. All new entries remain candidates and are disabled when registered.
 - The eight Atlas candidates are now preserved in the catalog even where their identity remains name-only or automated access is deferred. This closes the previous catalog omission without changing any access-control boundary.
+
+
+## Dual-mode source and novel-candidate inventory follow-up — 2026-11-26
+
+The earlier Provider-to-catalog reconciliation text above is historical and has been superseded in two respects:
+
+- The source model now supports a Provider record and a separate user-opened external search/homepage destination simultaneously through `externalSearchUrlTemplate` and `externalSearchBaseUrl`. This is implemented in shared types, Worker validation/response generation, the source-management UI, and unit tests. The Worker never requests the external destination.
+- The eight Atlas novel/e-book candidates reviewed in the thirty-first batch have now been added to the durable source catalog, together with four additional book/general-archive candidates. The current inventory is 137 unique candidates: JAV 28, torrent 30, forum 16, other-index 63; provenance tags are Atlas 75, FetchJAV 28, Lustpress 8, and AIOResourceSearch-owned 32 (overlapping tags).
+
+No new Provider implementation, KV configuration, source enablement, credential, Cloudflare deployment, or file retrieval was added by this follow-up. The only new search template is Open Library's user-opened external search link; it is not a Worker API call.
