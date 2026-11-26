@@ -23,13 +23,13 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 119; the 63 reviewed Atlas rows remain unimported.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not automatically imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. At the time of that Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 122; the 63 reviewed Atlas rows remain unimported.
 
 
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 119 条去重候选：Atlas 标签 67、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 22；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- 122 条去重候选：Atlas 标签 67、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 25；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。它们都只是用户主动打开的外部入口；DMHY 和 AniBT 另外有独立 Provider 实现。
 - 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -124,7 +124,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（45）
+## 其他资源索引（48）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -193,6 +193,14 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Douban：第一方法律声明要求对条目元数据、评分、评论和采集使用事先取得书面许可；仅保留外部入口。
 - Notify.moe：第一方 API 存在，条款反对 HTML 抓取并指向 API，但第三方聚合许可、配额和服务持续性尚未确认；不进行 API 批量获取。
 - 上述候选均保留在目录中，未新增 Provider、搜索模板、KV 配置或启用状态。
+
+## 补充游戏与音乐元数据候选（2026-11-26）
+
+- RAWG：官方游戏 API 有免费层，但 API 条款限制数据进一步分发，并禁止将数据/图片用于色情或淫秽内容场景；与本项目成人内容核心范围存在产品级冲突，仅保留官网外部入口。
+- Giant Bomb：第一方状态页明确表示游戏等 API 当前不可用，替代 Wiki 仍处于早期状态；仅保留官网外部入口。
+- Discogs：API 中部分唱片/艺人/厂牌字段标为 CC0，但受限数据、图片、字段级署名和时效要求，以及将流量导向非 Discogs 服务的限制，需要先取得书面澄清；暂不接入。
+- ListenBrainz：官方 API 主要用于读取或提交用户听歌记录，不是通用音乐目录搜索接口；不作为共享目录数据源，不收集用户 Token。
+- 上述审查未新增 Provider、搜索模板、KV 配置或启用状态。
 
 ## 来源项目范围说明
 
