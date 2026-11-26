@@ -2426,15 +2426,25 @@ References:
   - Operator news archive: https://animetosho.org/about/news
   - Secondary shutdown confirmation: https://otakudown.com/anime-tosho-shuts-down-downloads-feeds/
 
-## Tokyo Toshokan — public RSS capability historically documented; current integration not verified — 2026-11-25
+## Tokyo Toshokan — public RSS capability historically documented; current integration not verified — revalidated 2026-11-26
 
-- The canonical site search result identifies Tokyo Toshokan as a Japanese-media BitTorrent index and documents that a new RSS feed/customizer was introduced in 2017, with search features supported in RSS at that time.
-- The current canonical page could not be retrieved by the research fetcher in this review (HTTP 403). That response alone does not prove the site blocks all clients or that a bypass is necessary; however, it also does not establish a currently supported RSS URL, present-day automation permission, or normal Worker reachability.
-- Decision: retain only a user-initiated external destination for now. Do not guess feed URLs, probe undocumented endpoints, rotate IPs, impersonate browsers, or attempt to bypass a challenge. Reconsider if the canonical site provides a currently documented feed URL and the terms/ordinary access can be verified.
+- The canonical site's indexed listing still identifies Tokyo Toshokan as a Japanese-media BitTorrent index and retains the historical announcement that its RSS feed/customizer was introduced in 2017, with search features supported in RSS at that time.
+- A current indexed listing page was discoverable, but direct retrieval of the canonical homepage again returned HTTP 403 in this review. This is a fetcher-specific observation only; it does not prove universal blocking or establish that bypass is necessary.
+- No current first-party RSS endpoint specification, current terms granting third-party automated aggregation, or ordinary Worker reachability was verified. The 2017 announcement is historical capability evidence, not current authorization or a stable current interface contract.
+- **Decision:** retain the existing user-initiated external destination only. Do not add a Provider or search template, guess feed URLs, probe undocumented endpoints, rotate IPs, impersonate browsers, or attempt to bypass a challenge. Reconsider only after a currently documented public feed and applicable automation/data-use conditions can be verified.
 - References:
-  - Canonical site listing and RSS announcement: https://www.tokyotosho.info/
-  - Example current listing indexed by search: https://www.tokyotosho.info/?cat=10&date=2026-08-31
+  - Canonical homepage and historical RSS announcement: https://www.tokyotosho.info/
+  - Indexed listing page: https://www.tokyotosho.info/?cat=10&date=2026-07-21
 
+## Project JAV — public catalogue UI verified; search contract and automation permission unresolved — 2026-11-26
+
+- The first-party homepage is currently publicly reachable and identifies the service as a JAV torrent index. Its rendered page exposes a keyword/title/actress/code search control, filters, pagination, catalogue metadata, and magnet links. The homepage also displays a current update timestamp.
+- The rendered interface confirms that a user-facing search UI exists, but the retrieved page does not expose a verifiable query URL or documented public search API/RSS contract. Do not infer the search route from client-side behavior or copy third-party scraper endpoints.
+- The reviewed footer provides DMCA/contact/ideas links and states that the site does not host videos itself. No first-party Terms of Use, privacy policy, public API/RSS documentation, or explicit permission for third-party automated metadata aggregation was verified in this pass.
+- **Decision:** retain Project JAV as a user-initiated external destination only. Do not add a search template until its actual user-facing query URL is verified; do not implement Worker HTML scraping, undocumented endpoint calls, metadata harvesting, or magnet harvesting. Reconsider if the operator publishes a supported search contract and applicable automation/data-use terms or grants explicit permission.
+- References:
+  - First-party homepage and rendered search/catalogue UI: https://projectjav.com/
+  - First-party homepage footer (DMCA/contact/ideas and no-hosted-video statement): https://projectjav.com/
 
 
 ## Additional cross-category API candidates — 2026-11-25
