@@ -78,10 +78,11 @@ function parseCooldownUntil(response: Response, now: number): number | null {
 
 /**
  * Internal-only, per-upstream Durable Object coordinator.
- * The SQLite row contains timestamps only; no query, result, or user data.
+ * SQLite stores lane timestamps plus a short-lived Eporner request lease; no query, result, media, or user data.
  */
 export class RateLimitCoordinator {
   private readonly ready: Promise<void>;
+  private epornerLockTableReady = false;
 
   constructor(private readonly ctx: CoordinatorState) {
     this.ready = ctx.blockConcurrencyWhile(async () => {
@@ -119,7 +120,10 @@ export class RateLimitCoordinator {
         return json({ error: "invalid_lease" }, 400);
       }
       const leaseId = body.leaseId;
-      this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS eporner_request_lock (lane TEXT PRIMARY KEY, lease_id TEXT, lease_until INTEGER NOT NULL)");
+      if (!this.epornerLockTableReady) {
+        this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS eporner_request_lock (lane TEXT PRIMARY KEY, lease_id TEXT, lease_until INTEGER NOT NULL)");
+        this.epornerLockTableReady = true;
+      }
       this.ctx.storage.sql.exec(
         "INSERT OR IGNORE INTO eporner_request_lock (lane, lease_id, lease_until) VALUES (?, NULL, 0)",
         lane,
@@ -316,7 +320,9 @@ async function coordinatorRequest(
   if (path === "acquire") {
     const acquired = "acquired" in payload ? payload.acquired : undefined;
     const retryAt = "retryAt" in payload ? payload.retryAt : undefined;
+    const returnedLeaseId = "leaseId" in payload ? payload.leaseId : undefined;
     if (typeof acquired !== "boolean" ||
+        (acquired && returnedLeaseId !== leaseId) ||
         (!acquired && (typeof retryAt !== "number" || !Number.isFinite(retryAt)))) {
       throw new Error("Invalid Eporner request-lock response.");
     }
@@ -391,13 +397,13 @@ export function createCoordinatedFetch(
 
     try {
       let response = await fetchImpl(input, init);
-      if (lane === "eporner") response = await bufferEpornerResponse(response);
       const cooldownUntil = parseCooldownUntil(response, Date.now());
       if (cooldownUntil !== null) {
         // Persist upstream throttling even if the initiating client disconnects
         // after the response arrives; otherwise the shared lane can lose a 429.
         await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownUntil);
       }
+      if (lane === "eporner") response = await bufferEpornerResponse(response);
       return response;
     } finally {
       if (exclusiveLeaseId) {
