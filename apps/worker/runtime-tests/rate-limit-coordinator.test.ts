@@ -118,7 +118,6 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
     const fetchStarted = new Promise<void>((resolve) => { markFetchStarted = resolve; });
     const upstreamBody = new ReadableStream<Uint8Array>({
       async start(controller) {
-        markFetchStarted();
         await bodyGate;
         controller.enqueue(new TextEncoder().encode("ok"));
         controller.close();
@@ -128,7 +127,10 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
       namespace,
       "eporner",
       new AbortController().signal,
-      async () => new Response(upstreamBody, { headers: { "Content-Type": "application/json" } }),
+      async () => {
+        markFetchStarted();
+        return new Response(upstreamBody, { headers: { "Content-Type": "application/json" } });
+      },
     );
 
     const pending = coordinatedFetch("https://www.eporner.com/api/v2/video/search/");
