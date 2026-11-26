@@ -342,3 +342,10 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - TIDAL：第一方 Developer Terms 将工具用途限定于非商业产品，要求有效 TIDAL 登录凭据，并禁止自动抓取/站内检索工具复制或索引平台内容，也禁止建立内容数据库。当前聚合用途不具备明确许可，仅保留首页入口。
 - Qobuz：可查到的第一方 API Terms（2011 年生效，未来使用前须复核是否仍有效）要求 Qobuz 签发的 Application ID/secret/key，并禁止将服务内容提供给非用户、广告/赞助变现、索引服务内容、收集用户信息和绕过元数据地域限制。当前不接入 API，仅保留首页入口。
 - 本批新增 3 个候选，目录更新为 156 条去重候选（JAV 28、torrent 30、forum 16、other-index 82）；AIOResourceSearch 自有来源标签 51（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。没有新增自动获取路径。
+
+
+## 补充音乐平台外部入口（2026-11-27，第四批）
+
+- SoundCloud：官方 API 支持曲目、用户和播放列表搜索，但需要注册应用及平台签发凭据；API 条款禁止未经 API 授权的数据抓取/聚合，并明确禁止将 API 或用户内容用于展示露骨性图像或销售/宣传色情内容的应用。鉴于 JAV/成人内容是本项目核心分类，不接入 API，仅保留首页外部入口。
+- Game Jolt：官方 API 面向游戏内数据存储、分数、会话、奖杯和用户功能，不是公共游戏目录搜索 API；第一方条款禁止成人内容及抓取/复制平台内容，因此不纳入本项目来源目录。
+- 本批新增 SoundCloud 1 条，目录更新为 157 条去重候选（JAV 28、torrent 30、forum 16、other-index 83）；AIOResourceSearch 自有来源标签 52（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。未新增 Provider、凭据、KV 配置、启用状态或部署。
