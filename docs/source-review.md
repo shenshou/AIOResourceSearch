@@ -2788,3 +2788,51 @@ This batch revisited 141HongKong, 52AV, Cool18, EYNY, and HJD2048. The review di
   - https://github.com/DIYgod/RSSHub/issues/13014
 
 **Batch outcome:** no source was promoted to an automated Provider; no catalog destination was replaced; no third-party scraper implementation was adopted. Reconsider only after first-party confirmation of canonical ownership, a supported public interface, and terms that permit the intended metadata use.
+
+## Follow-up candidate revalidation — 2026-11-26
+
+This batch rechecked SexInSex, SIS001, 91论坛, JAVLeak, and JavMost. A visible search form, forum search feature, or RSS feature is not by itself an authorization to operate a third-party aggregator. No candidate in this batch met the project's requirements for a Worker Provider.
+
+### SexInSex
+- The first-party landing page currently displays a 21+ age/legal warning, states that full access requires account activation by email, and includes a user-submitted-link/legal-rights disclaimer. A first-party page also states that visitor access was restricted because automated crawlers and malicious attacks had overloaded the server.
+- No public API/RSS contract or first-party permission for third-party metadata collection was verified. The observed activation/access requirements do not authorize Worker account/session handling.
+- **Decision: retain user-initiated external access only.** No Worker scraping, account/session automation, or access-control workaround.
+- References:
+  - https://sexinsex.net/
+  - https://whatsapp.btnihao.com/bbs/redirect.php?goto=lastpost&tid=9541239
+
+### SIS001
+- The first-party FAQ on `web.sis001.com` documents both the forum's built-in search feature and an RSS subscription feature. This establishes that the forum has user-facing search/RSS functionality, but the FAQ does not expose a verified public feed URL/query contract or establish permission for this project's automated collection and metadata display.
+- The current FAQ fetch is HTTP 403 in this research session. A separate third-party RSSHub request from 2020 is merely a feature request, not an official feed implementation or authorization.
+- The catalog root was previously observed returning HTTP 403; no public, operator-authorized Provider interface was verified.
+- **Decision: retain external access only.** Do not reverse-engineer feed URLs, use RSSHub scraping routes, or automate account/session access. Reconsider only if the operator documents a public feed/API and permits this use.
+- References:
+  - https://web.sis001.com/bbs1/faq.php
+  - https://github.com/DIYgod/RSSHub/issues/4377
+
+### 91论坛
+- The exact catalog destination `https://91porny.com/forum` returned HTTP 403 in this review. Third-party regional measurements report blocking in mainland China, but regional blocking is not permission to proxy around it.
+- No first-party current Terms, public API/RSS contract, or authorized public search interface was verified. Earlier page observations of post listings and promotional redirects do not establish permission for automated extraction.
+- **Decision: retain user-initiated external access only.** No Worker fetching, alternate-route probing, or regional-block evasion.
+- References:
+  - https://91porny.com/forum/
+  - https://zh.greatfire.org/domain/91porny.com
+
+### JAVLeak
+- The current homepage is publicly retrievable and visibly exposes a search input, advanced-search link, and paginated metadata listings. The homepage did not expose a Terms or Privacy link/text in the retrieved page, and no official API/RSS contract or explicit automation/data-use permission was verified.
+- The presence of a search form does not establish a stable supported search URL or permission to collect and republish metadata. Domain-registration records only establish registration, not operator identity or access rights.
+- **Decision: retain homepage-only external access.** Keep the search template removed; no Worker scraping or undocumented endpoint use until first-party terms and a supported interface are published.
+- References:
+  - https://javleak.com/
+  - https://www.whois.com/whois/javleak.com
+
+### JavMost
+- The catalog's historical `javmost.com` destination was previously observed redirecting to `javmost.ws`; the currently retrievable site resolves to `www.javmost.ws`. This supports recording the observed redirect destination, but does not independently establish long-term canonical ownership or an authorized integration relationship.
+- The current homepage exposes navigation, advanced-search controls, and paginated metadata. The linked Legal page is a 18 U.S.C. §2257 compliance statement and says displayed content is user-submitted or pulled from third-party sources; it is not a Terms of Service or automated-access policy. No official API/RSS contract or permission for third-party metadata aggregation was verified.
+- **Decision: retain external access only; do not promote the search template.** Do not treat the 2257 statement as automation permission or scrape the site's search/results pages. Reconsider only after current operator terms and a supported, permitted public interface are available.
+- References:
+  - https://www.javmost.ws/
+  - https://www.javmost.ws/legal/
+  - https://radar.cloudflare.com/domains/domain/javmost.com
+
+**Batch outcome:** zero Provider promotions, zero search-template restorations, and zero access-control workarounds. Existing external destinations remain unchanged pending first-party permission and a supported public interface.
