@@ -2985,3 +2985,19 @@ Decision: remove the clickable catalog destination and retain a name-only record
 - XNXX and XVideos remain external-homepage-only candidates; YouPorn becomes name-only because its Terms expressly restrict linking absent permission.
 - No unofficial scraper, HTML extraction, account/session reuse, or access-control workaround was introduced.
 - No source activation, KV configuration, Cloudflare deployment, or production setting was changed.
+
+
+## Provider implementation update — 2026-11-26
+
+The Eporner public API integration has now been implemented in the feature branch.
+
+- Registered `eporner-api` in the compile-time Provider registry as a keyword-only, metadata-only JAV Provider.
+- Search requests use the documented API with `thumbs=none`; returned video IDs are checked through the official status endpoint and only `active` records are returned.
+- Search metadata is restricted to title, canonical URL, keywords, view count, rating, duration, and the original timezone-unspecified added-time string.
+- Embed/player markup, image URLs, downloads, and media fields are neither returned to the UI nor retained in the edge cache. The cache stores an allowlisted metadata projection only.
+- Added a shared one-second `eporner` Durable Object lane so search, status, and scheduled feed requests remain sequential across Worker instances.
+- Added an hourly Cron Trigger. Each invocation consumes one page of up to 1,000 removal-feed records, validates it, and advances the opaque cursor only after successful validation.
+- The existing `SOURCES_KV` namespace stores only the small sync cursor/timestamp record. No removed-ID list, search result, media, or user data is stored. The Provider fails closed while a continuation cursor is pending or the last completed sync is older than 36 hours.
+- Added focused Provider, removal-sync, metadata-cache, and rate-lane tests. They have been added to the Worker test command but have not yet been executed in CI for the current branch head.
+
+The source catalog now marks Eporner as a built-in Provider candidate. Its source and adapter remain unconfigured and disabled: no production KV writes, source activation, Cloudflare deployment, or PR merge has occurred. Before enablement, the hourly Cron Trigger and first successful removal-feed sync must be verified in a non-production Cloudflare environment, along with ordinary API connectivity and the project's jurisdiction-specific launch assessment.
