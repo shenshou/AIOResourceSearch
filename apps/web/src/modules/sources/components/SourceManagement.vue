@@ -238,7 +238,7 @@ async function submitForm() {
           searchUrlTemplate: navigationTemplate,
           externalSearchUrlTemplate: undefined,
           externalSearchBaseUrl: undefined,
-          baseUrl: form.baseUrl?.trim() || form.externalSearchBaseUrl?.trim() || undefined,
+          baseUrl: form.externalSearchBaseUrl?.trim() || form.baseUrl?.trim() || undefined,
         }
       : {
           searchUrlTemplate: undefined,
@@ -473,7 +473,7 @@ async function deleteSource(source: SourceDefinition) {
               <label class="wide">外部搜索 URL 模板（可选；用户主动打开，不由 Worker 请求；必须包含一个 {query}）
                 <input v-model="form.externalSearchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
               </label>
-              <label class="wide">外部站点首页（可选；仅在未配置外部搜索模板时显示）
+              <label v-if="!form.externalSearchUrlTemplate?.trim()" class="wide">外部站点首页（可选；仅在未配置外部搜索模板时显示）
                 <input v-model="form.externalSearchBaseUrl" type="url" maxlength="2048" placeholder="https://example.com" />
               </label>
             </template>
