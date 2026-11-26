@@ -1,14 +1,16 @@
-# Age-assurance readiness
+# Age-assurance and launch-scope readiness
 
-**Status: launch blocker for adult-content discovery**
+**Status: jurisdiction-specific launch assessment pending; no blanket adult-content disablement**
 
 This document records the project's technical and policy assessment. It is an engineering decision record, not legal advice or a determination that any particular statute applies to this project.
 
-## Scope
+## Product scope
 
-The product is a public search aggregator. It can expose adult-source names, search destinations, metadata, and outbound links even though it does not host video files. The absence of media hosting does not by itself establish that age-assurance rules are inapplicable. Whether a particular law covers this service depends on its statutory definitions, the actual content presented, the operator's status, the service's commercial character, and the jurisdictions served.
+AIOResourceSearch is a multi-category metadata search aggregator. Adult-resource discovery is one of the product's core use cases. The project does not host or stream media files; it may display source names, text metadata, resource identifiers, and user-opened external links.
 
-The project has not completed a jurisdiction-by-jurisdiction legal applicability review. Do not infer that a rule does or does not apply solely from the fact that the project is a small, non-monetized, public GitHub Pages/Cloudflare application.
+The absence of media hosting does not by itself establish that age-assurance rules are inapplicable. Conversely, the project must not assume that every rule governing adult video-hosting services automatically applies to a metadata search aggregator. Applicability depends on statutory definitions, the actual material presented, the operator's status, the service's commercial character, and the jurisdictions served.
+
+The project has not completed a jurisdiction-by-jurisdiction legal applicability review. Do not infer that a rule does or does not apply solely from the fact that the project is small, non-monetized, or hosted on GitHub Pages and Cloudflare.
 
 ## Evidence reviewed (2026-11-26)
 
@@ -20,7 +22,7 @@ The project has not completed a jurisdiction-by-jurisdiction legal applicability
 - Utah's Department of Commerce announced that enforcement of the core age-verification requirement for covered commercial adult websites began 2026-11-02. The same notice distinguishes the age-verification mandate from a separately enjoined location/VPN provision: https://commerce.utah.gov/2026/10/30/utah-to-begin-enforcing-age-verification-for-adult-websites/
 - The U.S. Supreme Court held in *Free Speech Coalition, Inc. v. Paxton* (2025) that Texas's age-verification law was a constitutionally permissible exercise of state authority: https://www.supremecourt.gov/opinions/24pdf/23-1122_3e04.pdf
 
-The statutes differ. This project must not treat one state's method, threshold, exemptions, or data rules as a nationwide standard.
+The statutes differ. This project must not treat one state's method, threshold, exemptions, or data rules as a nationwide standard. It must also assess whether the statutory definitions cover this particular metadata-search product rather than assuming that they do.
 
 ### European Union
 
@@ -33,30 +35,26 @@ The statutes differ. This project must not treat one state's method, threshold, 
 
 | Option | Cost | Assurance | Decision |
 |---|---|---|---|
-| DOB field / 18+ checkbox / localStorage flag | No direct cost | Self-declaration only; easily bypassed and not a substitute for statutory age verification | Reject as compliance control |
+| DOB field / 18+ checkbox / localStorage flag | No direct cost | Self-declaration only; easily bypassed and not a substitute for statutory age verification | Reject as a compliance control |
 | Build an in-house verifier from scratch | Engineering and operational cost; no trustworthy data source by itself | Cannot establish age without reliable evidence; creates sensitive-data and security risks if it collects IDs or payment/identity data | Reject |
-| Use a trusted age-assurance provider | May involve fees and jurisdiction-specific contracts | Potentially suitable where the provider/method meets the relevant law | Not selected; conflicts with current no-paid-service constraint unless a genuinely free trusted option is available |
+| Use a trusted age-assurance provider | May involve fees and jurisdiction-specific contracts | Potentially suitable where the provider/method meets the relevant law | Not selected; conflicts with the current no-paid-service constraint unless a genuinely free trusted option is available |
 | Integrate the EU Age Verification Blueprint | Software is open source/free | Privacy-preserving proof of age, but depends on trusted issuers, supported presentation protocols, and Member State deployment | Keep as a future EU-specific integration candidate; not a universal solution |
-| Restrict adult features by jurisdiction | Infrastructure cost may be low, but requires reliable geo-policy and ongoing legal maintenance | May reduce exposure but is not a substitute for verification where the law requires verification; IP geolocation is imperfect | Not approved as the sole control |
-| Keep adult discovery unavailable | No verification vendor cost | Avoids presenting adult search results through this product while the gate is unresolved | **Selected interim state** |
+| Restrict adult features by jurisdiction | Infrastructure cost may be low, but requires reliable geo-policy and ongoing legal maintenance | May reduce exposure but is not a substitute for verification where the law requires verification; IP geolocation is imperfect | Consider only if a legal review identifies a relevant jurisdiction-specific obligation; not approved as a universal default |
+| Hide all adult discovery until a verification vendor is selected | No verification vendor cost | Removes a core product use case without first establishing that this product is covered by the relevant requirements | Rejected as a blanket product rule |
 
-## Engineering decision
+## Engineering and product decision
 
-1. Do not implement a cosmetic age gate and label it age verification.
-2. Keep adult-only Providers disabled and unconfigured.
-3. Until a reviewed age-assurance path is operational, do not display adult search results, adult metadata, adult-source external-search destinations, or adult source links in the public interface. Hiding only thumbnails is insufficient.
-4. Do not collect or retain government IDs, selfies, face templates, dates of birth, payment data, or identity documents in this project.
-5. Do not store a reusable "verified" boolean in localStorage or treat a browser cookie as proof of age.
-6. Keep non-adult categories and sources independent; do not gate unrelated categories merely because adult sources exist in the catalog.
-7. Before enabling adult discovery, document launch jurisdictions, applicable statutory thresholds/exemptions, whether this service is covered, acceptable proof methods, privacy/data-retention obligations, and the operational process for verification failures and appeals.
-8. If a no-cost, trusted, privacy-preserving method is not available for the selected launch scope, adult discovery remains disabled. Do not bypass the requirement by relabeling the service or routing users through third-party sites.
+1. Adult-resource discovery remains a core product capability. Do not globally hide adult categories, metadata, search results, or source destinations solely because the jurisdiction review is incomplete.
+2. Do not implement a cosmetic age gate and label it age verification.
+3. Continue source-by-source technical and policy review. A source's own Terms, API contract, access controls, attribution rules, and removal requirements remain independently binding project constraints.
+4. Before public launch, document the intended launch jurisdictions and assess whether the laws in those jurisdictions cover this metadata-search service, including relevant definitions, thresholds, exemptions, operator status, and service characteristics.
+5. If a reviewed jurisdiction-specific obligation applies, implement the required proportionate control for that scope before serving affected users. If no compliant no-cost method is available, evaluate a narrowly scoped jurisdiction or feature restriction, or delay launch in that scope; do not automatically disable adult discovery worldwide.
+6. Do not collect or retain government IDs, selfies, face templates, dates of birth, payment data, or identity documents in this project unless a separately reviewed design establishes a lawful necessity and appropriate safeguards. The current design does not collect them.
+7. Do not store a reusable "verified" boolean in localStorage or treat a browser cookie as proof of age.
+8. Keep non-adult categories independent; adult compliance work must not unnecessarily gate unrelated categories.
+9. Worker authorization, input validation, source enablement, rate limiting, and API security remain required regardless of age-assurance decisions. These controls protect the service and do not themselves constitute age verification.
 
-## Reconsideration criteria
+## Reconsideration and launch criteria
 
-Reopen this decision only when at least one of the following is true:
+Revisit this record when launch jurisdictions are selected, relevant laws or court orders change, or the product's content and operating model materially change. Before release, record the applicability conclusion and any required controls for each launch jurisdiction. If a control is required, validate it server-side and fail closed for the affected scope when proof validation or trust-list checks fail; minimize retained state and test expired, replayed, malformed, wrong-audience, wrong-threshold, and untrusted-issuer proofs.
 
-- A trusted, no-cost age-assurance mechanism is available for the project's actual launch jurisdictions and the project can validate its trust chain.
-- The operator obtains an appropriately scoped, reviewed age-assurance provider arrangement.
-- The product scope changes so adult discovery and adult-source navigation are removed from the public service.
-
-Any future implementation must be server-enforced for protected API results, fail closed when proof validation or trust-list checks fail, minimize retained state, and include tests for expired, replayed, malformed, wrong-audience, wrong-threshold, and untrusted-issuer proofs.

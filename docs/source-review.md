@@ -933,7 +933,7 @@ The canonical Terms are now directly reviewable at https://www.eporner.com/terms
 
 The API-specific terms welcome use on a website or app and require: reading the removed-video feed at least once daily and removing listed videos; compliance with applicable age-verification and child-protection rules; no use of the API/feed for machine-learning or AI training/testing; no downloading, copying, or re-hosting video files; and fair request behavior. The API documentation says to respect Cache-Control, make sequential rather than parallel page requests, and wait for Retry-After after HTTP 503. This project should consume only text metadata (title, keywords, duration, views/rating/date) and the canonical video URL. Do not consume thumbnails, embeds, player markup, or media files. The project must not treat the API as a way around Eporner's regional or age controls.
 
-Decision: Eporner is eligible for a metadata-only Provider through the official public API, not HTML scraping. Keep it unconfigured and disabled until the project implements a compliant daily removal-feed sync and confirms that its own user-facing age-assurance flow meets the applicable requirements. No API call, source activation, or deployment is part of this review.
+Decision: Eporner is eligible for a metadata-only Provider through the official public API, not HTML scraping. Implement the Provider with a daily removal-feed sync and fail-closed suppression of removed IDs. Public enablement remains subject to source-policy review and the project's jurisdiction-specific launch assessment; this is not a blanket requirement to hide all adult discovery while that assessment is pending. No API call, source activation, or deployment is part of this review.
 
 #### XNXX
 
@@ -2900,7 +2900,7 @@ This revalidation covers 夯鸭论坛 (Hung-Ya), 色花堂98堂 (SeHuaTang), JAV
 | 色花堂98堂 (SeHuaTang) | Existing operator-associated Telegram channel announces .net/.org domains and search availability changes, but is not a first-party Terms/API/RSS policy; current .org content/domain identity remains unverified | **Canonical domain and automation permission unresolved** | Keep existing unverified external reference; no mirror substitution, scraping, or account automation |
 | JAVGG | First-party Terms at https://javgg.net/terms-of-service/ prohibit data mining, harvesting, and extraction; no exception or official API/RSS contract was found | **Automated metadata extraction prohibited by published Terms** | Homepage-only; no Worker Provider or HTML scraper |
 | JavyNow | First-party Terms at https://javynow.com/tos prohibit scrapers, offline readers, spiders, robots, and automated extraction absent express authorization; third-party reproduction/distribution is also restricted | **Automated retrieval not authorized** | Homepage-only; remove/keep removed any search template; no Worker fetch |
-| Eporner | First-party Terms updated 2026-10-09 expressly exempt the documented public API; API v2.1.0 provides no-key search and a removed-video feed | **Documented API use permitted subject to API Terms** | Eligible for metadata-only Provider after daily removal-feed sync and project age-assurance prerequisites |
+| Eporner | First-party Terms updated 2026-10-09 expressly exempt the documented public API; API v2.1.0 provides no-key search and a removed-video feed | **Documented API use permitted subject to API Terms** | Eligible for metadata-only Provider after daily removal-feed sync and jurisdiction-specific launch review |
 
 ### Source-specific findings
 
