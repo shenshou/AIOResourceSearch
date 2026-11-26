@@ -3891,3 +3891,15 @@ References:
 - Three canonical homepage-only candidates are added to the runtime candidate inventory: RAWG (game), Giant Bomb (game), and Discogs (music).
 - ListenBrainz is documented as out of scope for shared catalogue search because its documented API is user-listening-history oriented.
 - No Provider implementation, external-search template, KV configuration, source enablement, credential, or Cloudflare deployment was added.
+
+
+## Implemented Provider-to-catalog reconciliation — 2026-11-26
+
+A cross-check of the compile-time Worker registry, Provider source files, focused tests, provider-specific documentation, and frontend sourceCatalog.ts found two implemented Providers that had not yet been represented by matching source-catalog records:
+
+- **MangaDex** — Worker Provider `mangadex-api` v1.0.0, registered in `apps/worker/src/providers/registry.ts`, with focused tests and `docs/providers/mangadex-api.md`. The Provider is limited to public manga title metadata, explicit content-rating filters, visible attribution, one-hour cache, and the shared 400 ms `mangadex` Durable Object lane. It does not fetch chapters, cover art, images, accounts, or user endpoints.
+- **MusicBrainz** — Worker Provider `musicbrainz-api` v1.0.0, registered in the same compile-time registry, with focused tests and `docs/providers/musicbrainz-api.md`. It is limited to non-commercial release-group metadata, omitting tags, ratings, annotations, cover art, and user data; uses a descriptive User-Agent, one-hour cache, and shared 1,000 ms `musicbrainz` Durable Object lane.
+
+Both sources have now been added to `apps/web/src/modules/sources/sourceCatalog.ts` with their matching adapterId, category, content category, capabilities, search mode, canonical homepage, and operational/policy notes.
+
+**This is a catalog registration reconciliation only.** No KV adapter/source records have been written; both remain unconfigured and disabled. No Cloudflare binding, live upstream request, deployment, or production change has occurred. Before any future enablement, complete the dedicated non-production Cloudflare Hosted verification and re-check MangaDex's ad-free/free-service condition and MusicBrainz's non-commercial-use condition.
