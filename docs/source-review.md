@@ -3982,3 +3982,38 @@ The earlier Provider-to-catalog reconciliation text above is historical and has 
 - The eight Atlas novel/e-book candidates reviewed in the thirty-first batch have now been added to the durable source catalog, together with four additional book/general-archive candidates. The current inventory is 137 unique candidates: JAV 28, torrent 30, forum 16, other-index 63; provenance tags are Atlas 75, FetchJAV 28, Lustpress 8, and AIOResourceSearch-owned 32 (overlapping tags).
 
 No new Provider implementation, KV configuration, source enablement, credential, Cloudflare deployment, or file retrieval was added by this follow-up. The only new search template is Open Library's user-opened external search link; it is not a Worker API call.
+
+
+## Public-domain ebook, national-library, and collaborative-text sources — 2026-11-26
+
+This batch adds three more first-party-documented candidates for the novel/general-resource categories. All remain external-only; no automated acquisition or file retrieval is introduced.
+
+### Standard Ebooks
+
+- First-party feeds documentation says New Releases RSS/Atom feeds are open to everyone.
+- The full-catalog OPDS feed and other feeds are a Patrons Circle benefit, accessible through a donation, qualifying contribution, or corporate sponsorship. Those restricted feeds are not used because the project does not pay for third-party services or access tiers.
+- The open new-release feed is a notification feed, not a keyword-search endpoint.
+- Decision: homepage-only; no patron-only feed, Provider, bulk download, or ebook-file retrieval.
+- References: https://standardebooks.org/feeds ; https://standardebooks.org/help/how-to-add-an-opds-feed-to-your-ereader
+
+### Library of Congress
+
+- First-party JSON/YAML API supports keyword search through `/search/?q=...` and returns structured summaries for digitized collection items and other site content. It is public and does not require an API key.
+- The API does not include undigitized library-catalog records. Published rate limits for the JSON/YAML API are 20 requests/minute, with a one-hour block if exceeded; 429 or CAPTCHA responses require pausing/backoff, never evasion. Recommended page size is at most 1,000 results.
+- Rights are item-specific. The Library explicitly warns that online availability does not grant reuse rights; its own U.S. Government works may be CC0, but third-party collection material may remain copyrighted or otherwise restricted.
+- Decision: add a user-opened keyword search link only. No Worker Provider until item-level rights handling, scope filtering, and a strict shared rate-limit lane are designed.
+- References: https://www.loc.gov/apis/json-and-yaml ; https://www.loc.gov/apis/json-and-yaml/requests/endpoints/ ; https://www.loc.gov/apis/json-and-yaml/working-within-limits/ ; https://www.loc.gov/legal/security-copyright-and-privacy/understanding-copyright/
+
+### Wikisource
+
+- First-party policy states that hosted works must be public domain or under a licence compatible with its free-content definition; original Wikisource contributions are generally CC BY-SA/GFDL, but individual source works may have different rights tags.
+- Public-domain status is generally assessed under U.S. law and must be checked for the intended jurisdiction. Wikisource does not guarantee that every work's rights assessment is correct.
+- Wikimedia API policy requires descriptive User-Agent identification, compliance with rate-limit/throttling instructions, and prohibits spreading requests across user agents or otherwise circumventing limits. Any republished or cached text must comply with its individual licence.
+- Decision: homepage-only until a per-work licence/rights and API-use plan is designed; no bulk text harvesting or Worker Provider.
+- References: https://en.wikisource.org/wiki/Wikisource:Reusing_Wikisource_content ; https://en.wikisource.org/wiki/Wikisource:Licensing ; https://meta.wikimedia.org/wiki/API_Policy_Update_2024/en
+
+### Batch outcome
+
+- Added Standard Ebooks, Library of Congress, and Wikisource as project-owned candidates.
+- Standard Ebooks patron-only feeds are not used; Library of Congress remains user-opened search pending per-item rights and rate-limit handling; Wikisource remains homepage-only pending per-work licence review.
+- No Provider, API credential, KV configuration, source enablement, file download, or Cloudflare deployment was added.
