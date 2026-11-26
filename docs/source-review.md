@@ -2836,3 +2836,51 @@ This batch rechecked SexInSex, SIS001, 91论坛, JAVLeak, and JavMost. A visible
   - https://radar.cloudflare.com/domains/domain/javmost.com
 
 **Batch outcome:** zero Provider promotions, zero search-template restorations, and zero access-control workarounds. Existing external destinations remain unchanged pending first-party permission and a supported public interface.
+
+## Additional index/forum-source revalidation — 2026-11-26
+
+This batch rechecked 5278.cc, OurSogo, Sex8.cc, 91Porn, and Hanime1. Domain activity, third-party status scans, or a third-party RSS route are not substitutes for a first-party supported interface and automation permission.
+
+### 5278.cc
+- A direct retrieval of the exact catalog homepage returned HTTP 403 in this review.
+- Cloudflare Radar shows recent TLS certificate issuance and DNS/domain activity, but that establishes only technical domain activity, not permission for automated access or a public search contract.
+- No first-party current Terms, public API/RSS, or operator-documented search interface was verified.
+- **Decision: retain homepage-only external reference.** No Worker requests, alternate-route probing, cookie reuse, or challenge bypass.
+- References:
+  - https://5278.cc/
+  - https://radar.cloudflare.com/domains/domain/5278.cc
+
+### OurSogo
+- A direct retrieval of `https://oursogo.com/` returned HTTP 403 in this review.
+- No first-party current Terms, official API/RSS documentation, or supported public search interface was verified. Domain reachability or third-party directory references do not establish automation permission.
+- **Decision: retain homepage-only external reference.** Do not probe alternate paths, reuse cookies, or bypass the 403.
+- Reference: https://oursogo.com/
+
+### Sex8.cc
+- The exact catalog domain was not retrievable in this review. The existing catalog evidence records an operator-associated Linktree listing Sex8.cc as a destination; this association does not provide current Terms, an API/RSS contract, or permission for third-party metadata extraction.
+- Cloudflare Radar's certificate observations establish that the domain has had active TLS certificates, not that a public automated interface is available or permitted.
+- **Decision: retain homepage-only external reference.** No Worker crawling or post extraction pending first-party policy and interface verification.
+- References:
+  - https://sex8.cc/
+  - https://radar.cloudflare.com/domains/domain/sex8.cc
+
+### 91Porn
+- The first-party homepage currently presents an 18+ age confirmation and explicitly tells visitors in mainland China not to access the site. This is a site-specific access notice; it is not an invitation to evade geographic restrictions.
+- The RSSHub route documentation marks 91Porn as having strict anti-crawling. A third-party scraper route is not operator authorization and is not imported.
+- No first-party public API/RSS contract or permission for third-party metadata aggregation was verified.
+- **Decision: retain user-initiated external access only.** No Worker fetching, RSSHub route use, age-gate automation, or regional restriction evasion. This source remains distinct from 91论坛 (`91porny.com/forum`).
+- References:
+  - https://91porn.com/
+  - https://john-marques.github.io/rsshub-docs/routes/multimedia
+
+### Hanime1
+- The exact site publishes a first-party 18 U.S.C. §2257 statement requiring visitors to be at least 18 (or the higher age of majority where applicable). This is an age/compliance statement, not an API contract or automated-access policy.
+- The canonical homepage returned HTTP 403 in this review. Third-party regional measurements report mainland-China blocking, which does not authorize proxying or other circumvention.
+- No first-party public API/RSS contract or permission for third-party metadata aggregation was verified.
+- **Decision: retain user-initiated external access only.** No Worker scraping, challenge bypass, or geographic restriction evasion.
+- References:
+  - https://hanime1.me/
+  - https://hanime1.me/2257
+  - https://en.greatfire.org/domain/hanime1.me
+
+**Batch outcome:** zero Provider promotions, zero new search templates, and zero access-control workarounds. Existing catalog destinations remain unchanged.
