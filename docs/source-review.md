@@ -3687,3 +3687,72 @@ References:
 - AniList official Terms of Use: https://docs.anilist.co/guide/terms-of-use
 - AniList official rate-limiting guidance: https://docs.anilist.co/guide/rate-limiting
 - AniList official API stability considerations: https://docs.anilist.co/guide/considerations
+
+
+## Anime metadata-source batch review — 2026-11-26
+
+### Bangumi — public subject-search API exists; integration gate remains open
+
+- The first-party `bangumi/api` repository documents a legacy keyword subject-search endpoint `GET /search/subject/:keywords`, URL-encoded keywords, type and response-size controls, pagination, and a maximum of 25 results per page.
+- The first-party repository also publishes an OpenAPI v0 schema and marks parts of the newer API as experimental, subject to change. The legacy search document and the newer OpenAPI surface should not be conflated; implementation must select and test one supported contract.
+- Bangumi explicitly asks non-browser API clients to use a descriptive User-Agent containing a developer identity and application name; distributed apps should include a version, and open-source projects should include the project homepage. Generic/default User-Agents may be disabled.
+- No numeric request quota or explicit third-party metadata-republication licence was verified in the reviewed first-party materials. The API's existence and developer guidance are not a blanket grant for bulk collection or republication.
+- **Decision:** retain Bangumi as a candidate with canonical homepage only. No Provider or external search template until current endpoint stability, rate policy, content-use terms, and the exact permissible metadata fields are confirmed. If reconsidered, use a transparent project-specific User-Agent and conservative caching; do not bulk mirror the database.
+
+### MyAnimeList — official API access exists, but current first-party contract not verified
+
+- Third-party API references describe MAL API v2 anime/manga keyword search and metadata endpoints requiring an issued Client ID; user-list and account-specific functions use OAuth. These references are not first-party authorization or a reliable current statement of quota.
+- Do not copy or reuse a Client ID extracted from MAL's official mobile app or third-party source code. Do not automate account login or reuse user credentials.
+- Current official developer reference and terms could not be independently retrieved in this review. No official current numeric rate limit or third-party metadata display/republication permission was verified.
+- **Decision:** retain canonical MAL homepage only. No API Provider, copied client ID, OAuth flow, user-list collection, scraping, or undocumented endpoint use until current first-party documentation and explicit permitted-use scope are established.
+
+### AniDB — API documentation exists, but current contract and permission remain unverified
+
+- AniDB publishes HTTP and UDP API specifications on its own wiki. The official wiki returned HTTP 403 to the research fetcher; this is a fetcher-specific result and does not prove global unavailability.
+- Third-party technical references describe a registered-client requirement for UDP API use and warn against using UDP as a bulk database-download mechanism. Those references are not a substitute for current first-party protocol rules, rate policy, or permission.
+- No current first-party public search contract, numeric request quota, or explicit third-party metadata aggregation/republication permission was verified.
+- **Decision:** retain AniDB canonical homepage only. No Provider, bulk sync, registered client, undocumented API call, scraping, or attempt to work around access restrictions. Reconsider after direct first-party API-policy review.
+
+### Kitsu — public anime GET/search API exists; terms and data-use scope need confirmation
+
+- The first-party Kitsu API documentation describes the JSON:API endpoint `https://kitsu.io/api/edge`, public-facing GET endpoints that generally do not require authentication, text filtering with `filter[text]`, and pagination (10 by default, generally up to 20).
+- The same documentation states that R18 resources are hidden from unauthenticated requests and from accounts with mature content disabled. It also describes Algolia-backed search keys that are dynamic and user-specific when obtained under an authenticated session; keys must not be shared because they can expose user-specific/private content.
+- The GitHub repository contains the API documentation; its repository/documentation licence is not evidence that Kitsu's catalogue data is licensed for republication. Kitsu's Terms of Service could not be reliably reviewed in this pass, and no explicit third-party metadata aggregation permission or numeric API quota was verified.
+- **Decision:** retain Kitsu canonical homepage only. No Provider, shared Algolia keys, OAuth/user credentials, R18 access workaround, bulk collection, or metadata republication until current first-party terms and API-use permission are confirmed. Public GET technical availability alone is insufficient.
+
+### LiveChart — no supported automated interface verified
+
+- The canonical LiveChart domain and likely terms/documentation routes were not retrievable by the research fetcher (robots/access limitation). No first-party public API, RSS contract, documented search endpoint for third-party integration, numeric quota, or metadata-use permission was verified.
+- A research-fetcher restriction is not proof that the service is globally inaccessible, nor permission to route around it.
+- **Decision:** retain canonical LiveChart homepage only. No Worker scraping, undocumented endpoint probing, proxy, alternate-domain substitution, or access-control workaround.
+
+### Douban — first-party written permission required
+
+- Douban's first-party Legal Notice dated 2025-05-27 defines Douban content to include book/film/music item metadata, ratings, reviews and related counts, and prohibits use of that content without prior written permission. The restriction expressly covers commercial display, derivative apps/websites, data collection, crawlers, and similar extraction.
+- The first-party notice directs parties seeking to use Douban content to contact `bd-team@douban.com` for authorization. Historical Douban API client documentation and third-party mirrors do not override the current first-party notice.
+- **Decision:** keep Douban as user-initiated external navigation only. No API Provider, third-party API substitute, HTML scraping, internal app API, login/signature automation, or metadata/score/review reuse without written permission.
+
+### Notify.moe — public API preferred over scraping, but aggregation scope remains unclear
+
+- Notify.moe's first-party API page documents a REST API at `https://notify.moe/api` and exposes anime-related types including Anime, AnimeRelations, Episode, Character and Company.
+- Its first-party Terms of Service (last modified 2017-11-17) explicitly prohibit HTML scraping and direct users to the public API to minimize bandwidth. This is a clear preference for API over scraping, but it does not expressly grant third-party bulk aggregation or republication rights.
+- The official API documentation page is available, but no numeric quota or explicit third-party metadata reuse licence was found. The project's public GitHub repository was archived in 2024, which is third-party operational context and raises maintenance/continuity concerns; it does not itself mean the live API is discontinued.
+- **Decision:** retain Notify.moe canonical homepage only. Do not scrape HTML. No Provider or bulk API harvesting until the operator confirms permitted third-party aggregation, current service support, and sustainable request limits.
+
+### References
+
+- Bangumi API repository: https://github.com/bangumi/api
+- Bangumi legacy subject search: https://github.com/bangumi/api/blob/master/docs-raw/Search-API.md
+- Bangumi User-Agent guidance: https://github.com/bangumi/api/blob/master/docs-raw/user%20agent.md
+- Bangumi OpenAPI v0 schema: https://github.com/bangumi/api/blob/master/open-api/v0.yaml
+- MyAnimeList API reference portal (not retrievable in this review): https://myanimelist.net/apiconfig/references/api/v2
+- AniDB HTTP API specification: https://wiki.anidb.net/HTTP_API_Definition
+- AniDB UDP API specification: https://wiki.anidb.net/UDP_API_Definition
+- Kitsu API documentation: https://hummingbird-me.github.io/api-docs/
+- Kitsu API documentation repository: https://github.com/hummingbird-me/api-docs
+- LiveChart canonical site: https://www.livechart.me/
+- Douban first-party Legal Notice: https://www.douban.com/about/legal?page=2025-05-27
+- Douban first-party User Agreement: https://www.douban.com/about/agreement
+- Notify.moe first-party API docs: https://notify.moe/api
+- Notify.moe first-party Terms: https://notify.moe/terms
+- Notify.moe public repository (archived): https://github.com/animenotifier/notify.moe
