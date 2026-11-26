@@ -3784,7 +3784,7 @@ References:
 - Wikidata's first-party licensing and data-access pages state that structured data is released under CC0 and may be reused without attribution; Wikidata nevertheless asks projects to identify it as a data source and provide a way to report data issues.
 - The first-party access guide distinguishes its mechanisms: Elasticsearch / `wbsearchentities` is appropriate for text/entity-name search; the Linked Data Interface is for already-known entity IDs; the Action API is intended for small groups of known entities (up to 50); and WDQS is intended for narrowly scoped relationship queries, not fuzzy text search or broad result sets.
 - Access guidance requires a meaningful User-Agent, avoiding parallel request bursts, observing robot policy, using short timeouts, and stopping after HTTP 429 while respecting Retry-After. The separate WDQS service also publishes its own external-client rate and concurrency limits; those limits should not be confused with Action API limits.
-- **Decision:** retain a film/TV-scoped Wikidata candidate as homepage-only pending a narrow search design and result-quality tests. No bulk dump, broad SPARQL scan, or Provider is introduced in this review. If revisited, use the search API for text lookup rather than regex-heavy WDQS queries, add explicit source provenance, and implement conservative serial requests and backoff.
+- **Decision:** retain a film/TV-scoped Wikidata candidate as homepage-only pending a narrow search design and result-quality tests. No bulk dump, broad SPARQL scan, or Provider is introduced in this review. If revisited, use the Action API search interface (`wbsearchentities`) for text lookup rather than regex-heavy WDQS queries, add explicit source provenance, use a descriptive User-Agent, keep concurrency at or below three (prefer serial requests), cache results, and honor `Retry-After` with backoff on 429/503. Re-check the live global rate-limit policy before implementation.
 
 ### First-party references
 
@@ -3800,6 +3800,8 @@ References:
 - Wikidata first-party data-access guide: https://www.wikidata.org/wiki/Wikidata:Data_access
 - Wikidata API etiquette: https://www.mediawiki.org/wiki/API:Etiquette
 - Wikidata Query Service rate limits: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/API
+- Wikimedia's 2026 API rate-limit policy: https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits
+- Wikimedia API rate-limit FAQ: https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits/FAQ
 
 
 ## Film / TV discovery and metadata-source review — 2026-11-26
