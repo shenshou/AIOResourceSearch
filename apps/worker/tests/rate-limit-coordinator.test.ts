@@ -445,7 +445,7 @@ test("holds the Eporner exclusive lease until the upstream response body is full
     }),
   };
   let releaseBody!: () => void;
-  const bodyGate = new Promise<void>((resolve) => { releaseBody = resolve; });
+  const bodyGate = new Promise<void>((resolve) => { releaseBody = () => resolve(); });
   const upstreamBody = new ReadableStream<Uint8Array>({
     async start(controller) {
       await bodyGate;
