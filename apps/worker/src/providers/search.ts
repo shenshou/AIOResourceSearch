@@ -340,23 +340,29 @@ export async function executeSearch(
   const externalSearches: ExternalSearchLink[] = sourceConfig.sources
     .filter((source) =>
       source.enabled &&
-      source.type === "external-search" &&
       matchesContentCategory(source) &&
       source.searchModes.includes(request.mode) &&
-      (typeof source.searchUrlTemplate === "string" || typeof source.baseUrl === "string"),
+      ((source.type === "external-search" &&
+        (typeof source.searchUrlTemplate === "string" || typeof source.baseUrl === "string")) ||
+       ((source.type ?? "provider") === "provider" &&
+        (typeof source.externalSearchUrlTemplate === "string" || typeof source.externalSearchBaseUrl === "string"))),
     )
     .flatMap((source) => {
       try {
-        const url = source.searchUrlTemplate
-          ? source.searchUrlTemplate.replace("{query}", encodeURIComponent(request.query))
-          : source.baseUrl!;
+        const isProvider = (source.type ?? "provider") === "provider";
+        const searchTemplate = isProvider ? source.externalSearchUrlTemplate : source.searchUrlTemplate;
+        const homepageUrl = isProvider ? source.externalSearchBaseUrl : source.baseUrl;
+        const url = searchTemplate
+          ? searchTemplate.replace("{query}", encodeURIComponent(request.query))
+          : homepageUrl;
+        if (!url) return [];
         const parsed = new URL(url);
         if (parsed.protocol !== "https:" || parsed.username || parsed.password) return [];
         return [{
           sourceId: source.id,
           sourceName: source.name,
           category: source.category,
-          kind: source.searchUrlTemplate ? "search" : "homepage",
+          kind: searchTemplate ? "search" : "homepage",
           url: parsed.toString(),
         }];
       } catch {
