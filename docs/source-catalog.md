@@ -4,7 +4,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 149 个去重候选</badge>
+<badge>共 153 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -23,13 +23,13 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries brought the catalog to 146 before the 2026-11-27 game/music follow-up, which brings the current total to 149.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries brought the catalog to 146 before the 2026-11-27 game/music follow-up (149), and the 2026-11-27 GOG/Epic/Deezer/Bandcamp follow-up brings the current total to 153.
 
 
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 149 条去重候选：JAV 28、torrent 30、forum 16、other-index 75；Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 44；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- 153 条去重候选：JAV 28、torrent 30、forum 16、other-index 79；Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 48；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 9 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT、Open Library、Library of Congress、Steam Store。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；Open Library 与 Library of Congress 的模板只在用户点击后由浏览器打开，Worker 不会请求目标站点。
 - 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -324,4 +324,13 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Steam Store：官方商店搜索页与 `?term=` 查询 URL 已通过真实搜索结果验证；Steamworks Web API 文档未提供适用于本项目的通用公开商品目录搜索契约。仅提供用户主动打开的搜索模板，不调用未文档化 Storefront 接口、不抓取页面。
 - Spotify：Web API 文档支持音乐搜索，但当前入门要求 Premium 账户与应用凭据；Developer Terms 禁止未经许可的机器人、站内搜索/检索工具抓取、复制或索引 Spotify 服务内容。仅保留首页入口，不实现 API 搜索。
 - Apple Music：API 有目录搜索能力，但需开发者令牌和 Media Services 私钥；Apple Developer Program 年费为 99 美元，且 MusicKit 条款将用途限定于帮助终端用户使用 Apple Music 订阅服务。当前不符合项目的免费接入及产品用途边界，仅保留首页入口。
-- 本批新增 3 个候选：Steam Store、Spotify、Apple Music。目录更新为 149 条去重候选（JAV 28、torrent 30、forum 16、other-index 75）；AIOResourceSearch 自有来源标签 44（标签交叉）。外部搜索模板由 8 条增至 9 条。未新增 Provider、凭据、KV 配置、启用状态或部署。
+- 本批新增 3 个候选：Steam Store、Spotify、Apple Music。目录更新为 153 条去重候选（JAV 28、torrent 30、forum 16、other-index 79）；AIOResourceSearch 自有来源标签 48（标签交叉）。外部搜索模板由 8 条增至 9 条。未新增 Provider、凭据、KV 配置、启用状态或部署。
+
+
+## 游戏与音乐平台补充外部入口（2026-11-27，第二批）
+
+- GOG：第一方 User Agreement 明确禁止未经授权的机器人、爬虫、脚本和信息提取工具与 GOG 服务交互；官方 Galaxy SDK 面向开发者，没有核实到通用公开目录搜索 API 或第三方元数据复用许可。仅保留首页入口。
+- Epic Games Store：官方商店 Browse 页面提供目录浏览和类型导航，但本次未核实到面向第三方的公开目录搜索 API 或元数据复用授权。仅保留首页入口；不因条款摘录中未发现明确 scraping 条款而推定自动化获准。
+- Deezer：历史开发者条款虽描述 Search API，但在线应用须经 Deezer 审批；Deezer 社区管理员 2025 年表示已暂停向个人开发者开放新的 API 访问，2026 年社区报告搜索行为不稳定。当前无可确认访问授权或第三方聚合许可，仅保留首页入口。
+- Bandcamp：第一方 Acceptable Use Policy 明确禁止自动抓取及文本/数据挖掘；其 API 面向厂牌和商品履约合作方，需单独申请 OAuth 凭据，不是通用目录搜索 API。仅保留首页入口。
+- 本批新增 4 个候选，目录更新为 153 条去重候选（JAV 28、torrent 30、forum 16、other-index 79）；AIOResourceSearch 自有来源标签 48（标签交叉）。外部搜索模板仍为 9 条；未新增 Provider、凭据、KV 配置、启用状态或部署。
