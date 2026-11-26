@@ -91,7 +91,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | Bitsearch | AIOResourceSearch | 仅首页入口；API 数据再展示许可待确认 |
 | XXXClub | Atlas | 仅首页入口或 URL 待补 |
 | Nyaa | AIOResourceSearch | 动漫分类；仅原站首页入口，自动化访问待审查 |
-| DMHY | AIOResourceSearch | 官方关键词 RSS；Provider 已实现，待 Hosted 验证 |
+| AnimeBytes | AIOResourceSearch | 私人 tracker；仅原站首页入口，无公开目录 API/RSS |
+| 動漫花園 (DMHY) | AIOResourceSearch | 官方关键词 RSS；Provider 已实现，待 Hosted 验证 |
 | Shana Project | AIOResourceSearch | 动漫分类；仅原站首页入口，公开 RSS 非查询型 |
 | Tokyo Toshokan | AIOResourceSearch | 动漫分类；仅官方首页外部入口，当前 RSS/自动化许可未核实 |
 | Mikan Project | Atlas / AIOResourceSearch | 动漫分类；官方关键词搜索外部入口，私有 RSS 不接入 |
