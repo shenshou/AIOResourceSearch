@@ -232,6 +232,7 @@ async function submitForm() {
     ...form,
     id: form.id.trim(),
     name: form.name.trim(),
+    baseUrl: form.baseUrl?.trim() || undefined,
     ...(form.type === "provider" ? { adapterId: form.adapterId?.trim() ?? "" } : { adapterId: undefined }),
     ...(form.type === "external-search"
       ? {
@@ -249,7 +250,6 @@ async function submitForm() {
     ...(form.type === "provider" && form.adapterId === "generic-html"
       ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: { ...form.htmlSelectors!, fields: htmlFields } }
       : { providerSearchUrlTemplate: undefined, htmlSelectors: undefined }),
-    baseUrl: form.baseUrl?.trim() || undefined,
     credentialBinding: form.credentialBinding?.trim() || undefined,
     notes: form.notes?.trim() || undefined,
     searchModes: [...form.searchModes],
