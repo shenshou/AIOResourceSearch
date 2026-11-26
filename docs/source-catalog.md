@@ -4,7 +4,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 137 个去重候选</badge>
+<badge>共 140 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -23,13 +23,13 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 137.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries bring the current catalog total to 140.
 
 
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 137 条去重候选：Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 32；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- 140 条去重候选：Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 35；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 6 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；外部链接仍只由浏览器打开，Worker 不会请求目标站点。
 - 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -124,7 +124,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（63）
+## 其他资源索引（66）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -169,6 +169,9 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | Google Books | AIOResourceSearch | API 数据涉及第三方许可且 API 条款限制收费；仅外部入口 |
 | Project Gutenberg | AIOResourceSearch | 公共领域目录和 OPDS 可用；暂仅首页入口，后续可评估有界 OPDS Provider |
 | Internet Archive | AIOResourceSearch | 官方元数据搜索 API 存在；条目权利因上传者而异，暂仅首页入口 |
+| Standard Ebooks | AIOResourceSearch | 新书 RSS/Atom 免费公开；全量 OPDS 受 Patrons Circle 权限限制，暂仅首页入口 |
+| Library of Congress | AIOResourceSearch | 官方 JSON/YAML 搜索 API 公开；20 次/分钟，条目权利需逐项核验 |
+| Wikisource | AIOResourceSearch | 公共领域或兼容自由许可；逐作品检查许可，暂仅首页入口 |
 
 ## 补充跨分类来源
 
@@ -213,6 +216,13 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Google Books：API 数据涉及第三方授权，且条款限制收费应用并要求侵权内容移除流程；只保留官网入口。
 - Project Gutenberg：机器可读公共领域目录和 OPDS 发现接口存在；OPDS 有 User-Agent、联系地址、请求节奏和 landing-page 链接要求，后续再评估有界 Provider。
 - Internet Archive：官方元数据搜索 API 存在，但内容权利随具体上传项目变化；在权利筛选和内容范围设计前仅保留官网入口。
+- 上述来源均未新增 Provider、KV 配置、来源启用或文件获取功能。
+
+## 补充公共领域电子书、国家图书馆与协作文本来源（2026-11-26）
+
+- Standard Ebooks：新书 RSS/Atom 对所有人开放，但完整 OPDS 和其他 Feed 需要 Patrons Circle 捐赠/资格；不使用受限 Feed 或付费访问，公开新书 Feed 也不是关键词搜索接口，因此仅保留首页入口。
+- Library of Congress：官方 JSON/YAML API 可搜索数字化馆藏和站点内容，不需要 API Key；JSON/YAML API 限额为 20 次/分钟，超限会封锁一小时，429/CAPTCHA 必须暂停而非规避。未数字化的图书馆目录记录不在 API 中，内容权利按条目判断；仅提供用户主动搜索入口。
+- Wikisource：作品须为公有领域或兼容自由许可，原始贡献通常为 CC BY-SA/GFDL，但每个作品的来源许可与公共领域状态需要逐项确认；Wikimedia API 需标识 User-Agent 并遵守限流，不得规避。仅保留首页入口。
 - 上述来源均未新增 Provider、KV 配置、来源启用或文件获取功能。
 
 ## 补充游戏与音乐元数据候选（2026-11-26）
