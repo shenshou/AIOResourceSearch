@@ -3671,3 +3671,19 @@ References:
 - AnimeBytes linked status JSON (service status only): https://status.animebytes.tv/api/status
 - The Wiki private-tracker overview (third-party): https://thewiki.moe/sourcing/private-trackers/
 - autobrr supported indexers (third-party): https://autobrr.com/configuration/indexers
+
+
+## AniList metadata API review — 2026-11-26
+
+- AniList publishes a free, public GraphQL API for anime and manga metadata. Public metadata queries do not require OAuth; GraphQL requests use POST to `https://graphql.anilist.co`.
+- The first-party API Terms are decisive for this product: they prohibit using the API within competing, non-complementary services of the same nature, explicitly including anime/manga list or tracker services, and prohibit hoarding or mass collection. AIOResourceSearch is a multi-source anime/resource search service, so its intended use may fall within the competing-service restriction. Do not infer that the general free-use statement overrides this specific restriction.
+- The API documentation currently warns that the service is degraded and temporarily limited to 30 requests/minute (the normal documented limit is 90/minute), with burst limiting and a one-minute timeout after rate-limit violations. The docs also describe possible manual IP blocking for excessive requests.
+- **Decision:** do not implement or enable an AniList Provider, bulk metadata sync, or API-backed search until AniList gives explicit written confirmation that this specific aggregator use is permitted. No API account, OAuth, credential, or request was created/performed for this review. Retain the source as a user-initiated external destination only; no scraping or rate-limit workaround.
+
+### References
+
+- AniList official API introduction: https://docs.anilist.co/guide/introduction
+- AniList official GraphQL request guide: https://docs.anilist.co/guide/graphql/
+- AniList official Terms of Use: https://docs.anilist.co/guide/terms-of-use
+- AniList official rate-limiting guidance: https://docs.anilist.co/guide/rate-limiting
+- AniList official API stability considerations: https://docs.anilist.co/guide/considerations
