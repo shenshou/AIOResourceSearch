@@ -4126,3 +4126,27 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added four project-owned candidates: GOG, Epic Games Store, Deezer, and Bandcamp. All four are homepage-only; no search templates or automated acquisition paths were added.
 - Catalog count: 153 unique candidates (JAV 28, torrent 30, forum 16, other-index 79); project-owned provenance tags: 48 (overlapping tags). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
+
+
+## 独立游戏与音乐服务补充审查（2026-11-27，第三批）
+
+### itch.io — documented RSS exists; no general catalogue API or republication grant established
+- First-party API overview explicitly offers RSS for any browse-page URL by appending `.xml`, plus global new-games, featured-games, and sales feeds. This is an intentional user-facing feed capability. The documented server-side API requires account credentials and exposes account, owned-game, purchase, and reward operations; it is not a general public catalogue-search API.
+- The first-party Terms prohibit harvesting/collecting information about others and maliciously manipulating the interface. They do not, in the reviewed text, grant this project a blanket right to aggregate and republish catalogue metadata.
+- **Decision:** retain itch.io as a game candidate with homepage navigation only. Public RSS is a future Provider candidate, but do not poll, aggregate, or redistribute feeds until the intended feed scope, publisher/item rights, rate behavior, and third-party metadata use are confirmed. No account credentials or private purchase data.
+- References: https://itch.io/docs/api/overview ; https://itch.io/docs/api/serverside ; https://itch.io/docs/legal/terms
+
+### TIDAL — homepage-only; API terms conflict with catalogue indexing
+- TIDAL Developer Terms version 3.0 (May 6, 2024) limit Developer Tools to non-commercial applications and require TIDAL credentials. They prohibit robots, spiders, automated scraping mechanisms, and site-search/retrieval applications that retrieve, duplicate, or index TIDAL Platform/Content. They also prohibit storing, aggregating, or creating databases/compilations of TIDAL Content except what is strictly necessary to operate the offering.
+- **Decision:** retain TIDAL as a music candidate with homepage navigation only. A cross-source catalogue index is not established as an allowed use; no API integration, content indexing, or copying.
+- References: https://developer.tidal.com/documentation/guidelines/guidelines-developer-terms-3_0 ; https://developer.tidal.com/reference
+
+### Qobuz — homepage-only; API is credentialed and indexing is prohibited
+- The accessible first-party Qobuz API Terms document is effective September 1, 2011, so its current validity must be reconfirmed before any future API use. It requires a Qobuz-issued Application ID, secret, and key; prohibits sharing credentials, making API/Service/Content available to non-users, advertising/sponsorship monetization, indexing any part of the Service, collecting user information, and disregarding metadata geoblocking.
+- **Decision:** retain Qobuz as a music candidate with homepage navigation only. No API credentials, catalogue indexing, user-data collection, monetization, or geoblocking workarounds.
+- Reference: https://static.qobuz.com/apps/api/QobuzAPI-TermsofUse.pdf
+
+### Batch outcome
+- Added three project-owned candidates: itch.io, TIDAL, and Qobuz. All are homepage-only; no search templates or automated acquisition paths were added. itch.io's documented RSS is recorded as a future candidate, not implemented.
+- Catalog count: 156 unique candidates (JAV 28, torrent 30, forum 16, other-index 82); project-owned provenance tags: 51 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, KV configuration, source enablement, or deployment changed.
