@@ -8,7 +8,7 @@ The source catalog is a long-lived inventory of candidate upstream sources and i
 
 These rules apply to every source category, including JAV/adult metadata, anime, film/TV, manga, novels, games, music, torrent indexes, forums, and general resource indexes. Do not apply a blanket category exclusion where a source-specific assessment is required.
 
-## The eight governing principles
+## The ten governing principles
 
 ### 1. The catalog is a durable source-asset inventory
 
@@ -47,6 +47,19 @@ A restriction on Worker acquisition does not automatically require removing an o
 ### 8. Reconcile upstream inventories completely and preserve provenance
 
 For Atlas, Lustpress, FetchJAV, and future reference projects, maintain a source-level reconciliation between the upstream inventory and this project's catalog/review records. Record the upstream file or section, the number of raw entries, normalization and deduplication rules, multi-category identities, excluded/out-of-scope entries, and unresolved differences. Do not claim that an upstream inventory is fully imported based only on a label count or a partial README list. Preserve upstream project attribution even when a candidate is also discovered independently or shared across categories.
+
+
+### 9. Adult-related functionality is a core product pillar
+
+Adult/JAV-related search, metadata, source discovery, source management, and external-resource navigation are an explicit core of AIOResourceSearch, not an optional or disposable side category. Treat adult sources as first-class catalog and product scope alongside anime, film/TV, manga, novels, games, music, and general indexes. Do not introduce blanket adult-category hiding, global filtering, mass deletion, or default runtime shutdown as a general product rule. If a specific jurisdiction or deployment requires a legal restriction, assess and implement the narrowest applicable jurisdiction-, feature-, and audience-specific measure; do not unnecessarily disable unrelated regions, categories, or non-adult functionality. Legal and platform requirements remain real constraints, but they must be addressed precisely rather than by erasing the project's adult-resource direction.
+
+### 10. Research and development are not limited to official interfaces
+
+Do not make the existence of an official API, official RSS feed, or vendor-recommended integration the only permitted subject of technical research. Study and learn from other open-source projects and real-world implementations, including their adapter architecture, public-page search flows, HTML/JSON parsing, metadata normalization, pagination, caching, error handling, and other acquisition techniques. Evaluate whether a technique can be independently adapted to this project and whether it can operate reliably with our architecture and cost constraints.
+
+Separate **technical feasibility**, **source access conditions**, and **data-use permission**. A third-party implementation or publicly observable request flow is a research reference, not proof of authorization. Borrowing an implementation pattern does not itself authorize access, republication, or bypassing a site's controls. Do not implement a path that requires defeating authentication, paywalls, CAPTCHA, anti-bot/Cloudflare challenges, geo/IP restrictions, rate limits, or other access controls. Where ordinary public-page or other non-official acquisition is technically viable, assess the applicable terms, data scope, request impact, and legal constraints rather than rejecting it solely because it is not an official API. Record unresolved cases and investigate compliant alternatives.
+
+The catalog is also the long-term development inventory, not merely an archive. Progressively assess and implement its in-scope, not-yet-implemented sources in planned batches, using prioritization based on user value, feasibility, reliability, maintenance cost, and applicable constraints. Do not silently abandon unimplemented entries. Keep blocked entries visible in the backlog, revisit them when conditions or viable approaches change, and report genuine exclusions with reasons. This is a staged development commitment, not a promise that every third-party site can be integrated regardless of its restrictions or technical condition.
 
 ## Required source record and review outcomes
 

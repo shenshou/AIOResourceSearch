@@ -23,6 +23,9 @@ The application does not host media files. It does not include user accounts, cl
 
 The only planned browser-persisted preferences are the image-display toggle and theme.
 
+
+Adult/JAV-related search, metadata, and source management are a core product pillar of this project, not an optional category. The source inventory is intended to support progressive development of additional in-scope sources over time. Technical research may learn from other open-source implementations and is not limited to official APIs; implementation feasibility, access restrictions, and data-use permission must be evaluated separately. See [the source catalog governance policy](docs/source-catalog-policy.md).
+
 ## Source catalog
 
 The candidate source inventory collected from Atlas, Lustpress, and FetchJAV is documented in [docs/source-catalog.md](./docs/source-catalog.md). Its retention, evidence, review, and reconciliation rules are defined in [docs/source-catalog-policy.md](./docs/source-catalog-policy.md) and are mandatory under [docs/development-standards.md](./docs/development-standards.md). Sources are not automatically enabled: each candidate must be checked for canonical URLs, search URL format, access policy, and Cloudflare Workers compatibility. A deferred or currently unreachable source remains in the inventory unless a documented removal criterion is met.

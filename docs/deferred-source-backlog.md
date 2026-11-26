@@ -6,6 +6,13 @@ This document tracks sources or acquisition techniques that are intentionally **
 
 A backlog entry is not an approval, implementation promise, or indication that the source is currently reachable.
 
+
+## Long-term development commitment
+
+This backlog is not a parking lot for sources that will never be revisited. Every in-scope source in the catalog that does not yet have a working acquisition implementation remains part of the long-term development inventory. Review and prioritize these sources in batches, including research into techniques used by Atlas, Lustpress, FetchJAV, and other relevant open-source projects. The absence of an official API does not end technical investigation: evaluate ordinary public-page parsing and other viable approaches as separate options.
+
+This commitment does not authorize bypassing access controls or ignoring source terms. If the only currently known path requires such a bypass, keep that path deferred, document the exact blocker, and continue to look for a compliant alternative or a change in authorization/conditions. Do not silently remove the source from future consideration. Track prioritization and progress in the roadmap or source review records rather than treating every backlog entry as an immediate implementation task.
+
 ## Reconsideration criteria
 
 Reopen an item only when at least one of the following becomes true:
