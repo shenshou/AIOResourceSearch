@@ -4194,5 +4194,5 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 
 ### Batch outcome
 - Added three project-owned music candidates: Audius, Jamendo, and Free Music Archive. All are homepage-only; no search templates or automated acquisition paths were added.
-- Catalog now contains 160 unique candidates (JAV 28, torrent 30, forum 16, other-index 88); AIOResourceSearch provenance tags: 55 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- Catalog now contains 160 unique candidates (JAV 28, torrent 30, forum 16, other-index 86); AIOResourceSearch provenance tags: 55 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
