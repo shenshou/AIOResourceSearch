@@ -3842,3 +3842,52 @@ References:
 - OMDb API key and free tier: https://www.omdbapi.com/apikey.aspx
 - OMDb API legal / Terms of Use: https://www.omdbapi.com/legal.htm
 - OMDb API home and change log: https://www.omdbapi.com/
+
+
+## Game and music metadata-source review — 2026-11-26
+
+### RAWG — a game API exists, but its content and redistribution terms conflict with this product
+
+- RAWG's API documentation describes a searchable video-game metadata API with a free personal/hobby tier and request limits. Its API-specific Terms of Service, last updated 2021-03-01, separately prohibit further distribution of the Services and prohibit using API data or images in connection with pornographic, obscene, abusive, or otherwise offensive content.
+- The API documentation also says data must not be redistributed or made available to other businesses, and requires an active RAWG backlink on pages using its data. The API documentation's tier description and the older API-specific Terms should not be treated as a blanket grant for a multi-source search aggregator.
+- AIOResourceSearch has JAV/adult search as a core product pillar. Restricting RAWG records to the game category would not resolve the product-level content restriction.
+- **Decision:** retain RAWG as a canonical homepage-only game candidate. No API key request, Provider, image/metadata reuse, scraping, or third-party API wrapper unless RAWG provides current written authorization covering the entire product context and intended distribution.
+
+### Giant Bomb — its first-party API is currently unavailable
+
+- Giant Bomb's first-party API page explains that after its move away from Fandom, the API mechanisms are not currently available and are expected to change. It explicitly lists game, character, company, release, and other APIs as unavailable; its replacement wiki is described as rough alpha browsing.
+- **Decision:** retain Giant Bomb as a canonical homepage-only game candidate. Do not call historical API endpoints, probe undocumented replacements, use third-party mirrors, or treat the community wiki rebuild as an API contract. Reassess only after the operator publishes a supported interface and current terms.
+
+### Discogs — CC0 catalogue fields exist, but the intended search-aggregator use needs clarification
+
+- Discogs' first-party API Terms (last updated 2025-05-27) identify release titles, notes, dates, formats, track listings, identifiers, credits, artist names, and label/producer names as CC0 data. User data, marketplace data, and user-contributed images are separately classified as Restricted Data.
+- Restricted Data cannot be transferred to third parties or used commercially. API content must not be displayed more than six hours behind the current Discogs site, and caching is limited to what is necessary. The Terms require a prominent non-affiliation notice and a “Data provided by Discogs” notice with a direct link next to each use of Discogs data.
+- The Terms also prohibit certain commercial uses, including using the API or Content with the intent to drive traffic to other non-Discogs websites or services. Since AIOResourceSearch is a multi-source search product that presents external resource destinations, the applicability of that clause to this product requires written clarification even if the implementation were restricted to CC0 catalogue fields.
+- **Decision:** retain Discogs as a canonical homepage-only music candidate. No API integration, API credential, Provider, image, user, collection, wantlist, or marketplace-data use until Discogs clarifies in writing that this exact multi-source search and external-link use is permitted. Do not use additional API keys to work around any rate limit.
+
+### ListenBrainz — API purpose does not match a public music-catalogue search source
+
+- First-party documentation describes endpoints for submitting listens, reading a user's recent listens/listening history, and retrieving the currently playing track. Submission and some account-linked operations require a user token; the API publishes dynamic rate-limit response headers.
+- These endpoints are oriented around user listening activity and statistics, not a general public artist/release catalogue search contract. User-specific history is outside this project's source-search scope.
+- **Decision:** do not add ListenBrainz as a shared catalogue source. Do not request, collect, or store user tokens or aggregate individual users' listening histories. Reconsider only if a distinct public metadata-search interface is documented and its intended use is reviewed.
+
+### Existing MusicBrainz implementation — keep its separate constraints
+
+- MusicBrainz remains a distinct existing metadata Provider, not a substitute for Discogs. Its first-party API documentation states non-commercial use is free, no API key is required for public lookups, a meaningful User-Agent is mandatory, and each client application must not exceed one request per second. Core database data is CC0, while supplementary datasets can have different licences.
+- The previously documented implementation and licence checks remain separate from this batch. Do not infer that MusicBrainz's terms apply to Discogs or ListenBrainz, or that one provider's availability authorizes another provider.
+
+### First-party references
+
+- RAWG API documentation: https://rawg.io/apidocs
+- RAWG API-specific Terms of Service: https://rawg.io/tos_api
+- Giant Bomb API availability notice: https://giantbomb.com/api
+- Discogs API Terms of Use: https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use
+- ListenBrainz API documentation: https://listenbrainz-server.readthedocs.io/en/latest/dev/api.html
+- MusicBrainz API documentation: https://musicbrainz.org/doc/MusicBrainz_API
+- MusicBrainz rate limiting: https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting
+
+### Batch outcome
+
+- Three canonical homepage-only candidates are added to the runtime candidate inventory: RAWG (game), Giant Bomb (game), and Discogs (music).
+- ListenBrainz is documented as out of scope for shared catalogue search because its documented API is user-listening-history oriented.
+- No Provider implementation, external-search template, KV configuration, source enablement, credential, or Cloudflare deployment was added.
