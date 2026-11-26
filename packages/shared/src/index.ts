@@ -74,8 +74,12 @@ export interface SourceDefinition {
   /** provider calls a Worker implementation; external-search only builds a destination URL. */
   type?: SourceType;
   adapterId?: string;
-  /** Optional HTTPS search URL template for external-search sources; must contain exactly one {query}. If omitted, baseUrl is opened as a homepage link. */
+  /** HTTPS search URL template for external-search-only sources; exactly one {query}. */
   searchUrlTemplate?: string;
+  /** Optional user-opened HTTPS search URL for a Provider source; exactly one {query}. */
+  externalSearchUrlTemplate?: string;
+  /** Optional user-opened HTTPS homepage for a Provider source. Never fetched by the Worker. */
+  externalSearchBaseUrl?: string;
   /** Worker-side search URL template used by reviewed HTML adapters. */
   providerSearchUrlTemplate?: string;
   htmlSelectors?: HtmlSelectorConfig;
