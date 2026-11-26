@@ -45,6 +45,34 @@ test("reads and validates persisted sync state and freshness", async () => {
   assert.equal(isEpornerRemovalSyncFresh({ ...state, lastCompleteAt: "2026-11-24T00:00:00Z" }, now), false);
 });
 
+test("keeps the initial since watermark stable when the first upstream attempt fails", async () => {
+  const memory = memoryEnv();
+  await assert.rejects(
+    syncEpornerRemovalFeed(memory.env, async () => {
+      throw new Error("temporary upstream failure");
+    }, now),
+    /temporary upstream failure/i,
+  );
+
+  const initial = JSON.parse(memory.values.get(KEY)!);
+  const expectedSince = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  assert.equal(initial.since, expectedSince);
+  assert.equal(initial.lastCompleteAt, null);
+  assert.equal(initial.lastPageCount, 0);
+
+  let requested = "";
+  const retry = await syncEpornerRemovalFeed(memory.env, async (input) => {
+    requested = String(input);
+    return new Response(JSON.stringify({
+      has_more: false,
+      removed: [],
+    }), { headers: { "Content-Type": "application/json" } });
+  }, now + 15 * 60 * 1000);
+
+  assert.equal(new URL(requested).searchParams.get("since"), expectedSince);
+  assert.equal(retry.complete, true);
+});
+
 test("persists the continuation cursor after one page and completes on the next scheduled run", async () => {
   const memory = memoryEnv();
   let requested = "";

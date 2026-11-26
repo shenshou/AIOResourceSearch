@@ -109,6 +109,19 @@ export async function syncEpornerRemovalFeed(
   const startedAt = new Date(scheduledTime).toISOString();
   const since = existing?.since ?? new Date(scheduledTime - DEFAULT_LOOKBACK_MS).toISOString();
 
+  // Persist the bootstrap watermark before the first network attempt. If that
+  // attempt fails, the next Cron run must retry the same window rather than
+  // moving the 24-hour lookback forward and potentially skipping removals.
+  if (!existing) {
+    await env.SOURCES_KV.put(STATE_KEY, JSON.stringify({
+      version: 1,
+      since,
+      lastCompleteAt: null,
+      lastAttemptAt: startedAt,
+      lastPageCount: 0,
+    } satisfies EpornerRemovalSyncState));
+  }
+
   const url = new URL(REMOVAL_ENDPOINT);
   url.searchParams.set("per_page", String(REMOVAL_PAGE_SIZE));
   if (existing?.after) url.searchParams.set("after", existing.after);
