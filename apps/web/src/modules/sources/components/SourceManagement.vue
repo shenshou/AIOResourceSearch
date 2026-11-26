@@ -224,17 +224,27 @@ async function submitForm() {
       return;
     }
   }
+  const originalSource = editingId.value
+    ? manager.sources.value.find((item) => item.id === editingId.value)
+    : undefined;
+  const navigationTemplate = form.externalSearchUrlTemplate?.trim() || form.searchUrlTemplate?.trim() || undefined;
   const source: SourceDefinition = {
     ...form,
     id: form.id.trim(),
     name: form.name.trim(),
     ...(form.type === "provider" ? { adapterId: form.adapterId?.trim() ?? "" } : { adapterId: undefined }),
     ...(form.type === "external-search"
-      ? { searchUrlTemplate: form.searchUrlTemplate?.trim() || undefined, externalSearchUrlTemplate: undefined, externalSearchBaseUrl: undefined }
+      ? {
+          searchUrlTemplate: navigationTemplate,
+          externalSearchUrlTemplate: undefined,
+          externalSearchBaseUrl: undefined,
+          baseUrl: form.baseUrl?.trim() || form.externalSearchBaseUrl?.trim() || undefined,
+        }
       : {
           searchUrlTemplate: undefined,
-          externalSearchUrlTemplate: form.externalSearchUrlTemplate?.trim() || undefined,
-          externalSearchBaseUrl: form.externalSearchBaseUrl?.trim() || undefined,
+          externalSearchUrlTemplate: navigationTemplate,
+          externalSearchBaseUrl: form.externalSearchBaseUrl?.trim() ||
+            (originalSource?.type === "external-search" && !navigationTemplate ? form.baseUrl?.trim() : undefined),
         }),
     ...(form.type === "provider" && form.adapterId === "generic-html"
       ? { providerSearchUrlTemplate: form.providerSearchUrlTemplate?.trim() || undefined, htmlSelectors: { ...form.htmlSelectors!, fields: htmlFields } }
