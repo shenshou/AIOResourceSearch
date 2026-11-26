@@ -141,5 +141,12 @@ test("rejects malformed removal records and unexpected content types", async () 
     }), now),
     /unexpected content type/i,
   );
-  assert.equal(memory.writes.length, 0);
+  // Bootstrap state is intentionally persisted before the first upstream
+  // request so a failed first attempt cannot move the 24-hour since window.
+  assert.equal(memory.writes.length, 1);
+  const bootstrap = JSON.parse(memory.values.get(KEY)!);
+  assert.equal(bootstrap.since, new Date(now - 24 * 60 * 60 * 1000).toISOString());
+  assert.equal(bootstrap.after, undefined);
+  assert.equal(bootstrap.lastCompleteAt, null);
+  assert.equal(bootstrap.lastPageCount, 0);
 });
