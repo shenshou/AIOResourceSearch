@@ -3800,3 +3800,45 @@ References:
 - Wikidata first-party data-access guide: https://www.wikidata.org/wiki/Wikidata:Data_access
 - Wikidata API etiquette: https://www.mediawiki.org/wiki/API:Etiquette
 - Wikidata Query Service rate limits: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/API
+
+
+## Film / TV discovery and metadata-source review — 2026-11-26
+
+### Trakt — public discovery API is explicitly limited by anti-piracy use policy
+
+- Trakt's first-party API Use Policy permits public title search, title/person details, images, ratings, vote counts, and discovery lists in free or paid apps. Standard API access is free and has documented unauthenticated GET limits (500 requests per five minutes per client ID + public IP); 429 responses require Retry-After or exponential backoff.
+- The same first-party policy expressly prohibits using Trakt data in apps or websites that promote copyright infringement or piracy, and separately prohibits bulk harvesting, catalog mirroring, or supplying Trakt data to other services. AIOResourceSearch includes torrent-indexer and magnet-resource search; that product context creates a material policy conflict even though the API's ordinary discovery features otherwise look suitable.
+- **Decision:** retain Trakt as a canonical homepage-only candidate. No API app registration, Provider, OAuth, search integration, or data collection unless Trakt explicitly confirms in writing that this specific torrent/magnet resource-search product is within its permitted use. Do not try replacement keys/apps or other workarounds if access is restricted.
+
+### TheTVDB — API exists, but the API legal notice conflicts with the product's adult-content scope
+
+- TheTVDB's first-party developer page describes a film/TV metadata API, project-specific API key registration, attribution requirements, and a free attributed tier for projects below the stated revenue threshold; higher revenue tiers are paid and are outside the no-paid-services rule.
+- The API Terms license access for the product/project described during API-key approval. Its first-party API legal notice prohibits use of API data/images in connection with pornographic, abusive, or otherwise offensive content. Since JAV/adult search is a core AIOResourceSearch product pillar, limiting a TheTVDB source record to the film/TV category does not remove the product-level conflict.
+- **Decision:** retain TheTVDB as a canonical external-navigation candidate only. No API key, Provider, image or metadata reuse, or scraping anywhere in this product unless the operator grants explicit written authorization covering the whole product context.
+
+### Letterboxd — API access is request-only and not currently assured for this project
+
+- Letterboxd's first-party API access page says access is by request and is not guaranteed. It also states that it is not currently granting API access for data-analysis, visualization, recommendation, private/personal projects, or uses that recreate current/planned paid subscription features.
+- The API reference is publicly readable, but that does not itself grant an API credential or approval. Member RSS feeds are personal feeds for user activity, not a shared public film catalogue/search feed.
+- **Decision:** retain canonical homepage only. No API integration, account/session automation, member-feed aggregation, or HTML scraping absent explicit access approval and scope confirmation.
+
+### OMDb — API is technically accessible, but the indexing terms need written clarification
+
+- OMDb's first-party API key page advertises a free tier with 1,000 requests/day and states that its content is licensed under CC BY-NC 4.0. Its API page also records that adult content is suppressed from search results (changelog dated 2026-11-11).
+- The first-party Terms of Use separately prohibit creating, recreating, distributing, or advertising an index of Contributions without written authorization and prohibit commercial use of Contributions. The public API page's CC BY-NC statement does not, by itself, resolve how these indexing restrictions apply to an external multi-source search product or which API fields are covered.
+- **Decision:** retain OMDb as a canonical homepage-only candidate. No API key request, Provider, indexing, scraping, or metadata reuse until the operator clarifies in writing that this exact public search/index use is permitted and identifies the applicable licence scope.
+
+### First-party references
+
+- Trakt API Use Policy: https://developer.trakt.tv/docs/api-use-policy
+- Trakt rate limits: https://developer.trakt.tv/docs/rate-limiting
+- Trakt create-an-app / production access: https://developer.trakt.tv/docs/create-an-app
+- TheTVDB API and data licensing: https://thetvdb.com/api-information
+- TheTVDB Terms of Service: https://thetvdb.com/tos
+- TheTVDB API signup and tier selection: https://www.thetvdb.com/api-information/signup
+- Letterboxd API access: https://letterboxd.com/api-beta/access/
+- Letterboxd API reference: https://api-docs.letterboxd.com/
+- Letterboxd Terms of Use (updated October 2026): https://letterboxd.com/legal/terms-of-use/
+- OMDb API key and free tier: https://www.omdbapi.com/apikey.aspx
+- OMDb API legal / Terms of Use: https://www.omdbapi.com/legal.htm
+- OMDb API home and change log: https://www.omdbapi.com/
