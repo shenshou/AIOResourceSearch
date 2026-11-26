@@ -4017,3 +4017,55 @@ This batch adds three more first-party-documented candidates for the novel/gener
 - Added Standard Ebooks, Library of Congress, and Wikisource as project-owned candidates.
 - Standard Ebooks patron-only feeds are not used; Library of Congress remains user-opened search pending per-item rights and rate-limit handling; Wikisource remains homepage-only pending per-work licence review.
 - No Provider, API credential, KV configuration, source enablement, file download, or Cloudflare deployment was added.
+
+
+## Contemporary web-novel and serialized-fiction platforms — 2026-11-26
+
+This batch adds six current novel/serialized-fiction platforms to the durable candidate catalog. These are external destinations only; no chapter scraping, content extraction, paid-content access, or metadata aggregation is implemented.
+
+### Royal Road
+
+- Public novel discovery platform; no first-party public metadata/search API was verified in this review.
+- The official Terms page could not be retrieved. A third-party Terms index reproduces a clause against spidering/crawling/scraping, but its current status was not independently confirmed.
+- Decision: homepage-only. No Worker request, crawling, or chapter extraction until first-party API and policy evidence is available.
+- References: https://www.royalroad.com ; https://www.royalroad.com/tos ; https://edit.tosdr.org/documents/9620
+
+### Wattpad
+
+- No first-party public search API or third-party metadata reuse grant was verified.
+- A third-party transcription of Wattpad's Terms reproduces an explicit no-crawling/scraping clause and personal/non-commercial restriction; the first-party policy page could not be retrieved during this review, so this is recorded as supporting rather than conclusive first-party evidence.
+- Decision: homepage-only. No automated collection, chapter retrieval, or metadata redistribution.
+- References: https://www.wattpad.com ; https://www.wattpad.com/terms ; https://apis.io/api-terms/wattpad/wattpad-terms-of-service/
+
+### WebNovel
+
+- First-party Terms grant a limited personal, non-commercial use licence, reserve rights in platform Materials, and prohibit circumventing security/access controls. Some platform features require payment.
+- No public search API or permission for third-party metadata aggregation was verified.
+- Decision: homepage-only. No scraping, chapter retrieval, paid-content access, or metadata reuse.
+- Reference: https://www.webnovel.com/terms_of_service
+
+### Wuxiaworld
+
+- First-party Terms effective September 15, 2025 explicitly prohibit bots, scrapers, crawlers, and other automated extraction without prior written permission.
+- The same Terms prohibit bypassing login, paid chapter/content locks, and API rate limits.
+- Decision: user-initiated homepage navigation only; no Provider, automated metadata acquisition, or chapter extraction.
+- Reference: https://www.wuxiaworld.com/terms-of-service
+
+### Scribble Hub
+
+- First-party Terms and public series-discovery UI are available. The Terms grant rights to host/display user content through Scribble Hub services, but no public developer API or permission for third-party metadata aggregation was verified.
+- The reviewed Terms do not expressly state a general scraping ban; this review therefore does not infer one. Absence of a ban is not a data-reuse grant.
+- Decision: homepage-only pending a documented API and data-use permission. No scraping or chapter retrieval.
+- Reference: https://www.scribblehub.com/terms-of-service/
+
+### Novel Updates
+
+- Public novel index and first-party Terms URL identified, but the Terms page returned 403 to the research fetcher and no first-party public API or metadata reuse permission was verified.
+- Decision: homepage-only; no scraping, crawler, or metadata aggregation until first-party policy and search contract are confirmed.
+- References: https://www.novelupdates.com ; https://www.novelupdates.com/terms-of-service/
+
+### Batch outcome
+
+- Added six project-owned novel-platform candidates, all external-only.
+- Wuxiaworld's current Terms explicitly prohibit automated extraction without written permission; WebNovel's terms reserve platform rights and limit use; other platforms remain unverified for API/data reuse.
+- No Provider, KV configuration, source enablement, chapter/file retrieval, or Cloudflare deployment was added.
