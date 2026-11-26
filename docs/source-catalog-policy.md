@@ -42,7 +42,7 @@ When evidence is incomplete or contradictory, keep the source disabled and recor
 
 Where permitted, retain a user-initiated external homepage or search link even when Worker automation is deferred. External Search must only generate a user-opened HTTPS destination; it must not silently fetch, scrape, proxy, preflight, or parse the destination through the Worker. A source may be external-only, homepage-only, or name-only when no safe verified destination exists. Do not guess a mirror or replace a historical domain with an unverified redirect target.
 
-A restriction on Worker acquisition does not automatically require removing an otherwise permitted user-opened external link. Conversely, the existence of an external link does not authorize a Provider.
+A restriction on Worker acquisition does not automatically require removing an otherwise permitted user-opened external link. A single catalog/runtime source record may expose both a reviewed Provider and a separate user-opened external search/homepage destination; the two paths must remain operationally independent. Conversely, the existence of an external link does not authorize a Provider.
 
 ### 8. Reconcile upstream inventories completely and preserve provenance
 
