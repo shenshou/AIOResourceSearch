@@ -36,7 +36,7 @@ Worker-backed adapters declare one mechanism:
 2. **RSS** — public RSS or Atom feeds.
 3. **HTML** — a reviewed HTML adapter requests a public search page and extracts configured fields with Cloudflare's native `HTMLRewriter`.
 
-External search is a separate source type, not a Worker acquisition mechanism. It only expands a verified HTTPS search URL template or returns a homepage URL for the user to open. It does not fetch the destination.
+External navigation is independent from Worker acquisition. An external-search-only source expands its verified HTTPS search URL template or homepage URL. A Provider source may additionally declare `externalSearchUrlTemplate` or `externalSearchBaseUrl`; the Worker returns that destination alongside Provider results but never fetches it. This allows one source record to expose both capabilities without coupling browser navigation to Worker acquisition.
 
 ### Generic HTML adapter
 
@@ -92,12 +92,12 @@ Pages and Worker are separate deployable targets in one monorepo. Source request
 - Adapter metadata: identity, version, mechanism, supported source kinds, supported content categories, capabilities, and administrative state. It contains no executable code.
 - Provider adapters: reviewed TypeScript implementations that translate one source's permitted protocol into the shared result contract.
 
-A source has one of two types:
+A source has one of two acquisition types:
 
 - `provider`: `adapterId` must exist in adapter metadata, be enabled, and have an implementation in the Worker compile-time registry.
 - `external-search`: has an HTTPS `searchUrlTemplate` containing exactly one `{query}`, or an HTTPS `baseUrl` homepage. The Worker returns the destination but never fetches or parses it.
 
-A source may not use both external-search and Worker-side HTML configuration.
+A Provider may independently expose user navigation through `externalSearchUrlTemplate` (exactly one `{query}`) or `externalSearchBaseUrl` (HTTPS homepage). These fields are output-only navigation metadata: they never initiate Worker requests, do not affect Provider resolution, and are shown only while the source is enabled. Legacy `external-search` records and their `searchUrlTemplate` / `baseUrl` fields remain supported.
 
 ## Source and adapter configuration
 
