@@ -3756,3 +3756,47 @@ References:
 - Notify.moe first-party API docs: https://notify.moe/api
 - Notify.moe first-party Terms: https://notify.moe/terms
 - Notify.moe public repository (archived): https://github.com/animenotifier/notify.moe
+
+
+## Film / TV metadata-source review batch — 2026-11-26
+
+### TVmaze — public show-search API; CC BY-SA obligations need product-level handling
+
+- TVmaze's first-party API documentation describes a free public REST API at `https://api.tvmaze.com`, including fuzzy show-name search, JSON responses, CORS support, and 60-minute response caching.
+- The public API is licensed CC BY-SA. TVmaze states that data may be used for any purpose when the source is credited and the ShareAlike provision is followed. Its API page documents a baseline of at least 20 calls per 10 seconds per IP, HTTP 429 handling/backoff, connection hygiene, and recommends a uniquely descriptive User-Agent.
+- The project's current result model and UI need to preserve source-level field provenance and attribution; it is not enough to add a generic source link if TVmaze-derived fields are mixed with non-ShareAlike data. The precise compatibility of the project's data presentation/distribution and applicable ShareAlike version should be reviewed before implementation.
+- **Decision:** retain TVmaze as a film/TV candidate with canonical homepage only. No Provider, HTML scraping, or source enablement until field-level provenance, attribution placement, ShareAlike compatibility, and shared Worker egress pacing are designed and reviewed.
+
+### TMDB — API exists, but its content restriction conflicts with a core product pillar
+
+- TMDB's first-party developer FAQ confirms a movie/TV/actor API requiring an API key. The developer API is free only for non-commercial projects with prescribed attribution; commercial projects require a separate commercial agreement.
+- More importantly, the same first-party FAQ's API legal notice prohibits using TMDB API data or images in connection with pornographic, obscene, abusive, or otherwise offensive content. JAV/adult search is a core product pillar of AIOResourceSearch, so segregating the TMDB source to the film/TV category would not safely resolve the product-level restriction.
+- **Decision:** retain TMDB as a canonical external-navigation candidate only. Do not use its API, images, metadata, third-party wrappers, or scraping anywhere in this product unless TMDB provides explicit written authorization that clearly covers the entire intended product context. This is not a statement that ordinary user-initiated navigation to TMDB is prohibited.
+
+### IMDb — published datasets are not licensed for this product's database use
+
+- IMDb publishes daily refreshed downloadable TSV datasets, but its first-party help page limits the stated permission to personal, non-commercial use and requires compliance with its conditions.
+- The same first-party page expressly says the data must not be altered, republished, resold, or repurposed to create an online/offline database of movie information (except for individual personal use). IMDb's Conditions of Use also prohibit data mining, robots, and screen scraping absent express written consent.
+- **Decision:** retain IMDb as a canonical homepage-only candidate. No dataset ingestion, search Provider, scraping, or reuse of IMDb metadata in this public multi-source product absent a separate written licence that covers the intended database/search use.
+
+### Wikidata — CC0 structured data with documented search and access guidance
+
+- Wikidata's first-party licensing and data-access pages state that structured data is released under CC0 and may be reused without attribution; Wikidata nevertheless asks projects to identify it as a data source and provide a way to report data issues.
+- The first-party access guide distinguishes its mechanisms: Elasticsearch / `wbsearchentities` is appropriate for text/entity-name search; the Linked Data Interface is for already-known entity IDs; the Action API is intended for small groups of known entities (up to 50); and WDQS is intended for narrowly scoped relationship queries, not fuzzy text search or broad result sets.
+- Access guidance requires a meaningful User-Agent, avoiding parallel request bursts, observing robot policy, using short timeouts, and stopping after HTTP 429 while respecting Retry-After. The separate WDQS service also publishes its own external-client rate and concurrency limits; those limits should not be confused with Action API limits.
+- **Decision:** retain a film/TV-scoped Wikidata candidate as homepage-only pending a narrow search design and result-quality tests. No bulk dump, broad SPARQL scan, or Provider is introduced in this review. If revisited, use the search API for text lookup rather than regex-heavy WDQS queries, add explicit source provenance, and implement conservative serial requests and backoff.
+
+### First-party references
+
+- TVmaze API documentation and licence/rate guidance: https://www.tvmaze.com/api
+- TVmaze API plans and free-tier limits: https://www.tvmaze.com/api/plans
+- TVmaze Terms of Service: https://www.tvmaze.com/site/tos
+- TMDB first-party API FAQ and legal notice: https://developer.themoviedb.org/docs/faq
+- TMDB API getting started: https://developer.themoviedb.org/docs/getting-started
+- IMDb non-commercial datasets: https://www.imdb.com/interfaces/
+- IMDb first-party dataset use restrictions: https://help.imdb.com/article/imdb/general-information/can-i-use-imdb-data-in-my-software/G5JTRESSHJBBHTGX
+- IMDb Conditions of Use: https://www.imdb.com/conditions/
+- Wikidata licensing: https://www.wikidata.org/wiki/Wikidata:Licensing
+- Wikidata first-party data-access guide: https://www.wikidata.org/wiki/Wikidata:Data_access
+- Wikidata API etiquette: https://www.mediawiki.org/wiki/API:Etiquette
+- Wikidata Query Service rate limits: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/API
