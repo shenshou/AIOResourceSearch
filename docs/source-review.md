@@ -3903,3 +3903,12 @@ A cross-check of the compile-time Worker registry, Provider source files, focuse
 Both sources have now been added to `apps/web/src/modules/sources/sourceCatalog.ts` with their matching adapterId, category, content category, capabilities, search mode, canonical homepage, and operational/policy notes.
 
 **This is a catalog registration reconciliation only.** No KV adapter/source records have been written; both remain unconfigured and disabled. No Cloudflare binding, live upstream request, deployment, or production change has occurred. Before any future enablement, complete the dedicated non-production Cloudflare Hosted verification and re-check MangaDex's ad-free/free-service condition and MusicBrainz's non-commercial-use condition.
+
+
+## Provider source-catalog registration reconciliation — 2026-11-26
+
+The catalog management UI treats entries with `type: "provider"` differently from external-search candidates: it requires the matching adapter to be registered and enabled before the operator can open the source-registration form. The cross-check found that several already-implemented Providers were described in notes but their catalog entries lacked the `type` and `adapterId` fields, which meant bulk import would incorrectly classify them as external-search entries.
+
+The following existing entries now carry their exact compiled adapter mapping and capability contract: Sukebei → `sukebei-rss`; DMHY → `dmhy-rss`; AniBT → `anibt-torznab`; Torlock → `torlock-torznab`; YourBittorrent → `yourbittorrent-json`; Eporner → `eporner-api`; MangaDex → `mangadex-api`; MusicBrainz → `musicbrainz-api`; and the five The RarBg category entries → shared `the-rarbg-json`. Perverzija DB (`perverzija-db`) was also missing as a catalog candidate and has now been added.
+
+This does not register or enable any adapter/source in KV. The UI will now correctly classify these entries as Provider candidates and require the adapter to be available before individual source registration. All remain disabled by default. The catalog total is now 125 unique candidates.
