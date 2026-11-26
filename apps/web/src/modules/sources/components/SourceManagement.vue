@@ -494,7 +494,7 @@ async function deleteSource(source: SourceDefinition) {
               <label class="wide">外部搜索 URL 模板（可选；用户主动打开，不由 Worker 请求；必须包含一个 {query}）
                 <input v-model="form.externalSearchUrlTemplate" type="text" maxlength="2048" placeholder="https://example.com/search?q={query}" />
               </label>
-              <label v-if="!form.externalSearchUrlTemplate?.trim()" class="wide">外部站点首页（可选；仅在未配置外部搜索模板时显示）
+              <label class="wide">外部站点首页（可选；与外部搜索模板独立配置）
                 <input v-model="form.externalSearchBaseUrl" type="url" maxlength="2048" placeholder="https://example.com" />
               </label>
             </template>
