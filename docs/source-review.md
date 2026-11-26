@@ -3331,3 +3331,79 @@ References:
 - JavLibrary/JavMost fetch failures are not misrepresented as site-wide blocks or permission evidence.
 - No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
 - No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
+
+## Non-JAV index source revalidation — twenty-first batch (2026-11-26)
+
+This batch revisited five name-only or domain-ambiguous candidates from the FetchJAV inventory: 85Tube, AApp11, HAnime XYZ, MIEN321, and PornJP. FetchJAV's public repository lists these names among additional supported sites, but a third-party adapter list is provenance for candidate discovery, not first-party domain identity or permission to reuse its extraction behavior.
+
+### Decision summary
+
+| Candidate | Evidence found | Current decision | Project action |
+|---|---|---|---|
+| 85Tube | A third-party article dated 2026-11-17 claims 85Tube is an older brand/name associated with 85PO and that 85tube.com redirects to 85ro.com. Another third-party scan reports 85PO Terms identify only "85PO" as operator. No operator-controlled first-party statement connecting 85Tube to 85PO/85RO or authorizing aggregation was verified. | **Possible brand/domain relationship, not first-party verified** | Preserve 85Tube and its prior provenance; do not replace its name-only record with 85PO/85RO or automate retrieval |
+| AApp11 | FetchJAV lists AApp11 as an additional site but supplies no canonical domain in the reviewed site table. Search results for aapp11.com and aapp11.xyz are third-party domain/safety records; no first-party link ties either to the FetchJAV candidate. | **Canonical domain unresolved** | Keep name-only; do not infer or add aapp11.com / aapp11.xyz |
+| HAnime XYZ | FetchJAV lists HAnime XYZ as an additional site, but no canonical domain or first-party operator source was found. Similar names such as hanime.moe are not evidence of identity. | **Canonical domain unresolved** | Keep name-only; do not substitute another HAnime service |
+| MIEN321 | FetchJAV lists MIEN321 as an additional site. Third-party domain relationship pages mention mien321.cc and mien321.xyz, but do not establish either as the current canonical site or connect it to the same operator. No first-party Terms/API/RSS/search contract found. | **Possible historical domain leads only** | Keep name-only; do not add .cc/.xyz domains or use third-party adapters |
+| PornJP | FetchJAV lists PornJP as an additional site, but the search did not identify a verifiable first-party canonical domain, operator, Terms, public API/RSS, or supported search interface. | **Canonical domain unresolved** | Keep name-only; do not guess a domain or substitute similarly named sites |
+
+### Source-specific findings
+
+#### 85Tube
+
+FetchJAV's public repository lists 85Tube among additional sites. A third-party Japanese article published 2026-11-17 describes 85PO as a newer name associated with 85XO/85TUBE and claims that `85tube.com` redirects to `85ro.com`; a third-party scan also describes 85PO terms that identify only "85PO" as operator. These reports are leads, not an operator-controlled canonical-domain announcement. They do not establish that the operator authorizes third-party indexing or metadata aggregation.
+
+Decision: retain the existing 85Tube candidate and the previously recorded uncertainty around `85ro.com`. Do not rename it to 85PO, add sibling domains, switch users to a new domain, or configure Worker retrieval based on third-party reports.
+
+References:
+- https://github.com/FetchJAV/FetchJAV_Public
+- https://min-ero.jp/85tube-review/
+- https://tools.malwaretips.com/url-scan/85po.net
+
+#### AApp11
+
+FetchJAV's public repository lists AApp11 as an additional site but does not identify a canonical URL in the reviewed list. Search results for `aapp11.com` and `aapp11.xyz` are third-party domain/safety records, not first-party evidence that either is the source used by FetchJAV. No verified operator-controlled page, current Terms, public API/RSS, or stable search route was found.
+
+Decision: retain AApp11 as a name-only candidate. Do not add a guessed domain or copy FetchJAV's site adapter.
+
+References:
+- https://github.com/FetchJAV/FetchJAV_Public
+- https://www.siteconfiavel.com.br/site/aapp11-com
+- https://webrate.org/site/aapp11.xyz/
+
+#### HAnime XYZ
+
+FetchJAV's public repository lists HAnime XYZ among additional sites but provides no canonical URL in the reviewed site table. Search did not identify a first-party operator page that establishes a domain or policy. Similar names, including hanime.moe, remain separate services unless a first-party statement proves otherwise.
+
+Decision: retain the name-only candidate; do not guess a domain or reuse HanimeTV/Hanime1 routes.
+
+References:
+- https://github.com/FetchJAV/FetchJAV_Public
+
+#### MIEN321
+
+FetchJAV lists MIEN321 as an additional site. Third-party relationship data references `mien321.cc`, and other domain-index results mention `mien321.xyz`; neither source identifies the operator or proves which domain, if any, is canonical today. No first-party Terms, public API/RSS, supported search interface, or permission for third-party metadata aggregation was verified.
+
+Decision: preserve the name-only entry. Do not add `.cc` or `.xyz` to the public catalog, and do not reuse a third-party downloader's adapter.
+
+References:
+- https://github.com/FetchJAV/FetchJAV_Public
+- https://builtwith.com/relationships/mien321.cc
+- https://www.findit.co.in/domains/178406/c29d8e4c941e590e34d529623298f19f/
+
+#### PornJP
+
+FetchJAV lists PornJP among additional sites, but the current search did not identify a first-party canonical URL or operator-controlled policy. Search results were either unrelated or insufficient to connect a domain to the exact FetchJAV candidate. No official API/RSS contract or stable public search interface was established.
+
+Decision: retain the name-only candidate and its FetchJAV provenance. Do not guess a domain or substitute similarly named websites.
+
+References:
+- https://github.com/FetchJAV/FetchJAV_Public
+
+### Batch outcome
+
+- Zero Provider promotions and zero search templates added or restored.
+- All five candidates remain in the 102-entry source inventory.
+- No name-only entry was silently converted into a live URL based on third-party domain indexes.
+- FetchJAV's list remains useful as source-discovery provenance, but its downloader adapters are not treated as authorization or copied into this metadata-only project.
+- No Worker fetch, HTML scraping, undocumented endpoint probing, account/session reuse, proxying, regional restriction evasion, or access-control workaround was introduced.
+- No KV configuration, source enablement, Cloudflare deployment, or production setting was changed.
