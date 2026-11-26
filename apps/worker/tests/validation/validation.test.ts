@@ -147,6 +147,29 @@ test("validateSource rejects more than 20 custom HTML metadata fields", () => {
   })), null);
 });
 
+test("validateSource accepts Provider sources with independent external search navigation", () => {
+  const result = validateSource(source({
+    externalSearchUrlTemplate: "https://source.example/search?q={query}",
+    externalSearchBaseUrl: "https://source.example",
+  }));
+  assert.ok(result);
+  assert.equal(result.externalSearchUrlTemplate, "https://source.example/search?q={query}");
+  assert.equal(result.externalSearchBaseUrl, "https://source.example");
+});
+
+test("validateSource rejects invalid Provider external search destinations", () => {
+  assert.equal(validateSource(source({ externalSearchUrlTemplate: "http://source.example/search?q={query}" })), null);
+  assert.equal(validateSource(source({ externalSearchUrlTemplate: "https://source.example/search" })), null);
+  assert.equal(validateSource(source({ externalSearchBaseUrl: "javascript:alert(1)" })), null);
+  assert.equal(validateSource(source({
+    type: "external-search",
+    adapterId: undefined,
+    capabilities: [],
+    searchUrlTemplate: "https://source.example/search?q={query}",
+    externalSearchBaseUrl: "https://source.example",
+  })), null);
+});
+
 test("validateSource requires external-search destinations to use HTTPS", () => {
   assert.equal(validateSource(source({
     type: "external-search",
