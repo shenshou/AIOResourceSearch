@@ -1280,7 +1280,7 @@ Decision: keep Jable.org as a name-only unverified candidate. Do not treat it as
 
 #### TnaFlix
 
-The canonical www.tnaflix.com homepage is reachable and exposes a public search field. Its first-party Terms of Service at /terms state that access is for personal, non-commercial purposes and that users may not copy or distribute any part of the website without prior written authorization. The Terms also reserve copyright and other intellectual-property rights in site content and prohibit use, copying, reproduction, distribution, broadcast, display, sale, licensing, or other exploitation of that content without prior written consent from the respective owners. No public metadata API or permission for third-party aggregation was found. The site has a separate legal/regulatory history and a 2022 data breach; neither creates permission to automate access or handle user credentials.
+The canonical www.tnaflix.com homepage is reachable and exposes a public search field. Its first-party Terms of Service at /terms state that access is for personal, non-commercial purposes and that users may not copy or distribute any part of the website without prior written authorization. The Terms also reserve copyright and other intellectual-property rights in site content and prohibit use, copying, reproduction, distribution, broadcast, display, sale, licensing, or other exploitation of that content without prior written consent from the respective owners. No public metadata API or permission for third-party aggregation was found. The French audiovisual regulator's Decision No. 2025-558 (published 2025-08-05; https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000052045307) records that minors could access TNAFlix pornography under the arrangements observed in June/July 2025 and issued a formal notice to the operator. This historical finding is an age-protection risk signal, not proof of the site's present-day technical state. TNAFlix also had a 2022 data breach; neither the regulatory matter nor the breach creates permission to automate access or handle user credentials.
 
 Decision: retain only the user-initiated homepage link. Do not implement Worker fetching, HTML parsing, metadata extraction, or reuse of account credentials/cookies absent written authorization. Do not adopt FetchJAV's scraping logic as proof of permission.
 
@@ -1288,7 +1288,7 @@ Decision: retain only the user-initiated homepage link. Do not implement Worker 
 
 - 2 remaining FetchJAV candidates received source-specific decisions.
 - Jable.org remains separate from JableTV and has an unresolved first-party robots/terms status.
-- TnaFlix's first-party Terms do not authorize the intended public metadata aggregation.
+- TnaFlix's first-party Terms do not authorize the intended public metadata aggregation; the 2025 French regulator notice is recorded as an additional age-protection risk.
 - The 26 explicitly listed FetchJAV sites have now all been reviewed individually; this does not mean every FetchJAV-tagged catalog record is a distinct site or a working Provider.
 - No Provider implementation, KV configuration, source enablement, or Cloudflare deployment was changed.
 - Next step: reconcile the full FetchJAV tag set against its 26 README-listed sites, identify duplicates/extra records, then continue the remaining Atlas/other-index candidates.
