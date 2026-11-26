@@ -1627,6 +1627,12 @@ References:
 - https://nyaa.si/?page=rss
 - https://wiki.servarr.com/sonarr/supported#nyaa
 
+2026-11-26 revalidation:
+- Direct retrieval of the canonical `nyaa.si/help`, `nyaa.si/rules`, and a sample `?page=rss` URL again failed in the current research environment. This remains a fetcher limitation; it is not proof of universal unavailability or permission to work around the failure.
+- Search results surfaced Nyaa-branded help/terms pages on other domains (including `nyaa.wiki`, `nyaa.help`, `nyaa.media`, and `nyaa.guru`). Their content must not be attributed to `nyaa.si` unless the Nyaa operator independently confirms domain ownership/canonical status. Do not replace the catalog destination with these domains.
+- Third-party clients and RSS implementations continue to provide technical evidence that the Nyaa-style `?page=rss` interface is used, but this is not first-party confirmation of current endpoint guarantees, automation policy, or third-party aggregation permission.
+- Decision unchanged: retain `https://nyaa.si` as a user-initiated external destination only. No RSS Provider, HTML scraper, search template, alternate domain, proxy, or challenge workaround.
+
 #### Mikan Project
 
 The canonical site is active and exposes anime listings. The RSS subscription examples found in public documentation use a per-user `MyBangumi?token=...` URL; the token represents the user's personal subscription. This is not a general anonymous search API and should not be collected into a shared Worker configuration.
