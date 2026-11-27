@@ -4379,7 +4379,7 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - No title-, performer-, fuzzy-, or substring-based matching is performed. Non-JAV content never uses the JAV catalogue-number key. This avoids broad speculative cross-category merges.
 - When a match is found, source attributions and previously missing metadata fields continue to be merged using the existing result merge behavior.
 - Focused regression tests cover equivalent code spellings across distinct URLs and verify that non-JAV content is not merged by a JAV-looking code.
-- This is a code-level identity improvement only. It does not add a Provider, contact any source, change KV configuration, enable a source, or deploy anything. Full CI remains deferred until the complete large JAV metadata search/aggregation module is finished.
+- This is a code-level identity improvement only. It does not add a Provider, contact any source, change KV configuration, enable a source, or deploy anything. The complete JAV metadata search/aggregation module subsequently passed full CI run [#46001993558](https://github.com/shenshou/AIOResourceSearch/actions/runs/46001993558) on code commit `432346d06e790c74e5889a59e1d990bcb4406e5a`.
 
 
 ## JAV metadata candidate: Cadrame (2026-11-27)
@@ -4401,5 +4401,5 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - The change intentionally does **not** remove arbitrary parameters such as id, code, q, or page, because these may identify distinct catalogue records. The displayed result URL is not rewritten; canonicalization is used only for cross-source identity matching.
 - Two focused regression tests cover (1) equivalent URLs with tracking parameters, fragment, host casing, trailing slash and reordered query parameters, and (2) preservation of distinct meaningful query values.
 - No title/performer fuzzy matching, new Provider, upstream request, source enablement, KV change, deployment or production data mutation was introduced.
-- Full CI remains deferred until the complete JAV search/aggregation module is finished, consistent with the project's module-level validation rule.
+- The complete JAV search/aggregation module subsequently passed full CI run [#46001993558](https://github.com/shenshou/AIOResourceSearch/actions/runs/46001993558) on code commit `432346d06e790c74e5889a59e1d990bcb4406e5a`; the follow-up documentation-only reconciliation did not change executable code.
 - Architecture references reviewed for this module: Javinizer-Go's layered aggregation and per-field metadata priority model; Stash-Box's separate performer/studio/scene identity model. These are design references only; no code or access method was copied.
