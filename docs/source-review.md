@@ -4749,3 +4749,7 @@ Rechecked OneJAV, ProjectJAV, TorrentKitty, XXXClub and Bitsearch. OneJAV's offi
 
 Rechecked Nyaa, Shana Project, AnimeBytes, Tokyo Toshokan and Mikan Project. The catalog's exact Nyaa `.si` domain could not be retrieved; a separate Nyaa-branded `.media` site documents search-filtered RSS and magnet links, but its canonical relationship to `.si` is unverified, so no domain substitution. Shana Project's official public RSS is limited to the latest 50 releases, not a keyword API; its private feed is token/account-based. AnimeBytes is a private tracker. Tokyo Toshokan's homepage and RSS returned 403 and were not bypassed. Mikan's documented RSS uses a personal token and is not a public shared search feed. No Provider was added. See `docs/resource-link-source-status.md`.
 
+## External torrent-source review batch 4 (2026-11-27)
+
+Rechecked Nyaa, Shana Project, AnimeBytes, Tokyo Toshokan and Mikan Project. The catalog's exact Nyaa `.si` domain could not be retrieved; a separate Nyaa-branded `.media` site documents search-filtered RSS and magnet links, but its canonical relationship to `.si` is unverified, so no domain substitution. Shana Project's official public RSS is limited to the latest 50 releases, not a keyword API; its private feed is token/account-based. AnimeBytes is a private tracker. Tokyo Toshokan's homepage and RSS returned 403 and were not bypassed. Mikan's documented RSS uses a personal token and is not a public shared search feed. No Provider was added. See `docs/resource-link-source-status.md`.
+

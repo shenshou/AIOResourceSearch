@@ -144,3 +144,20 @@ The next five external-only candidates were rechecked.
 - Tokyo Toshokan's 403 was not bypassed; AnimeBytes remains private; Mikan's personal token feed is not a public search API.
 - No source was enabled or deployed.
 
+## External torrent-source review batch 4 — 2026-11-27
+
+| Source | Current evidence | Decision |
+|---|---|---|
+| Nyaa | The catalog's exact `nyaa.si` homepage, robots.txt and `/terms` could not be retrieved by the research browser. A separate Nyaa-branded `nyaa.media` site is currently accessible and its first-party Help documents keyword/category search, magnet links and search-filtered RSS; its Terms prohibit scraping that harms availability and bypassing security controls. However, no first-party evidence was found proving `nyaa.media` is the same operator-controlled canonical endpoint as the catalog's `nyaa.si`. | Keep the existing `.si` entry unchanged and external-only. Do not silently substitute `.media`, poll its RSS, or use third-party mirrors until the operator relationship is confirmed. |
+| Shana Project | The first-party Help documents a public RSS feed containing the latest 50 releases and separate public/private follow-list feeds. The secure feed is personal and changes downloaded-item state. The current public feed endpoint returns XML/RSS content unsupported by the research browser, but the first-party documentation establishes its existence. It is a latest-release feed, not a keyword-search API. | Keep external-only for now. Do not access private token feeds or use the 50-item feed as if it were a complete keyword index. Reassess only if a search use case and terms permit a bounded public RSS integration. |
+| AnimeBytes | Current tracker documentation continues to classify AnimeBytes as a closed private tracker; the Jackett indexer record also marks it private. | No public Provider. Do not use credentials, invitations, passkeys, private feeds or tracker APIs. |
+| Tokyo Toshokan | The first-party settings page exposes category controls including JAV and Hentai, plus RSS customization and a magnet-link display option. The exact homepage and `/rss.php` both returned HTTP 403 in this review. No first-party Terms/API or permission for external aggregation was verified. | Keep external-only. Do not bypass 403 or use a third-party indexer definition as permission. |
+| Mikan Project | The first-party homepage is reachable and exposes a public site-search control and current anime catalogue. Official subscription guidance describes a personal `/RSS/MyBangumi?token=...` feed; it is tied to a user's account/token. No public keyword RSS/API or permission for shared third-party feed aggregation was verified. | Keep metadata/RSS candidate external-only. No login, personal token collection, shared private RSS, scraping or regional-route workaround. |
+
+### Batch result
+- 5 existing candidates rechecked; 0 promoted to Provider.
+- Nyaa.media has a useful documented search/RSS/magnet interface, but it is not substituted for the catalog's nyaa.si without first-party canonical-domain confirmation.
+- Shana Project has a public latest-50 RSS feed but no public keyword-search contract; its private follow feed is out of scope.
+- Tokyo Toshokan's 403 was not bypassed; AnimeBytes remains private; Mikan's personal token feed is not a public search API.
+- No source was enabled or deployed.
+
