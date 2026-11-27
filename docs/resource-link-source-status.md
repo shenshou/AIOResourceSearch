@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **36 torrent-category entries**:
+The source catalog currently contains **40 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 26 | User-initiated navigation only; no Worker acquisition |
-| Total | 36 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 30 | User-initiated navigation only; no Worker acquisition |
+| Total | 40 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -57,7 +57,7 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 
 1. Keep the existing six magnet/torrent adapters and their source records intact.
 2. Do not create a fake ED2K Provider from the URI validator alone.
-3. Continue reviewing the 26 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
+3. Continue reviewing the 30 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
 4. For ED2K, only consider a source when it offers a documented public HTTP API/RSS or an explicitly authorized stable search interface. A self-hosted Kad engine would require a separate architecture decision and is not part of the current Worker topology.
 5. Preserve per-link source attribution and validate the complete URI before returning it. Never invent a magnet/ED2K link from metadata or a detail-page URL.
 
@@ -279,3 +279,29 @@ References:
 - MyPornClub first-party destination: https://myporn.club/
 - PornRips homepage and Requests page: https://pornrips.to/ ; https://pornrips.to/requests/
 - U3C3 community documentation: https://github.com/u3c3/bt-btt
+
+
+## External torrent-source review batch 6 — 2026-11-27
+
+Four additional adult/public tracker candidates were found in the current Prowlarr/Jackett indexer catalogue and cross-checked against available first-party or historical domain evidence. Because none of the exact first-party homepages could be verified in this pass, these are retained as name-only directory entries, not clickable destinations.
+
+| Candidate | Evidence and uncertainty | Decision |
+|---|---|---|
+| OpenSharing | Prowlarr describes an OpenSharing public tracker for adult content. Third-party historical metadata mentions opensharing.org, but the current first-party request timed out and the domain/operator relationship is unconfirmed. Search also returns unrelated OpenSharing projects. | Name-only candidate; no baseUrl, mirror substitution, API/RSS, scraping or Worker requests. |
+| PornoTorrent | Prowlarr describes a Brazilian public adult tracker. A third-party historical listing points to pornotorrent.com.br, but the available domain records are stale and show expiry-related historical data; no first-party current canonical domain or service status was verified. | Name-only candidate; do not restore the stale domain, guess a replacement, or automate access. |
+| RinTor.NeT | Prowlarr lists a Russian public adult tracker. A historical third-party directory lists rintor.net, but the first-party homepage could not be retrieved; current operator control, service status, Terms, API/RSS and automation permission remain unknown. | Name-only candidate; no baseUrl, search template or Worker requests. |
+| XXXTor | Prowlarr/Jackett list a public adult tracker; a historical third-party tracker directory lists xxxtor.net. The first-party homepage could not be retrieved and current canonical status, Terms, API/RSS and reuse permission remain unverified. | Name-only candidate; no baseUrl, mirror substitution or automation. |
+
+### Batch result
+- 4 additional name-only candidates retained; 0 Provider promotions; 0 clickable destinations or search templates added.
+- Torrent inventory becomes **40 entries = 10 Provider records + 30 external-only/unverified records**. Unique adapters remain 6.
+- This batch intentionally avoids treating third-party historical domain listings as canonical first-party URLs.
+- No access-control workaround, source enablement, production KV write, deployment or CI run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett supported trackers: https://github.com/Jackett/Jackett
+- OpenSharing historical domain metadata: https://opensharing.org.atlaq.com/
+- PornoTorrent historical domain record: https://pornotorrent.com.br/
+- RinTor historical tracker listing: https://toptracker.ru/details.php?id=5675
+- XXXTor historical tracker listing: https://toptracker.ru/details.php?id=5638

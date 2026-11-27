@@ -4807,3 +4807,23 @@ References:
 - First-party PornXLab Terms: https://www.pornxlab.com/page/tos.html
 - First-party PornRips Requests: https://pornrips.to/requests/
 - U3C3 community documentation: https://github.com/u3c3/bt-btt
+
+
+## Prowlarr/Jackett discovery batch 6 (2026-11-27)
+
+Four additional candidates were retained after cross-checking current community indexer lists against available domain evidence:
+
+- **OpenSharing:** Prowlarr classifies it as a Russian public adult tracker. The third-party historical opensharing.org listing is not current first-party proof; the homepage request timed out, and search results include unrelated OpenSharing products. Name-only record, no domain.
+- **PornoTorrent:** Prowlarr classifies it as a Brazilian public adult tracker. A third-party historical record mentions pornotorrent.com.br, but its domain data is stale and does not establish current operation or canonical ownership. Name-only record, no domain.
+- **RinTor.NeT:** Prowlarr lists a Russian public adult tracker; a historical tracker directory lists rintor.net. The first-party homepage was not retrievable, so current operator control and permission remain unverified. Name-only record, no domain.
+- **XXXTor:** Prowlarr/Jackett list a public adult tracker; a historical third-party directory lists xxxtor.net. The first-party homepage was not retrievable, so current canonical status and permissions remain unverified. Name-only record, no domain.
+
+**Decision:** preserve all four as name-only directory candidates. Do not guess or restore historical domains, add search templates, or implement Worker requests. This increases Torrent records from 36 to 40 (10 Provider records, 30 external-only/unverified); the six existing adapters are unchanged. No source was enabled, no production KV was changed, and no deployment/CI was run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett: https://github.com/Jackett/Jackett
+- OpenSharing historical listing: https://opensharing.org.atlaq.com/
+- PornoTorrent historical domain record: https://pornotorrent.com.br/
+- RinTor: https://toptracker.ru/details.php?id=5675
+- XXXTor: https://toptracker.ru/details.php?id=5638
