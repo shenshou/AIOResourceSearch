@@ -6,7 +6,7 @@ Some public metadata APIs impose limits on the application or source IP, not on 
 
 The current Cloudflare Cache API is edge-local. Workers KV is eventually consistent and does not provide compare-and-swap transactions. Neither can enforce a strict cross-request, cross-isolate quota. Do not use either as a distributed lock or global rate limiter.
 
-This document defines the implementation gate for APIs whose terms require coordinated outbound pacing. The Worker-side coordinator infrastructure and the MangaDex metadata Provider are implemented and registered on the feature branch. No MangaDex source/adapter configuration is enabled in KV, and no Cloudflare deployment or production binding has been applied.
+This document defines the implementation gate for APIs whose terms require coordinated outbound pacing. The Worker-side coordinator infrastructure and the reviewed metadata Providers are implemented and registered on the feature branch. Their source/adapter configurations remain disabled and unconfigured in KV; no Cloudflare deployment or production binding has been applied.
 
 ## Current API requirements
 
@@ -14,9 +14,12 @@ This document defines the implementation gate for APIs whose terms require coord
 |---|---|---|
 | MusicBrainz `/ws/2` | Official documentation currently states an average maximum of 1 request/second per source IP (unless otherwise agreed), and requires a meaningful identifying User-Agent | One shared application lane at a minimum 1,000 ms between requests; this is deliberately stricter and helps coordinate all Worker traffic, but the published numeric limit is IP-based |
 | MangaDex REST | Initial documented limit 5 requests/second/IP, with endpoint-specific limits and response headers | One shared application-wide lane at 400 ms (2.5 requests/second), leaving headroom below the published ceiling; honor response headers and back off on 429 |
-| Bangumi API v0 | Search endpoint currently marked experimental in the official OpenAPI schema | Do not implement keyword search against the experimental endpoint as a required Provider. Prefer a stable endpoint or keep it external-search until the API contract is suitable |\n| AniBT Torznab | 60 requests / 60 seconds / IP; Torznab is documented as no-store; 503 means temporarily unavailable | Shared `anibt` Durable Object lane at 1,100 ms spacing (about 54.5/min); no edge caching; honor 429/503 and `Retry-After` |\n| AniBT Torznab | 60 requests / 60 seconds / IP; Torznab is documented as no-store; 503 means temporarily unavailable | Shared `anibt` Durable Object lane at 1,100 ms spacing (about 54.5/min); no edge caching; honor 429/503 and `Retry-After` |
+| Bangumi API v0 | Search endpoint currently marked experimental in the official OpenAPI schema | Do not implement keyword search against the experimental endpoint as a required Provider. Prefer a stable endpoint or keep it external-search until the API contract is suitable |\n| AniBT Torznab | 60 requests / 60 seconds / IP; Torznab is documented as no-store; 503 means temporarily unavailable | Shared `anibt` Durable Object lane at 1,100 ms spacing (about 54.5/min); no edge caching; honor 429/503 and `Retry-After` |
+| AudioSilo Meta `/api/v1` | Public deployment documents a per-client token bucket (100 requests/second, burst 400); 429 includes `Retry-After`; search responses advertise a 60-second cache lifetime | Shared application-wide `audiosilo` Durable Object lane at 1,000 ms spacing (1 request/second); do not cache responses; persist 429/503 cooldowns |\n| AniBT Torznab | 60 requests / 60 seconds / IP; Torznab is documented as no-store; 503 means temporarily unavailable | Shared `anibt` Durable Object lane at 1,100 ms spacing (about 54.5/min); no edge caching; honor 429/503 and `Retry-After` |
 
 MusicBrainz documents its numeric 1 request/second ceiling against source IP, while also applying User-Agent-specific throttling. The project-wide lane is a conservative application-level control and must not be enforced independently per Worker instance. MangaDex documents an initial 5 requests/second per IP plus endpoint-specific limits; the project target is deliberately more conservative. Actual quota headers and newer official policy always take precedence over these starting intervals.
+
+AudioSilo's published quota is per client address, whereas the Worker uses one shared application-wide lane. The one-second interval is an intentionally conservative global ceiling (one request/second across the app), not a statement of AudioSilo's upstream quota. It can be relaxed after representative hosted traffic and quota behavior are measured.
 
 ## Implemented coordinator infrastructure
 
@@ -121,3 +124,10 @@ The full CI workflow runs both the fast Node suite and this local runtime suite 
 ## LibriVox
 
 LibriVox's first-party API update asks clients to separate requests by several seconds and warns that short-window throttling may return HTTP 429. The Worker has a dedicated compile-time `librivox` Durable Object lane with a 5,000 ms minimum interval and a registered `librivox-api` metadata-only Provider. The Provider is covered by a real first-party JSON fixture and Node tests; the lane is covered by Node and local `workerd` SQLite spacing and Retry-After persistence tests. Parsed Retry-After durations are anchored to the Durable Object clock. The source and adapter remain unconfigured and disabled; no production KV change or deployment is authorized. Non-production Hosted Cloudflare verification remains a separate pending gate.
+
+
+## AudioSilo Meta
+
+AudioSilo Meta's public API documents a 100 requests/second per-client token bucket with a burst of 400, plus `Retry-After` on 429. The Provider uses a dedicated shared `audiosilo` Durable Object lane at one request per second application-wide as a conservative initial cap. It does not cache search responses even though the API publishes a short 60-second cache lifetime. Upstream 429/503 responses are handled by the existing shared cooldown mechanism. The source remains disabled pending full CI and non-production Hosted Cloudflare verification.
+
+The Provider uses only CC0 factual WorkResult fields. The rate-limit lane does not authorize access to, caching of, or reuse of the CC BY-SA community layer.
