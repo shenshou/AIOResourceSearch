@@ -483,6 +483,7 @@ export async function executeSearch(
       const hasAttribution = attributions.some((item) => item.sourceId === attribution.sourceId);
       const links = [...(existing.externalLinks ?? []), ...(resource.externalLinks ?? [])];
       const uniqueLinks = [...new Map(links.map((link) => [link.url, link])).values()].slice(0, 20);
+      const mergedRelationships = mergeRelationships(existing.relationships, resource.relationships);
       results[existingIndex] = {
         ...existing,
         sourceAttributions: hasAttribution ? attributions : [...attributions, attribution],
@@ -498,9 +499,7 @@ export async function executeSearch(
         ed2kUri: existing.ed2kUri ?? resource.ed2kUri,
         torrentUrl: existing.torrentUrl ?? resource.torrentUrl,
         ...(uniqueLinks.length ? { externalLinks: uniqueLinks } : {}),
-        ...(mergeRelationships(existing.relationships, resource.relationships)?.length
-          ? { relationships: mergeRelationships(existing.relationships, resource.relationships) }
-          : {}),
+        ...(mergedRelationships?.length ? { relationships: mergedRelationships } : {}),
       };
     }
     if (results.length >= MAX_TOTAL_RESULTS) break;
