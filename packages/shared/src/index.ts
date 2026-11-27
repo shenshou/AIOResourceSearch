@@ -133,6 +133,7 @@ export const RESOURCE_RELATIONSHIP_TYPES = [
   "performer",
   "director",
   "studio",
+  "network",
   "label",
   "series",
   "genre",

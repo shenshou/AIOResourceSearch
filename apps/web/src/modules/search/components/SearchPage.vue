@@ -54,6 +54,7 @@ const relationshipLabels: Record<string, string> = {
   performer: "演员",
   director: "导演",
   studio: "制作商",
+  network: "制作网络",
   label: "发行商",
   series: "系列",
   genre: "类型",

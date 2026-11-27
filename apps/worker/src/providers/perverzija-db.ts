@@ -18,6 +18,7 @@ interface SceneRecord {
   release_date?: unknown;
   duration?: unknown;
   studio?: { name?: unknown } | null;
+  network?: { name?: unknown } | null;
   performers?: Array<{ name?: unknown }> | null;
   tags?: Array<{ name?: unknown }> | null;
   urls?: {
@@ -174,6 +175,9 @@ function sceneRelationships(scene: SceneRecord) {
     ...(typeof scene.studio?.name === "string" && scene.studio.name.trim()
       ? [{ type: "studio" as const, name: scene.studio.name.trim() }]
       : []),
+    ...(typeof scene.network?.name === "string" && scene.network.name.trim()
+      ? [{ type: "network" as const, name: scene.network.name.trim() }]
+      : []),
     ...(Array.isArray(scene.performers)
       ? scene.performers.flatMap((performer) =>
           typeof performer?.name === "string" && performer.name.trim()
@@ -193,6 +197,7 @@ function sceneRelationships(scene: SceneRecord) {
 function sceneDescription(scene: SceneRecord): string | undefined {
   const parts: string[] = [];
   const studio = typeof scene.studio?.name === "string" ? scene.studio.name.trim() : "";
+  const network = typeof scene.network?.name === "string" ? scene.network.name.trim() : "";
   const performers = Array.isArray(scene.performers)
     ? scene.performers.flatMap((performer) =>
         typeof performer?.name === "string" && performer.name.trim() ? [performer.name.trim()] : [])
@@ -204,6 +209,7 @@ function sceneDescription(scene: SceneRecord): string | undefined {
   const duration = durationLabel(scene.duration);
 
   if (studio) parts.push(`Studio: ${studio}`);
+  if (network) parts.push(`Network: ${network}`);
   if (performers.length) parts.push(`Cast: ${performers.slice(0, 12).join(", ")}`);
   if (tags.length) parts.push(`Tags: ${tags.slice(0, 20).join(", ")}`);
   if (duration) parts.push(`Duration: ${duration}`);
