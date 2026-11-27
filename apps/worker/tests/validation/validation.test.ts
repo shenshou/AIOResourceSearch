@@ -181,6 +181,39 @@ test("validateSource requires external-search destinations to use HTTPS", () => 
   })), null);
 });
 
+test("validateAdapter recognizes the implemented LibriVox audiobook adapter", () => {
+  const adapter = validateAdapter({
+    id: "librivox-api",
+    name: "LibriVox API",
+    description: "First-party audiobook catalogue metadata search.",
+    mechanism: "api",
+    contentCategories: ["audiobook"],
+    version: "1.0.0",
+    enabled: false,
+    categories: ["other-index"],
+    capabilities: ["metadata"],
+  });
+  assert.equal(adapter?.implemented, true);
+  assert.equal(adapter?.enabled, false);
+  assert.deepEqual(adapter?.contentCategories, ["audiobook"]);
+  assert.deepEqual(adapter?.capabilities, ["metadata"]);
+
+  const source = validateSource({
+    id: "librivox",
+    name: "LibriVox",
+    category: "other-index",
+    contentCategory: "audiobook",
+    type: "provider",
+    adapterId: "librivox-api",
+    enabled: false,
+    searchModes: ["keyword"],
+    capabilities: ["metadata"],
+    timeoutMs: 8000,
+  });
+  assert.equal(source?.contentCategory, "audiobook");
+  assert.equal(source?.enabled, false);
+});
+
 test("validateAdapter accepts an enabled adapter with a registered implementation", () => {
   const result = validateAdapter(adapter());
 
