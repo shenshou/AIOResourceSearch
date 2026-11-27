@@ -58,7 +58,7 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 
 ## Generic HTML extraction: magnet, torrent and ed2k selectors (2026-11-27)
 
-- The declarative HTML adapter now supports independent CSS selectors for magnet, Torrent download and ed2k links, in addition to metadata, images and custom metadata fields.
+- The declarative HTML adapter (version 1.1.0) now supports independent CSS selectors for magnet, Torrent download and ed2k links, in addition to metadata, images and custom metadata fields.
 - Source validation requires every declared downloadable-link capability to have its matching selector and rejects undeclared selector/capability mismatches.
 - The parser collects up to 30 distinct selected links per result, including multiple links of the same type. It only reads anchor `href` values selected by the administrator. The Provider validates magnet info hashes, accepts only same-host HTTPS Torrent URLs without embedded credentials, and validates the ed2k file-link shape before returning them.
 - The source-management interface exposes the three selectors separately. No script execution, browser emulation, redirect following, challenge solving, or access-control workaround is introduced.
