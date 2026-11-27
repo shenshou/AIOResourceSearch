@@ -7,6 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
+import { validateSource } from "../../src/validation.ts";
 import { listProviderAdapters } from "../../src/providers/registry.ts";
 import { SOURCE_CATALOG } from "../../../web/src/modules/sources/sourceCatalog.ts";
 import type { Env } from "../../src/env.ts";
@@ -2495,4 +2496,34 @@ test("generic HTML adapter extracts all declared downloadable link types safely"
   assert.equal(results[0]?.magnetUri, "magnet:?xt=urn:btih:01234567890123456789012345678901");
   assert.equal(results[0]?.torrentUrl, "https://cdn.example/file.torrent");
   assert.equal(results[0]?.ed2kUri, "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/");
+});
+
+
+test("validates generic HTML download selectors against declared source capabilities", () => {
+  const valid = validateSource(source({
+    id: "html-download-source",
+    adapterId: "generic-html",
+    baseUrl: "https://example.com",
+    providerSearchUrlTemplate: "https://example.com/search?q={query}",
+    htmlSelectors: {
+      result: "article",
+      title: "h2",
+      link: "a.title",
+      magnet: "a.magnet",
+      torrent: "a.torrent",
+      ed2k: "a.ed2k",
+    },
+    capabilities: ["metadata", "magnet", "torrent", "ed2k"],
+  }));
+  assert.ok(valid);
+
+  const missingTorrentSelector = validateSource(source({
+    id: "html-download-source",
+    adapterId: "generic-html",
+    baseUrl: "https://example.com",
+    providerSearchUrlTemplate: "https://example.com/search?q={query}",
+    htmlSelectors: { result: "article", title: "h2", link: "a.title" },
+    capabilities: ["metadata", "torrent"],
+  }));
+  assert.equal(missingTorrentSelector, null);
 });
