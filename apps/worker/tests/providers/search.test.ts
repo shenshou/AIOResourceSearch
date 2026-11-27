@@ -269,6 +269,25 @@ test("rate-limited Providers fail closed when the shared coordinator is missing"
   assert.equal(upstreamFetchCalls, 0);
 });
 
+test("Perverzija-lane Providers fail closed when the shared coordinator is missing", async () => {
+  let upstreamFetchCalls = 0;
+  const rateLimited = provider(async (_input, context) => {
+    await context.fetch("https://api.perverzija.com/v1/scenes?q=test");
+    upstreamFetchCalls += 1;
+    return [];
+  }, { rateLimitLane: "perverzija" });
+  const result = await executeSearch(
+    request,
+    sourceConfig(source()),
+    adapters,
+    resolve(rateLimited),
+  );
+
+  assert.equal(result.sources[0]?.status, "error");
+  assert.equal(result.sources[0]?.errorCode, "provider_failed");
+  assert.equal(upstreamFetchCalls, 0);
+});
+
 test("normalizes provider-owned fields and validates optional resource links", async () => {
   const magnet = "magnet:?dn=example&xt=urn:btih:01234567890123456789012345678901";
   const result = await executeSearch(
@@ -953,7 +972,7 @@ const perverzijaFixture = {
   }],
 };
 
-function perverzijaContext(fetchImpl: typeof fetch) {
+function perverzijaContext(fetchImpl: typeof fetch, cache?: Cache) {
   return {
     source: source({
       id: "perverzija-db",
@@ -964,10 +983,12 @@ function perverzijaContext(fetchImpl: typeof fetch) {
     }),
     signal: new AbortController().signal,
     fetch: fetchImpl,
+    cache,
   };
 }
 
 test("searches the documented Perverzija DB JSON API and maps attributed metadata", async () => {
+  assert.equal(perverzijaDbProvider.rateLimitLane, "perverzija");
   let requestedUrl = "";
   let redirectMode: RequestRedirect | undefined;
   const resources = await perverzijaDbProvider.search(
@@ -1006,6 +1027,38 @@ test("searches the documented Perverzija DB JSON API and maps attributed metadat
     url: "https://tube.perverzija.com/watch/sample-scene",
   }]);
   assert.equal(resources[0]?.imageUrl, undefined);
+});
+
+test("caches valid Perverzija metadata for five minutes and skips the upstream lane on hits", async () => {
+  const entries = new Map<string, Response>();
+  const cache = {
+    match: async (key: Request) => entries.get(key.url)?.clone(),
+    put: async (key: Request, response: Response) => { entries.set(key.url, response.clone()); },
+  } as unknown as Cache;
+  let fetchCalls = 0;
+  const fetcher: typeof fetch = async () => {
+    fetchCalls += 1;
+    return new Response(JSON.stringify(perverzijaFixture), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300, s-maxage=1800",
+      },
+    });
+  };
+
+  const first = await perverzijaDbProvider.search(
+    { query: "sample", mode: "keyword" },
+    perverzijaContext(fetcher, cache),
+  );
+  const second = await perverzijaDbProvider.search(
+    { query: "sample", mode: "keyword" },
+    perverzijaContext(fetcher, cache),
+  );
+
+  assert.equal(fetchCalls, 1);
+  assert.deepEqual(second, first);
+  assert.equal(entries.size, 1);
+  assert.equal(entries.values().next().value?.headers.get("Cache-Control"), "public, max-age=300");
 });
 
 test("omits impossible Perverzija calendar dates without discarding the scene", async () => {
