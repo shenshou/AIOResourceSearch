@@ -10,6 +10,9 @@ The product does not host media, manage personal libraries, provide accounts, sa
 
 ## Delivery principles
 
+- Continue autonomously when the user says “continue”; avoid routine confirmation questions. Ask only for genuinely blocking information or explicit authorization for irreversible/external operations.
+- Do not run or request CI for partial work. Complete the entire large module (implementation, tests, documentation, integration, and acceptance review) first, then run one full CI against the latest branch head. Focused local checks continue during development.
+
 1. Preserve the agreed product boundary and the Vue 3 + TypeScript + Vite / Cloudflare Pages + Workers + KV architecture.
 2. Keep content categories independent from source kinds and acquisition mechanisms.
 3. Prefer documented APIs and public RSS/Atom feeds. Use HTML parsing only after per-source review; external-search links are not Worker scraping.
