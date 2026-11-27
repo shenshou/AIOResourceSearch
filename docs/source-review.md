@@ -4764,3 +4764,8 @@ Rechecked Nyaa, Shana Project, AnimeBytes, Tokyo Toshokan and Mikan Project. The
 - The API page's programmatic-access invitation is useful evidence of API-call permission, but it is not a clear grant to publicly republish, indefinitely cache, or aggregate result metadata in a multi-user service. The Terms/Privacy/About pages could not be retrieved by the research browser, and no separate reuse licence was located.
 - The live JSON endpoint could not be retrieved by the research browser in this pass; no live query was sent and no production connectivity is claimed.
 - **Decision unchanged: do not register or enable a Provider yet.** Keep Bitsearch as a priority candidate until the operator clarifies public result display/caching rights and the API's quota/egress behavior is validated. No account or API key was created.
+
+## ED2K follow-up research (2026-11-27)
+
+A follow-up search found no public hosted ED2K keyword-search API appropriate for the Cloudflare Worker. The MIT-licensed `tronarite/ed2k-indexer` is a self-hosted Torznab bridge that scrapes configured sources and connects to a local eMule WebInterface; its Docker setup requires host eMule, credentials and local download/media paths. It is not a public ED2K index and conflicts with the current Cloudflare-only/no-local-media-management architecture. `ed2k-stats` accepts an existing ED2K hash/link for statistics and is an enrichment lookup, not a discovery source. First-party aMule documentation confirms that ED2K file links require filename, size and MD4 hash, and that searches run against eD2K servers or Kad through a client connection. No Worker Provider was added; no Kad peers or eMule services were contacted. Detailed assessment: `docs/resource-link-source-status.md`.
+

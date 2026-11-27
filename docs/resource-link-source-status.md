@@ -210,3 +210,29 @@ References:
 - First-party content-removal page: https://bitsearch.eu/content-removal
 - Current BTIH validation: `apps/worker/src/providers/search.ts`
 - Current shared rate limiter: `apps/worker/src/rate-limit-coordinator.ts`
+
+## ED2K follow-up research — 2026-11-27
+
+The additional search did not uncover a public hosted ED2K text-search API suitable for a Cloudflare Worker. It did surface two distinct tools that must not be confused with an index provider:
+
+| Candidate | Actual capability | Assessment |
+|---|---|---|
+| [ed2k-indexer](https://github.com/tronarite/ed2k-indexer) | MIT-licensed, self-hosted Python/Flask Torznab bridge. It scrapes configured sources, uses TMDB/OMDb to resolve movie/TV titles, and forwards selected ED2K links to a locally running eMule WebInterface. Requires Docker Compose, eMule on the host, credentials, local download/watch/media folders and a publicly reachable Torznab endpoint for Radarr/Sonarr. | Not a hosted ED2K index or API. It depends on a local eMule service and filesystem paths, and its scraper is source-specific. This conflicts with the project's Cloudflare-only/no-local-media-management architecture. Retain as a design reference for translating ED2K results into Torznab, but do not deploy or copy its scrapers. |
+| [ed2k-stats](https://ed2k.shortypower.org/) | Accepts an existing ED2K link or hash and displays network statistics; its eMule Web Services integration is a hash lookup URL. | Hash lookup/enrichment only, not keyword discovery and not a source of new ED2K file links. It cannot fill the ED2K Provider gap. |
+
+### Protocol confirmation
+- The aMule first-party docs define file links as `ed2k://|file|NAME|SIZE|MD4-HASH|/`; file identity is the MD4 hash plus file size. Server and server-list links are different URI types and must not be accepted as downloadable file links.
+- aMule supports searches against a connected server, all known servers, and the decentralized Kad network. Those are client/network operations, not a public REST API that a Cloudflare Worker can call by simply issuing an HTTP request.
+- A hosted aMule controller API can expose search if an operator runs an aMule instance, but that would add a separate continuously running service, credentials and network exposure. It is not an upstream public catalogue and is outside the current deployment model.
+
+### Decision
+- ED2K remains supported as a normalized output-link type, but there is still no approved ED2K Provider.
+- Do not create a Kad client inside the Worker, connect to public Kad peers, scrape arbitrary eMule web interfaces, or deploy a self-hosted indexer as an unapproved sidecar.
+- Reopen if a first-party public HTTP API/RSS with documented query access and reuse terms appears, or if the project owner explicitly approves a separate hosted ED2K search service.
+
+References:
+- aMule ED2K file-link syntax: https://amule-org.github.io/docs/p2p-networks/ed2k/links
+- aMule supported search modes: https://amule-org.github.io/docs
+- ed2k-indexer repository and setup: https://github.com/tronarite/ed2k-indexer
+- ed2k-stats hash lookup: https://ed2k.shortypower.org/
+
