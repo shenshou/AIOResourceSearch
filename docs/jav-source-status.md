@@ -7,11 +7,12 @@
 
 | 状态 | 数量 | 解释 |
 |---|---:|---|
-| 已完成当前阶段核验，现阶段明确不做自动接入 | 13 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
-| 已有初步核验，但仍需补关键证据 | 22 | 不是完全没看过，而是域名、条款、接口、授权链或运行情况尚未闭环 |
+| 已完成当前阶段核验，现阶段明确不做自动接入 | 14 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
+| 已有初步核验，但仍需补关键证据 | 20 | 不是完全没看过，而是域名、条款、接口、授权链或运行情况尚未闭环 |
+| 已具备第一方公开许可、待技术可行性评估 | 1 | 已确认公开 CC0 数据 dump，但尚未决定是否适合当前架构 |
 | 合计 | 35 | 与当前 JAV 目录条目数一致 |
 
-**因此，当前真正需要继续补证/验证的是 22 个，不是 35 个。**  
+**因此，当前需继续补证的是 20 个；另有 1 个来源已具备公开数据许可，但仍需技术可行性评估。**  
 这 23 个也不代表全部最终都能开发成 Provider。只有补证后同时满足公开接口、授权/使用条件、免费依赖和访问控制边界的来源，才进入开发队列。
 
 ## A. 当前阶段已形成明确结论（12）
@@ -29,6 +30,7 @@
 | `javynow` | JavyNow | 第一方条款禁止未经授权的自动化抓取/提取；不恢复搜索模板，不自动访问 |
 | `missav` | MissAV | 第一方条款明确限制美国访客访问；当前不作为通用来源展示或由 Worker 请求，不能绕过地域限制 |
 | `javseen` | JAVSeen | JAVSeen 首页直接链接的第一方 Terms 禁止使用自动化系统获取服务内容或信息，并禁止未经书面许可的商业复制/利用；条款正文将服务描述为 Javhd.today，域名适用范围仍有表述不一致。采取保守处理：未获运营方澄清前不做自动检索/采集，仅保留用户主动外部访问；不得自动切换其备份域名 |
+| `kanojo` | Kanojo | 官方 GitHub 主仓库已归档（最后代码提交 2023-09-27）；其 API 路由整体置于 `auth:sanctum` 中，需要认证，不是匿名公开检索 API。未验证现行公共服务或独立数据许可；当前不做自动接入，保留来源目录，待官方恢复公开接口后再评估 |
 | `rjav` | r/JAV | Reddit 数据访问要求 API/OAuth、审批及内容使用合规；未获所需授权前仅保留用户主动外部搜索 |
 | `knighjok-jav-dataset` | Japanese Adult Videos Dataset | 数据集声明 NC-SA 且来源授权链不清；不下载、不摄取、不缓存、不再发布 |
 
@@ -57,8 +59,7 @@
 | `av-search` | AV Search | 需要运营方公开的 API/稳定查询 URL、适用条款和 Worker 查询转发/元数据复用许可 |
 | `data-mv-hf` | Data-MV | 补齐数据许可、上游来源及再授权证明；同时评估数据不完整问题，不下载其中视频 |
 | `javplay-metadata` | JavPlay Metadata Index | 需要维护者确认上游数据授权链、公共聚合复用权、署名和删除处理机制 |
-| `kanojo` | Kanojo | 项目仓库已归档；需确认 API 当前是否运行、是否有公开契约及数据再利用授权 |
-| `r18dev` | R18.dev | 维护者曾说明现有 API 为 alpha 且非面向公众；需确认是否已有正式公开 API 和使用许可 |
+
 
 ## 口径与后续执行规则
 
@@ -111,4 +112,11 @@
 - Data-MV's current Hugging Face card displays Apache-2.0, but also describes bundled MP4 files and an incomplete metadata catalogue. The uploader has not established upstream authorization/provenance or the licence scope across the metadata and media assets; no download or ingestion.
 - Updated count: 13 current no-automation decisions; 22 requiring further evidence; 35 total JAV catalog entries.
 - No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
+### Batch 29 — 2026-11-27
+- Rechecked: `javplay-metadata`, `kanojo`, `r18dev`.
+- JavPlay: README declares CC BY 4.0 and identifies JavPlay.tv/ja7play.com as the source, but upstream authorization, public production aggregator scope and removal handling remain unconfirmed; keep pending, no data ingestion.
+- Kanojo: official repository is archived; all API routes are behind `auth:sanctum`; AGPL-3.0 covers software, not database data. Moved to current no-automation group; no authenticated endpoint or scraper reuse.
+- R18.dev: first-party dumps page publishes weekly SQL/GZip snapshots, programmatic latest-dump URL and an explicit CC0 grant for structured data. Moved to licensed technical-feasibility queue; no dump downloaded or imported.
+- Initial 23-item evidence backlog is fully reviewed. Updated 35-item disposition: 14 current no-automation decisions; 20 pending evidence items; 1 licensed technical-feasibility candidate.
+- No access controls were bypassed; no Provider, KV configuration, source enablement, deployment or production data was changed.
 

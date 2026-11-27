@@ -4653,3 +4653,40 @@ This batch rechecked JAVSeen, JAVTsunami, SupJAV, AV Search and the Data-MV Hugg
 - AV Search: https://av-search.video/en
 - Data-MV dataset card: https://huggingface.co/datasets/invokeaibase/data-mv
 
+## JAV source verification batch 29 — final three items from the reconciled backlog (2026-11-27)
+
+This final batch rechecked JavPlay Metadata Index, Kanojo and R18.dev. It closes the initial 23-item evidence review without forcing every candidate into a Provider.
+
+### JavPlay Metadata Index
+- The current upstream GitHub README identifies JavPlay.tv/ja7play.com as the source, publishes daily JSON snapshots and declares CC BY 4.0 for the metadata. The README also describes the dataset as intended for research and educational purposes.
+- The public licence declaration is useful evidence, but it does not independently establish that the repository maintainer has authority to sublicense all upstream-derived metadata, nor does it clarify whether a public production search aggregator is within the intended grant. Attribution and removal/takedown handling also need confirmation.
+- **Decision:** keep pending. Do not ingest, cache or republish the snapshots until the maintainer clarifies upstream authorization and confirms the intended public multi-source aggregator use. No dataset files were downloaded in this review.
+- Reference: https://github.com/av18live/japanese-adult-video-metadata
+
+### Kanojo
+- The official `kanojo-db/kanojo` repository is archived. GitHub repository metadata shows the archive state and the latest code push on 2023-09-27. The organization README describes the project as a community-run JAV/gravure database with an API for developers.
+- Inspection of the archived source shows that all routes in `routes/api.php`, including movie search, details and changes feeds, are enclosed in Laravel's `auth:sanctum` middleware. The developer documentation routes expose generated API docs, but the API itself is not an anonymous public search interface. The repository's AGPL-3.0 licence covers the software; it does not establish a licence for the database records.
+- The official `kanojodb.com` homepage could not be retrieved in this research session. No current public API access, maintainer-issued credentials, or data-reuse licence was verified.
+- **Decision:** move `kanojo` from pending to the current no-automation group. Retain the source-directory entry; do not use private/authenticated endpoints, reuse community scraper credentials, or copy database records. Reopen only if the operator restores a documented public API and clarifies data reuse rights.
+- References: https://github.com/kanojo-db ; https://github.com/kanojo-db/kanojo ; https://raw.githubusercontent.com/kanojo-db/kanojo/main/routes/api.php ; https://raw.githubusercontent.com/kanojo-db/kanojo/main/LICENSE
+
+### R18.dev
+- The first-party homepage labels the service as alpha and provides a search form. More importantly, its first-party Database dumps page publishes a weekly SQL/GZip dump, offers a programmatic `/dumps/latest` download URL, and explicitly states that all structured data is available under CC0.
+- The latest dump listed during this review is dated 2026-11-24 and is approximately 265.5 MiB compressed. This is a bulk-dataset delivery model, not a documented low-latency query API. The dump's decompressed size, schema, record-level field coverage, change format and ingestion cost have not yet been measured.
+- **Decision:** promote `r18dev` out of the unresolved evidence backlog into a distinct **licensed technical-feasibility candidate**. The CC0 statement is sufficient to proceed to a bounded schema/feasibility assessment, but not to claim a production Provider is ready. Do not download or import the dump in this review. A future technical assessment must determine whether incremental updates and an index can fit the project's Cloudflare free-tier and no-paid-dependency constraints without introducing an unwanted database-management subsystem.
+- First-party references: https://r18.dev/ ; https://r18.dev/dumps
+
+### Batch outcome
+- 3 final candidates rechecked.
+- JavPlay remains pending pending upstream authorization and intended-use clarification.
+- Kanojo moves to the current no-automation group because its archived API is authentication-protected and no data-reuse rights were established.
+- R18.dev moves to a licensed technical-feasibility queue because its first-party weekly database dump is explicitly CC0; no download or ingestion was performed.
+- The initial 23-item JAV evidence backlog is now fully reviewed. Updated 35-item disposition: **14 current no-automation decisions + 20 pending evidence items + 1 licensed technical-feasibility candidate = 35**.
+- No access controls were bypassed; no Provider code, KV configuration, source enablement, deployment or production data was changed.
+
+### Supporting references
+- JavPlay Metadata Index README: https://github.com/av18live/japanese-adult-video-metadata
+- Kanojo organization/repository: https://github.com/kanojo-db ; https://github.com/kanojo-db/kanojo
+- Kanojo API routes and software licence: https://raw.githubusercontent.com/kanojo-db/kanojo/main/routes/api.php ; https://raw.githubusercontent.com/kanojo-db/kanojo/main/LICENSE
+- R18.dev homepage and first-party database dumps: https://r18.dev/ ; https://r18.dev/dumps
+
