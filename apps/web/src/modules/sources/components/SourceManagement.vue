@@ -55,6 +55,7 @@ const sourceTypeLabels: Record<SourceType, string> = {
 };
 const capabilityLabels: Record<SourceCapability, string> = {
   metadata: "元数据",
+  relationships: "关联实体",
   image: "图片",
   magnet: "磁力链接",
   ed2k: "ED2K",
