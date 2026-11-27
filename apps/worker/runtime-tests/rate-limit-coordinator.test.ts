@@ -60,35 +60,35 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
   it("keeps cooldown state isolated between lane objects", async () => {
     const mangaStub = createStub("mangadex");
     const musicStub = createStub("musicbrainz");
-    const cooldownUntil = Date.now() + 5_000;
+    const mangaBaseline = await reserve(mangaStub, "mangadex");
+    const musicFirst = await reserve(musicStub, "musicbrainz");
 
     await post(mangaStub, "cooldown", {
       lane: "mangadex",
-      until: cooldownUntil,
+      durationMs: 5_000,
     });
 
-    const musicSlot = await reserve(musicStub, "musicbrainz");
-    const mangaSlot = await reserve(mangaStub, "mangadex");
+    const musicNext = await reserve(musicStub, "musicbrainz");
+    const mangaNext = await reserve(mangaStub, "mangadex");
 
-    expect(musicSlot).toBeLessThan(cooldownUntil);
-    expect(mangaSlot).toBeGreaterThanOrEqual(cooldownUntil);
+    expect(musicNext - musicFirst).toBe(1_000);
+    expect(mangaNext).toBeGreaterThanOrEqual(mangaBaseline + 5_000);
   });
 
   it("re-queues a reserved slot when a later cooldown is applied", async () => {
     const stub = createStub("mangadex");
     const scheduledAt = await reserve(stub, "mangadex");
-    const cooldownUntil = Date.now() + 2_000;
 
     await post(stub, "cooldown", {
       lane: "mangadex",
-      until: cooldownUntil,
+      durationMs: 2_000,
     });
     const validation = await post(stub, "validate", {
       lane: "mangadex",
       scheduledAt,
     });
 
-    expect(validation.scheduledAt).toBeGreaterThanOrEqual(cooldownUntil);
+    expect(validation.scheduledAt).toBeGreaterThanOrEqual(scheduledAt + 2_000);
   });
 
 
@@ -200,22 +200,27 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
       idFromName: (name: string) => coordinator.idFromName(name),
       get: (objectId: unknown) => coordinator.get(objectId),
     };
-    const startedAt = Date.now();
+    const clockProbe = await reserve(stub, "mangadex");
+    const clockOffset = clockProbe - Date.now() - 400;
+    let upstreamAt = 0;
     const coordinatedFetch = createCoordinatedFetch(
       namespace,
       "mangadex",
       new AbortController().signal,
-      async () => new Response("rate limited", {
-        status: 429,
-        headers: { "Retry-After": "2" },
-      }),
+      async () => {
+        upstreamAt = Date.now();
+        return new Response("rate limited", {
+          status: 429,
+          headers: { "Retry-After": "2" },
+        });
+      },
     );
 
     const response = await coordinatedFetch("https://api.mangadex.org/manga");
     expect(response.status).toBe(429);
 
     const nextSlot = await reserve(stub, "mangadex");
-    expect(nextSlot).toBeGreaterThanOrEqual(startedAt + 1_800);
+    expect(nextSlot).toBeGreaterThanOrEqual(upstreamAt + clockOffset + 2_300);
   });
 
   it("persists SQLite reservation state after Durable Object eviction", async () => {
