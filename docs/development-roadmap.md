@@ -114,6 +114,7 @@ Acceptance:
 
 Deliverables:
 - [x] Provider registry and shared result contract.
+- [ ] Complete the JAV metadata aggregation module: normalized catalogue-number identity and deterministic first-valid-value field merging are implemented; relationship modeling, orchestration refinements, integrated regression coverage, and acceptance review remain open. See [JAV metadata aggregation](./providers/jav-metadata-aggregation.md).
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
 - [x] Twelve site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, Eporner, LibriVox, and AudioSilo Meta Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
