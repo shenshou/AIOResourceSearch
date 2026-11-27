@@ -8,6 +8,7 @@ import type {
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
 import { listProviderAdapters } from "../../src/providers/registry.ts";
+import { SOURCE_CATALOG } from "../../../web/src/modules/sources/sourceCatalog.ts";
 import type { Env } from "../../src/env.ts";
 import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
@@ -1654,5 +1655,26 @@ test("The RarBg rejects mismatched hashes, untrusted detail URLs, and unsupporte
       },
     ),
     /does not support this content category/,
+  );
+});
+
+test("runtime source catalog Provider references exactly match the compile-time registry", () => {
+  const catalogIds = SOURCE_CATALOG.map((source) => source.id);
+  assert.equal(new Set(catalogIds).size, catalogIds.length, "source catalog IDs must be unique");
+
+  const catalogProviderIds = [
+    ...new Set(
+      SOURCE_CATALOG.flatMap((source) => (source.type === "provider" && source.adapterId ? [source.adapterId] : [])),
+    ),
+  ].sort();
+  const registeredProviderIds = listProviderAdapters()
+    .map((adapter) => adapter.id)
+    .filter((id) => id !== "generic-html")
+    .sort();
+
+  assert.deepEqual(
+    catalogProviderIds,
+    registeredProviderIds,
+    "every concrete Provider must be referenced by the source catalog, and every catalog Provider must be registered",
   );
 });

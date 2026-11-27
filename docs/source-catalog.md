@@ -23,7 +23,7 @@
 
 ## Atlas multi-category review completion (2026-11-25)
 
-The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries brought the catalog to 146 before the 2026-11-27 game/music follow-up (149), and the 2026-11-27 GOG/Epic/Deezer/Bandcamp follow-up brings the current total to 153.
+The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog candidates have now all been reviewed and reconciled. They are documented in [source-review.md](./source-review.md), but are **not bulk-imported** into the runtime catalog: review completion does not imply approval or Provider readiness. Several rows are cross-category aliases or duplicate platform identities. Eight Atlas novel/e-book candidates from that reconciliation have since been individually retained in the catalog; the remaining reviewed rows are not automatically imported. At the time of the original Atlas reconciliation, the catalog contained 91 candidates. Subsequent reviewed supplemental entries produced several dated historical snapshots (including 146 and 153 candidates); those figures are not current totals. The authoritative current total is calculated from the runtime catalog and stated in the current inventory summary below.
 
 
 
@@ -125,7 +125,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（72）
+## 其他资源索引（90）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -375,7 +375,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 \n## LibriVox Provider implementation update（2026-11-27）\n
 - LibriVox 已从“未来候选”升级为代码已实现的 Provider 候选：librivox-api v1.0.0，metadata-only，有声读物分类，标题前缀搜索，单次最多 20 条，字段白名单和 5 秒共享 Durable Object 限速。
 - Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。
-- 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 11。
+- 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；LibriVox 完成后具体 Provider 实现数为 11，随后 AudioSilo Meta 加入后当前为 12。
 - AudioSilo Meta 完整 CI 已于 2026-11-27 通过：[#45949235669](https://github.com/shenshou/AIOResourceSearch/actions/runs/45949235669)，验证提交 `c0745998e51d10a8481ca113941270b1da1ed007`，包含 lint、Worker 单元测试、Durable Object workerd runtime 测试、前端构建和 Worker 类型检查。非生产 Cloudflare Hosted 验证仍未开始；本次 CI 不代表已部署或可用于生产。
 
 ## AudioSilo Meta Provider implementation update（2026-11-27）
