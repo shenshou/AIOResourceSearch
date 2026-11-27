@@ -74,7 +74,7 @@ function validTorrentUrl(value: string | undefined, baseUrl: URL): string | unde
 
 function validEd2k(value: string | undefined): string | undefined {
   return value && value.length <= 4096 &&
-    /^ed2k:\/\/\|file\|[^|]{1,255}\|\d+\|[a-f0-9]{32}\|/i.test(value)
+    /^ed2k:\/\/\|file\|[^|]{1,255}\|\d+\|[a-f0-9]{32}\|\/$/i.test(value)
     ? value
     : undefined;
 }
