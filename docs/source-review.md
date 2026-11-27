@@ -4439,3 +4439,19 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - No public API, RSS contract, stable query URL, current automation terms, or explicit permission for third-party metadata reuse was verified. The research fetcher returned HTTP 403 for the FAQ route; that is not proof of a site-wide block and does not authorize alternate-route probing or challenge bypass.
 - **Decision:** add JASS as a JAV catalog candidate with homepage-only user-initiated external navigation. Do not add a Worker Provider, scrape metadata, or guess a query URL. Reassess only if JASS publishes a supported public interface and applicable terms.
 - References: https://jass-db.com/en/faq ; https://jass-db.com/zh-tw/about .
+
+
+## JAV metadata repository and aggregator project review (2026-11-27)
+
+### JavPlay Metadata Index — technically consumable snapshot, rights chain not yet established
+- Inspected the public repository `av18live/japanese-adult-video-metadata` at its 2026-11-27 snapshot. It publishes four JSON files updated daily at 00:00 UTC: 2,746 video records, 2,293 actor records, 100 manufacturers and 405 tags. The video record schema contains code, title, actor names, manufacturer, release date and a canonical `ja7play.com` URL; the inspected video records do not include image or media URLs.
+- The repository README declares CC BY 4.0 for its metadata and describes the data as for research and educational purposes. It also says all records are sourced from JavPlay.tv/ja7play.com. A repository contributor can license their own compilation/selection, but the repository's statement alone does not prove that the contributor has authority to grant reuse rights over upstream-derived catalogue facts or source-provided material. The purpose statement also warrants clarification before relying on it for a public production service.
+- The JSON is technically simple to consume from GitHub, but the current video file is approximately 0.7 MB and is a daily snapshot rather than a documented query API. A future integration would need to avoid fetching the entire file for every search and would need a compliant refresh/cache strategy. No such ingestion or caching was performed in this review.
+- **Decision:** retain the candidate and its current metadata-only scope. Do not implement a Provider or copy the dataset into project storage until the dataset maintainer confirms the upstream data-use authority and public multi-source aggregator reuse rights, including attribution and removal handling. Do not fetch JavPlay itself or attempt to bypass any regional or access restrictions.
+- Reference: https://github.com/av18live/japanese-adult-video-metadata .
+
+### JAVAPI (ANDonekey/javapi) — archived aggregator, architecture reference only
+- The repository is archived (read-only since 2026-11-04). Its documented API combines JavDB metadata with video-host embed links, and its implementation includes parallel scraper orchestration, per-source timeouts, graceful partial failure, caching and a registry-style scraper layout.
+- The same README explicitly documents Cloudflare bypass via `cloudscraper_go` and CycleTLS for protected sites, plus scrapers for sites whose current automation/data-use permission is not established. Those methods are outside this project's access-control boundary and are not reusable implementation instructions.
+- **Decision:** do not add JAVAPI as a data source, do not deploy or copy its scrapers, bypass code, embed/video-link extraction, or undocumented JavDB access. Retain only its high-level orchestration concepts as architecture research; prefer the existing Provider interface, shared request coordinator, allowlisted metadata normalization and per-source error reporting already used in AIOResourceSearch.
+- Reference: https://github.com/ANDonekey/javapi .
