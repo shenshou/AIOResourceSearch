@@ -101,6 +101,33 @@ test("maps series facts while ignoring cover URLs and expressive community field
   assert.equal(results[0]?.description, undefined);
 });
 
+test("preserves valid partial release dates and drops invalid calendar values", async () => {
+  const payload = {
+    results: [
+      {
+        kind: "work", id: "year-only", title: "Year Only",
+        authors: [], language: "en", series: null, release_date: "1998", narrators: [],
+      },
+      {
+        kind: "work", id: "month-invalid", title: "Invalid Month",
+        authors: [], language: "en", series: null, release_date: "2024-13", narrators: [],
+      },
+      {
+        kind: "work", id: "day-invalid", title: "Invalid Day",
+        authors: [], language: "en", series: null, release_date: "2024-02-30", narrators: [],
+      },
+    ],
+  };
+  const results = await audioSiloMetaProvider.search(
+    { query: "date", mode: "keyword" },
+    context(async () => Response.json(payload)),
+  );
+  assert.equal(results.length, 3);
+  assert.equal(results[0]?.releaseDate, "1998");
+  assert.equal(results[1]?.releaseDate, undefined);
+  assert.equal(results[2]?.releaseDate, undefined);
+});
+
 test("rejects invalid envelopes, unexpected content types, redirects, and oversized responses", async () => {
   await assert.rejects(
     audioSiloMetaProvider.search({ query: "test", mode: "keyword" },
