@@ -2395,7 +2395,7 @@ test("aggregates multiple downloadable links for one work and preserves per-link
     [firstMagnet, secondMagnet].sort(),
   );
   assert.deepEqual(
-    result.results[0]?.resourceLinks?.map((link) => link.sourceAttributions[0]?.sourceId).sort(),
+    result.results[0]?.resourceLinks?.map((link) => link.sourceAttributions?.[0]?.sourceId).sort(),
     ["first-link-source", "second-link-source"],
   );
   // Keep the original single-value property populated for older clients.
@@ -2425,7 +2425,7 @@ test("deduplicates identical downloadable links while retaining all contributing
   assert.equal(result.results.length, 1);
   assert.equal(result.results[0]?.resourceLinks?.length, 1);
   assert.deepEqual(
-    result.results[0]?.resourceLinks?.[0]?.sourceAttributions.map((item) => item.sourceId).sort(),
+    result.results[0]?.resourceLinks?.[0]?.sourceAttributions?.map((item) => item.sourceId).sort(),
     ["first-link-source", "second-link-source"],
   );
 });
