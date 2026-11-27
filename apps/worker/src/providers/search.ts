@@ -110,8 +110,9 @@ function normalizeResource(
   const releaseDate = typeof value.releaseDate === "string" ? value.releaseDate.trim() : "";
   const description = typeof value.description === "string" ? value.description.trim() : "";
 
-  const relationships = source.capabilities.includes("metadata") && Array.isArray(value.relationships)
+  const rawRelationships = source.capabilities.includes("metadata") && Array.isArray(value.relationships)
     ? value.relationships
+        .slice(0, 80)
         .filter((relationship) =>
           relationship &&
           typeof relationship === "object" &&
@@ -121,12 +122,14 @@ function normalizeResource(
           relationship.name.length <= 120 &&
           (relationship.url === undefined || isHttpsUrl(relationship.url)),
         )
-        .slice(0, 40)
         .map((relationship) => ({
           type: relationship.type,
           name: relationship.name.trim(),
           ...(relationship.url ? { url: relationship.url } : {}),
         }))
+    : undefined;
+  const relationships = rawRelationships?.length
+    ? mergeRelationships([], rawRelationships)
     : undefined;
 
   const externalLinks = Array.isArray(value.externalLinks)

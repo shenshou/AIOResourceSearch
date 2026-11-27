@@ -484,6 +484,27 @@ test("discards blank optional metadata so later sources can fill those fields", 
   });
 });
 
+test("deduplicates repeated relationships within a single source result", async () => {
+  const result = await executeSearch(
+    request,
+    sourceConfig(source({ capabilities: ["metadata"] })),
+    adapters,
+    resolve(provider(async () => [resource({
+      relationships: [
+        { type: "performer", name: "Performer A" },
+        { type: "performer", name: "  Performer   A ", url: "https://example.com/performer/a" },
+        { type: "tag", name: "Drama" },
+        { type: "tag", name: "Drama" },
+      ],
+    })])),
+  );
+
+  assert.deepEqual(result.results[0]?.relationships, [
+    { type: "performer", name: "Performer A", url: "https://example.com/performer/a" },
+    { type: "tag", name: "Drama" },
+  ]);
+});
+
 test("relationship identity normalizes Unicode compatibility and repeated whitespace", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({
