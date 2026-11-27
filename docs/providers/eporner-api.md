@@ -9,7 +9,7 @@ Use only the documented Eporner API v2.1.0. The Provider supports keyword search
 Included fields:
 - Video title and canonical page URL.
 - Keywords, view count, rating, duration in seconds, and the source's original added-time string.
-- Structured performer relationships from `fields=pornstars` and genre relationships from `fields=categories`; comma-separated keywords are exposed as tag relationships.
+- Structured performer relationships from `fields=pornstars`, genre relationships from `fields=categories`, and tag relationships from the comma-separated `keywords` field.
 
 Explicitly excluded:
 - Thumbnail/image URLs.
@@ -46,7 +46,7 @@ The built-in adapter is identified by:
 | Version | `1.1.0` |
 | Source category | `other-index` |
 | Content category | `jav` |
-| Capabilities | `metadata` |
+| Capabilities | `metadata`, `relationships` |
 | Search modes | `keyword` |
 
 The source catalog entry uses source ID `eporner` and points to adapter `eporner-api`. In the administrator UI, register the adapter first and enable the adapter only after the Worker version containing this Provider is deployed to a non-production environment. Then register the catalog source and leave the source itself disabled until the scheduled sync and hosted checks pass. No source or adapter KV record is created by this code change.

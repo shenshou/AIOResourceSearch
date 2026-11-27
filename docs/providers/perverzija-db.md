@@ -5,14 +5,14 @@
 - Adapter ID: `perverzija-db`
 - Version: `1.1.0`
 - Category: `other-index`
-- Capabilities: `metadata`
+- Capabilities: `metadata`, `relationships`
 - Search modes: `number`, `keyword`
 - API endpoint: `https://api.perverzija.com/v1/scenes`
 - Authentication: none
 - API key: not required
 - Shared rate-limit lane: `perverzija` (600 ms minimum spacing)
 
-The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capability `metadata`, and both search modes. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until a live Cloudflare Worker request has been verified.
+The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capabilities `metadata` and `relationships`, and both search modes. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until a live Cloudflare Worker request has been verified.
 
 ## Request behavior
 
