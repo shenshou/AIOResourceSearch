@@ -983,6 +983,25 @@ test("searches the documented Perverzija DB JSON API and maps attributed metadat
   assert.equal(resources[0]?.imageUrl, undefined);
 });
 
+test("omits impossible Perverzija calendar dates without discarding the scene", async () => {
+  const invalidDateFixture = {
+    data: [{
+      ...perverzijaFixture.data[0],
+      release_date: "2026-02-30",
+    }],
+  };
+  const resources = await perverzijaDbProvider.search(
+    { query: "sample", mode: "keyword" },
+    perverzijaContext(async () => new Response(JSON.stringify(invalidDateFixture), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })),
+  );
+
+  assert.equal(resources.length, 1);
+  assert.equal(resources[0]?.releaseDate, undefined);
+});
+
 test("rejects Perverzija records with untrusted attribution or watch URLs", async () => {
   const unsafeFixture = {
     data: [{
