@@ -116,3 +116,8 @@ It runs inside the local `workerd` runtime and covers concurrent reservation spa
 The runtime suite uses the existing declarative `exports` configuration. Do not add legacy `migrations` alongside it: Wrangler treats the two Durable Object lifecycle declarations as mutually exclusive. The test command does not deploy a Worker, create a hosted namespace, access production KV, or call upstream Providers.
 
 The full CI workflow runs both the fast Node suite and this local runtime suite as part of the same comprehensive verification run. Hosted non-production Cloudflare verification remains a separate operational gate and is not replaced by local `workerd` tests.
+
+
+## LibriVox
+
+LibriVox's first-party API update asks clients to separate requests by several seconds and warns that short-window throttling may return HTTP 429. The Worker now has a dedicated compile-time `librivox` Durable Object lane with a 5,000 ms minimum interval. The lane is covered by a Node coordinator test and a local `workerd` SQLite concurrency test. The Provider is not yet implemented or registered, and this lane does not authorize source enablement. Continue to honor `Retry-After`, fail closed when the coordinator is unavailable, and keep the source disabled until the response fixture, Provider tests, and non-production hosted verification gates pass.
