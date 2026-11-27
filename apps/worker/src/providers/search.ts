@@ -83,7 +83,7 @@ function isMagnetUri(value: unknown): value is string {
 function isEd2kUri(value: unknown): value is string {
   return typeof value === "string" &&
     value.length <= 4096 &&
-    /^ed2k:\/\/\|file\|[^|]{1,255}\|\d+\|[a-f0-9]{32}\|/i.test(value);
+    /^ed2k:\/\/\|file\|[^|]{1,255}\|\d+\|[a-f0-9]{32}\|\/$/i.test(value);
 }
 
 function normalizeResource(
