@@ -39,7 +39,7 @@ The platform distinguishes Worker-backed **Provider** sources from **External Se
 - `packages/shared`: shared TypeScript contracts.
 - Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
-See [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md) for Cloudflare Pages/Workers setup and the non-production deployment checklist. See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Age-assurance scope and implementation gates are recorded in [docs/age-assurance-readiness.md](docs/age-assurance-readiness.md). Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), source-inventory governance is defined in [docs/source-catalog-policy.md](docs/source-catalog-policy.md), the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md), and JAV work identity plus field-level merge behavior are specified in [docs/providers/jav-metadata-aggregation.md](docs/providers/jav-metadata-aggregation.md).
+See [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md) for the two-site Cloudflare deployment model: feature/fix branches flow into develop (Staging), then verified releases flow into main (Production). The two Pages projects and their Worker/KV/Durable Object environments are isolated. See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Age-assurance scope and implementation gates are recorded in [docs/age-assurance-readiness.md](docs/age-assurance-readiness.md). Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), source-inventory governance is defined in [docs/source-catalog-policy.md](docs/source-catalog-policy.md), the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md), and JAV work identity plus field-level merge behavior are specified in [docs/providers/jav-metadata-aggregation.md](docs/providers/jav-metadata-aggregation.md).
 
 ## Local development
 
@@ -60,13 +60,12 @@ npm run dev:worker
 
 During local development, the frontend defaults to `http://localhost:8787` for the Worker API. Production builds do not fall back to localhost: set `VITE_API_BASE_URL` to the HTTPS origin of the deployed Worker in the Cloudflare Pages environment (see [apps/web/.env.example](apps/web/.env.example) and [the deployment guide](docs/cloudflare-deployment.md)).
 
-The Worker requires a KV namespace binding before remote deployment. Create one:
+The base `apps/worker/wrangler.jsonc` is for local Worker development and is not the hosted deployment target. Hosted environments use separate generated configurations and separate KV namespaces:
 
-```bash
-npx wrangler kv namespace create SOURCES_KV
-```
+- Staging: `apps/worker/wrangler.staging.example.jsonc` → `aio-resource-search-api-staging`.
+- Production: `apps/worker/wrangler.production.example.jsonc` → `aio-resource-search-api`.
 
-Copy the returned namespace ID into `apps/worker/wrangler.jsonc`, replacing the clearly marked placeholder. Do not commit API tokens or other secrets.
+Create one KV namespace for Staging and another for Production. Their IDs belong only in the corresponding GitHub Environment variables or ignored local generated configs. Follow [the deployment guide](docs/cloudflare-deployment.md) for exact setup. Never reuse the same KV namespace between environments, and do not commit API tokens or other secrets.
 
 For local admin API testing, create `apps/worker/.dev.vars` with:
 
