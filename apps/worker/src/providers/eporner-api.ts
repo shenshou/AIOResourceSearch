@@ -134,12 +134,18 @@ function parseSearchResults(payload: unknown): EpornerVideo[] {
   return payload.videos as EpornerVideo[];
 }
 
-function sanitizeEntityReferences(value: unknown): Array<{ name: unknown; url: unknown }> {
+function sanitizeEntityReferences(
+  value: unknown,
+  entityType: "category" | "performer",
+): Array<{ name: string; url?: string }> {
   if (!Array.isArray(value)) return [];
   return value.slice(0, 40).flatMap((raw) => {
     if (typeof raw !== "object" || raw === null) return [];
     const record = raw as Record<string, unknown>;
-    return [{ name: record.name, url: record.url }];
+    const name = typeof record.name === "string" ? record.name.trim().slice(0, 120) : "";
+    if (!name) return [];
+    const url = safeEntityUrl(record.url, entityType);
+    return [{ name, ...(url ? { url } : {}) }];
   });
 }
 
@@ -154,8 +160,8 @@ function sanitizeSearchPayload(payload: unknown): unknown {
       rate: video.rate,
       length_sec: video.length_sec,
       added: video.added,
-      categories: sanitizeEntityReferences(video.categories),
-      pornstars: sanitizeEntityReferences(video.pornstars),
+      categories: sanitizeEntityReferences(video.categories, "category"),
+      pornstars: sanitizeEntityReferences(video.pornstars, "performer"),
     })),
   };
 }
