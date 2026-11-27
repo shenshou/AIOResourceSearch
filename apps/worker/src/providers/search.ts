@@ -176,6 +176,27 @@ function canonicalUrl(value: string): string {
   const url = new URL(value);
   url.hash = "";
   url.hostname = url.hostname.toLowerCase();
+
+  // Remove only widely used tracking parameters. Keep source-specific query
+  // parameters because they may identify a distinct catalogue record.
+  const trackingKeys = new Set([
+    "fbclid",
+    "gclid",
+    "dclid",
+    "msclkid",
+    "mc_cid",
+    "mc_eid",
+  ]);
+  const keysToDelete: string[] = [];
+  url.searchParams.forEach((_item, key) => {
+    const normalizedKey = key.toLowerCase();
+    if (normalizedKey.startsWith("utm_") || trackingKeys.has(normalizedKey)) {
+      keysToDelete.push(key);
+    }
+  });
+  for (const key of keysToDelete) url.searchParams.delete(key);
+  url.searchParams.sort();
+
   if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, "");
   return url.toString();
 }
