@@ -354,6 +354,77 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
   assert.deepEqual(result.sources.map((item) => item.resultCount), [1, 1]);
 });
 
+test("keeps the first source's conflicting metadata and fills only missing fields", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      releaseDate: context.source.id === "first" ? "2026-01-01" : "2026-02-02",
+      description: context.source.id === "first" ? "First source description" : "Conflicting later description",
+      metadata: context.source.id === "first"
+        ? { director: "Director A", author: "First author" }
+        : { director: "Director B", author: "Second author", studio: "Studio B" },
+      imageUrl: context.source.id === "first"
+        ? "https://first.example/cover.jpg"
+        : "https://second.example/cover.jpg",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source", capabilities: ["metadata", "image"] }),
+      source({ id: "second", name: "Second source", capabilities: ["metadata", "image"] }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.sourceId, "first");
+  assert.equal(result.results[0]?.releaseDate, "2026-01-01");
+  assert.equal(result.results[0]?.description, "First source description");
+  assert.equal(result.results[0]?.imageUrl, "https://first.example/cover.jpg");
+  assert.deepEqual(result.results[0]?.metadata, {
+    director: "Director A",
+    author: "First author",
+    studio: "Studio B",
+  });
+});
+
+test("discards blank optional metadata so later sources can fill those fields", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: context.source.id === "first" ? "   " : "SSIS-001",
+      releaseDate: context.source.id === "first" ? "  " : "2026-02-02",
+      description: context.source.id === "first" ? "  " : "Useful description",
+      metadata: context.source.id === "first"
+        ? { director: "   ", author: " First author " }
+        : { director: "Director B", author: "Second author" },
+      url: `https://${context.source.id}.example/item/ssis-001`,
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.catalogNumber, "SSIS-001");
+  assert.equal(result.results[0]?.releaseDate, "2026-02-02");
+  assert.equal(result.results[0]?.description, "Useful description");
+  assert.deepEqual(result.results[0]?.metadata, {
+    author: "First author",
+    director: "Director B",
+  });
+});
+
 test("deduplicates JAV results by normalized catalogue number across different detail URLs", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({

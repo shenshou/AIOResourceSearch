@@ -96,9 +96,18 @@ function normalizeResource(
 
   const metadata = value.metadata && typeof value.metadata === "object"
     ? Object.fromEntries(Object.entries(value.metadata)
-        .filter(([key, item]) => /^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) && typeof item === "string" && item.length <= 500)
-        .slice(0, 20))
+        .filter(([key, item]) =>
+          /^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key) &&
+          typeof item === "string" &&
+          item.trim().length > 0 &&
+          item.length <= 500,
+        )
+        .slice(0, 20)
+        .map(([key, item]) => [key, (item as string).trim()]))
     : undefined;
+  const catalogNumber = typeof value.catalogNumber === "string" ? value.catalogNumber.trim() : "";
+  const releaseDate = typeof value.releaseDate === "string" ? value.releaseDate.trim() : "";
+  const description = typeof value.description === "string" ? value.description.trim() : "";
 
   const externalLinks = Array.isArray(value.externalLinks)
     ? value.externalLinks
@@ -121,15 +130,15 @@ function normalizeResource(
     contentCategory: source.contentCategory ?? "jav",
     title: value.title.trim(),
     url: value.url,
-    ...(source.capabilities.includes("metadata") && typeof value.catalogNumber === "string" && value.catalogNumber.length <= 100
-      ? { catalogNumber: value.catalogNumber.trim() }
+    ...(source.capabilities.includes("metadata") && catalogNumber.length > 0 && catalogNumber.length <= 100
+      ? { catalogNumber }
       : {}),
-    ...(source.capabilities.includes("metadata") && typeof value.releaseDate === "string" && value.releaseDate.length <= 40
-      ? { releaseDate: value.releaseDate }
+    ...(source.capabilities.includes("metadata") && releaseDate.length > 0 && releaseDate.length <= 40
+      ? { releaseDate }
       : {}),
     ...(source.capabilities.includes("image") && isHttpsUrl(value.imageUrl) ? { imageUrl: value.imageUrl } : {}),
-    ...(source.capabilities.includes("metadata") && typeof value.description === "string" && value.description.length <= 4000
-      ? { description: value.description }
+    ...(source.capabilities.includes("metadata") && description.length > 0 && description.length <= 4000
+      ? { description }
       : {}),
     ...(source.capabilities.includes("metadata") && metadata && Object.keys(metadata).length ? { metadata } : {}),
     ...(source.capabilities.includes("magnet") && isMagnetUri(value.magnetUri) ? { magnetUri: value.magnetUri } : {}),
