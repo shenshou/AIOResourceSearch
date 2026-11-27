@@ -321,6 +321,32 @@ test("drops optional result fields that the source has not declared", async () =
   assert.equal(result.results[0]?.torrentUrl, undefined);
 });
 
+test("configured source order wins even when providers complete out of order", async () => {
+  const sharedProvider = provider(async (_input, context) => {
+    await new Promise((resolve) => setTimeout(resolve, context.source.id === "first" ? 25 : 0));
+    return [resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      description: context.source.id === "first" ? "Configured first" : "Completed first",
+    })];
+  });
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.sourceId, "first");
+  assert.equal(result.results[0]?.description, "Configured first");
+  assert.deepEqual(result.sources.map((item) => item.sourceId), ["first", "second"]);
+});
+
 test("deduplicates equivalent canonical result URLs across sources", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({
