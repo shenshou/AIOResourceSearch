@@ -1123,8 +1123,8 @@ const perverzijaFixture = {
     title: "Studio - Performer - Sample Scene",
     release_date: "2026-11-20",
     duration: 3661,
-    studio: { slug: "sample-studio", name: "Sample Studio" },
-    network: { slug: "sample-network", name: "Sample Network" },
+    studio: { slug: "sample-studio", name: "Sample Studio", image: "https://cdn.example/studio.jpg" },
+    network: { slug: "sample-network", name: "Sample Network", image: "https://cdn.example/network.jpg" },
     performers: [{ slug: "sample-performer", name: "Sample Performer", gender: "female" }],
     tags: [{ slug: "drama", name: "Drama" }],
     urls: {
@@ -1223,7 +1223,10 @@ test("caches valid Perverzija metadata for five minutes and skips the upstream l
   assert.equal(fetchCalls, 1);
   assert.deepEqual(second, first);
   assert.equal(entries.size, 1);
-  assert.equal(entries.values().next().value?.headers.get("Cache-Control"), "public, max-age=300");
+  const cachedResponse = [...entries.values()][0];
+  assert.equal(cachedResponse?.headers.get("Cache-Control"), "public, max-age=300");
+  const cachedBody = await cachedResponse?.clone().text();
+  assert.equal(cachedBody?.includes("cdn.example"), false);
 });
 
 test("refreshes a Perverzija cache entry with an invalid response envelope", async () => {

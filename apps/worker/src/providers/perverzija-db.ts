@@ -77,6 +77,45 @@ function isScenesEnvelope(payload: unknown): payload is { data: unknown[] } {
     Array.isArray(payload.data);
 }
 
+function sanitizeSceneEntity(value: unknown): { name?: unknown } | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  return { name: (value as Record<string, unknown>).name };
+}
+
+function sanitizeSceneEntities(value: unknown): Array<{ name?: unknown }> {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 40).flatMap((item) => {
+    const entity = sanitizeSceneEntity(item);
+    return entity ? [entity] : [];
+  });
+}
+
+function sanitizeScenesPayload(payload: unknown): { data: unknown[] } {
+  if (!isScenesEnvelope(payload)) {
+    throw new Error("Perverzija DB returned an invalid JSON response.");
+  }
+  return {
+    data: payload.data.map((raw) => {
+      if (typeof raw !== "object" || raw === null) return raw;
+      const record = raw as Record<string, unknown>;
+      const urls = typeof record.urls === "object" && record.urls !== null
+        ? record.urls as Record<string, unknown>
+        : {};
+      return {
+        id: record.id,
+        title: record.title,
+        release_date: record.release_date,
+        duration: record.duration,
+        studio: sanitizeSceneEntity(record.studio),
+        network: sanitizeSceneEntity(record.network),
+        performers: sanitizeSceneEntities(record.performers),
+        tags: sanitizeSceneEntities(record.tags),
+        urls: { page: urls.page, watch: urls.watch },
+      };
+    }),
+  };
+}
+
 async function fetchJson(url: string, context: ProviderContext): Promise<unknown> {
   throwIfAborted(context.signal);
   const cacheKey = new Request(url, { method: "GET" });
@@ -142,7 +181,7 @@ async function fetchJson(url: string, context: ProviderContext): Promise<unknown
 
   if (context.cache) {
     try {
-      await context.cache.put(cacheKey, new Response(responseText, {
+      await context.cache.put(cacheKey, new Response(JSON.stringify(sanitizeScenesPayload(payload)), {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=300",
