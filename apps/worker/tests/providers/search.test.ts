@@ -2556,3 +2556,20 @@ test("generic HTML adapter rejects cross-host Torrent download URLs", async () =
   assert.equal(results.length, 1);
   assert.equal(results[0]?.torrentUrl, undefined);
 });
+
+
+test("rejects malformed ed2k resource links with trailing data", async () => {
+  const configuredSource = source({ capabilities: ["metadata", "ed2k"] });
+  const result = await executeSearch(
+    request,
+    sourceConfig(configuredSource),
+    adapters,
+    resolve(provider(async () => [resource({
+      ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/unexpected",
+    })])),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.ed2kUri, undefined);
+  assert.equal(result.results[0]?.resourceLinks, undefined);
+});
