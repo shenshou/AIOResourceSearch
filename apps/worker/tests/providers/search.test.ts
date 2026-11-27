@@ -22,6 +22,7 @@ test("compile-time Provider registry contains the expected adapter allowlist", (
   const registeredIds = listProviderAdapters().map((adapter) => adapter.id).sort();
   assert.deepEqual(registeredIds, [
     "anibt-torznab",
+    "audiosilo-meta-api",
     "dmhy-rss",
     "eporner-api",
     "generic-html",
