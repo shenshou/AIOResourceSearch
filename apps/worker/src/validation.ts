@@ -189,7 +189,7 @@ export function validateFieldPriorities(
 
   for (const [field, rawIds] of entries) {
     const validField = PRIORITIZABLE_FIELDS.has(field) ||
-      /^metadata\\.[a-z][a-zA-Z0-9_-]{0,63}$/.test(field);
+      /^metadata\.[a-z][a-zA-Z0-9_-]{0,63}$/.test(field);
     if (!validField || !Array.isArray(rawIds) || rawIds.length > 100) return null;
     const seen = new Set<string>();
     const ids: string[] = [];
