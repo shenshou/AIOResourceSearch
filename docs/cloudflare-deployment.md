@@ -78,6 +78,26 @@ npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
 
 Wrangler configuration is the source of truth for Worker variables and bindings. Dashboard variables can be overwritten by a later Wrangler deployment if they are not represented in the configuration. Keep the exact CORS origin in the staging config rather than relying on a dashboard-only value.
 
+## 2.1 Optional GitHub Actions staging deployment
+
+A staging-only workflow is available at `.github/workflows/deploy-staging-worker.yml`. It is manual (`workflow_dispatch` only), runs only when the selected ref is `feature/adapter-management`, executes lint/tests/build first, validates the generated Wrangler config, deploys only the staging Worker, and then sets the staging administrator secret. It has no production target and does not run on ordinary commits.
+
+Before using it:
+
+1. Create a GitHub Environment named `staging`.
+2. Add these Environment variables:
+   - `CLOUDFLARE_ACCOUNT_ID`
+   - `CLOUDFLARE_STAGING_KV_NAMESPACE_ID` — the 32-character ID of the dedicated staging KV namespace.
+   - `CLOUDFLARE_STAGING_ALLOWED_ORIGIN` — the exact HTTPS Pages preview origin.
+3. Add these Environment secrets:
+   - `CLOUDFLARE_API_TOKEN` — a least-privilege token for deploying the Worker and managing its required bindings.
+   - `STAGING_ADMIN_API_TOKEN` — a unique long random administrator token for staging.
+4. In GitHub Actions, select **Deploy staging Worker**, choose `feature/adapter-management`, and run it.
+
+The workflow does not create the KV namespace; create it first and store its returned ID as the staging Environment variable. Consider configuring required reviewers on the GitHub `staging` Environment if deployment approval should be enforced by GitHub. The workflow is deliberately not wired to `push` or PR events.
+
+The same staging config can also be prepared and deployed manually with the Wrangler CLI commands above. Do not configure production secrets or production namespace IDs in the `staging` Environment.
+
 ## 3. Configure the staging administrator secret
 
 Use a unique, long random token for the staging Worker. Never reuse a production token, and never put the token in:

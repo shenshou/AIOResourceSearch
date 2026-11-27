@@ -1,0 +1,84 @@
+name: Deploy staging Worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aio-resource-search-staging-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    if: github.ref == 'refs/heads/feature/adapter-management'
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_STAGING_KV_NAMESPACE_ID: ${{ vars.CLOUDFLARE_STAGING_KV_NAMESPACE_ID }}
+      CLOUDFLARE_STAGING_ALLOWED_ORIGIN: ${{ vars.CLOUDFLARE_STAGING_ALLOWED_ORIGIN }}
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Validate deployment credentials
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_API_TOKEN: ${{ secrets.STAGING_ADMIN_API_TOKEN }}
+        run: |
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing CLOUDFLARE_ACCOUNT_ID environment variable."; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN secret."; exit 1; }
+          test -n "$ADMIN_API_TOKEN" || { echo "Missing STAGING_ADMIN_API_TOKEN secret."; exit 1; }
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Worker unit tests
+        run: npm run test:worker
+
+      - name: Run Durable Object runtime tests
+        run: npm run test:worker:runtime
+
+      - name: Build frontend and type-check Worker
+        run: npm run build
+
+      - name: Prepare isolated staging configuration
+        run: node scripts/prepare-staging-config.mjs
+
+      - name: Validate staging Worker bundle
+        run: npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
+
+      - name: Deploy staging Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
+
+      - name: Configure staging administrator secret
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_API_TOKEN: ${{ secrets.STAGING_ADMIN_API_TOKEN }}
+        run: printf '%s' "$ADMIN_API_TOKEN" | npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.staging.local.jsonc
+
+      - name: Record deployment summary
+        run: |
+          {
+            echo "## Staging Worker deployment"
+            echo "- Worker: `aio-resource-search-api-staging`"
+            echo "- Branch: `${GITHUB_REF_NAME}`"
+            echo "- KV: dedicated staging namespace"
+            echo "- Cron: disabled in staging"
+            echo "- Production resources: untouched"
+          } >> "$GITHUB_STEP_SUMMARY"
