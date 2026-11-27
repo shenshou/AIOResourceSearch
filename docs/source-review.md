@@ -4217,3 +4217,24 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added LibriVox and Podcast Index as two project-owned candidates. LibriVox is a potential future API-backed audiobook source; Podcast Index remains homepage-only pending current terms verification.
 - Catalog now contains 162 unique candidates (JAV 28, torrent 30, forum 16, other-index 88); AIOResourceSearch provenance tags: 57 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
+
+
+## 有声读物目录补充审查（2026-11-27，第七批）
+
+### AudioSilo Meta — CC0 核心元数据候选，需隔离社区许可层
+- 第一方 API 文档确认其提供公开、只读的有声读物元数据 API，支持作品搜索、最新作品、作品/录音/章节/人物/系列查询，以及 ASIN、ISBN、LibriVox ID 查找；目录读取不要求登录或 API key。
+- 第一方数据仓库明确区分许可：作品、录音、人物、系列等事实核心数据采用 CC0-1.0；人物/剧情摘要等社区派生层位于独立仓库，采用 CC BY-SA 4.0。线上发布的 SQLite/API artifact 会组合两个数据层，因此不能把整个 API 响应一概视为 CC0。
+- 仓库说明出版商简介与封面图只引用、不复制；封面图权利仍属于原权利人。API 对客户端限速，超限返回 429 并提供 Retry-After。
+- **Decision:** retain as a potential audiobook metadata Provider candidate, but any future implementation must select only CC0 factual core fields, explicitly exclude CC BY-SA community fields, publisher blurbs and cover-art reuse, preserve source attribution/provenance, and obey Retry-After. No API request, bulk snapshot, local mirror, or Provider implementation was added.
+- References: https://meta.audiosilo.app/docs/api ; https://github.com/kodestar/audiosilo-meta
+
+### AudiobookDB — homepage-only pending written integration agreement
+- First-party API documentation describes a public audiobook catalogue API and anonymous/personal access tiers, but explicitly states that a public or multi-user app—including a free app—requires a separate written integration agreement before use.
+- The same guide says personal API access does not authorize product integration, bulk extraction, redistribution, or permanent discovery-index retention; cover art is excluded from the API licence and descriptions remain subject to their rights holders.
+- **Decision:** retain AudiobookDB as a homepage-only discovery candidate. Do not call its API, request API credentials, cache responses, or index its catalogue unless a written agreement expressly covers AIOResourceSearch's multi-user aggregator use and the permitted fields/storage/retention.
+- Reference: https://audiobookdb.org/docs
+
+### Batch outcome
+- Added two project-owned candidates: AudioSilo Meta (potential CC0-core audiobook metadata Provider, subject to field-level separation) and AudiobookDB (homepage-only pending written agreement).
+- Catalog now contains 164 unique candidates (JAV 28, torrent 30, forum 16, other-index 90); AIOResourceSearch provenance tags: 59 (overlapping). User-opened external-search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, API calls, KV configuration, source enablement, deployment, or production data changes.
