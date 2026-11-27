@@ -4359,3 +4359,14 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Current catalog: 174 unique candidates (JAV 31, torrent 30, forum 16, other-index 97); AIOResourceSearch provenance tags: 68 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
 - No credentials, API calls, paid services, KV configuration, source enablement, Cloudflare deployment, or production data changes.
 - References: https://github.com/kanojo-db/ ; https://github.com/kanojo-db/kanojo ; https://github.com/kanojo-db/scrapers ; https://blog.javmuseum.com/blog/what-next-for-r18dev/ ; https://github.com/javinizer/javinizer-go ; https://github.com/libredmm/librefanza
+
+
+## JAV discovery candidate: AV Search (2026-11-27)
+
+- The public landing page is described as a free, no-account semantic search engine covering more than one million Japanese AV titles across FANZA, MGStage, SOKMIL and DUGA, with results linking to official storefront pages. This is potentially useful as a user-facing discovery destination, distinct from an API Provider.
+- The research fetcher received HTTP 403 for https://av-search.video/en. A fetcher-side 403 does not establish a global access restriction, a site's automation policy, or permission to solve a challenge. No challenge handling or alternate route was attempted.
+- No first-party API documentation, stable query URL, Terms/robots policy, or third-party automation permission was verified. Search-engine snippets describing the site as free do not establish permission for Worker-side query forwarding, indexing, or metadata reuse.
+- **Decision:** add AV Search as a JAV candidate with homepage-only navigation. Do not create a search template by guessing URL parameters, proxy user queries, scrape result pages, or call undocumented endpoints. Reassess only if the operator publishes a supported search contract and applicable terms.
+- Current catalog: 175 unique candidates (JAV 32, torrent 30, forum 16, other-index 97); provenance tags: 69 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
+- No Provider, API call, credential, KV configuration, source enablement, deployment, or production data change.
+- Reference: https://av-search.video/en
