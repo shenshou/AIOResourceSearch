@@ -34,7 +34,7 @@
 | `rjav` | r/JAV | Reddit 数据访问要求 API/OAuth、审批及内容使用合规；未获所需授权前仅保留用户主动外部搜索 |
 | `knighjok-jav-dataset` | Japanese Adult Videos Dataset | 数据集声明 NC-SA 且来源授权链不清；不下载、不摄取、不缓存、不再发布 |
 
-## B. 需要补证/继续验证（23）
+## B. 需要补证/继续验证（20）
 
 | ID | 来源 | 下一步必须确认的事项 |
 |---|---|---|
