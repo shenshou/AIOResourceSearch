@@ -50,6 +50,12 @@ const statusLabels: Record<string, string> = {
   unavailable: "暂不可用",
 };
 
+const resourceLinkLabels: Record<string, string> = {
+  magnet: "Magnet",
+  torrent: "Torrent",
+  ed2k: "ED2K",
+};
+
 const relationshipLabels: Record<string, string> = {
   performer: "演员",
   director: "导演",
@@ -75,7 +81,7 @@ const errorLabels: Record<string, string> = {
       <p class="eyebrow">MULTI-SOURCE SEARCH</p>
       <h1>一个入口，聚合多个资源数据源</h1>
       <p class="intro-copy">
-        输入番号或关键词，自动查询已实现的 Provider，并为启用的外部搜索入口生成原站链接。结果只展示元数据和资源站提供的外部链接。
+        输入番号或关键词，自动查询已实现的 Provider，并为启用的外部搜索入口生成原站链接。结果展示作品元数据、可下载资源链接及原站入口。
       </p>
     </section>
 
@@ -181,12 +187,26 @@ const errorLabels: Record<string, string> = {
                 {{ relationshipLabels[relationship.type] }}：<a v-if="relationship.url" :href="relationship.url" target="_blank" rel="noopener noreferrer">{{ relationship.name }}</a><template v-else>{{ relationship.name }}</template>
               </span>
             </div>
-            <div v-if="item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
-              <button v-if="item.magnetUri" type="button" @click="copyResourceLink(item.magnetUri, 'Magnet')">复制 Magnet</button>
-              <a v-if="item.magnetUri" :href="item.magnetUri">打开 Magnet</a>
-              <button v-if="item.ed2kUri" type="button" @click="copyResourceLink(item.ed2kUri, 'ED2K')">复制 ED2K</button>
-              <a v-if="item.ed2kUri" :href="item.ed2kUri">打开 ED2K</a>
-              <a v-if="item.torrentUrl" :href="item.torrentUrl" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
+            <div v-if="item.resourceLinks?.length || item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
+              <template v-if="item.resourceLinks?.length">
+                <template v-for="link in item.resourceLinks" :key="link.type + ':' + link.url">
+                  <template v-if="link.type === 'magnet' || link.type === 'ed2k'">
+                    <button type="button" @click="copyResourceLink(link.url, resourceLinkLabels[link.type])">复制 {{ resourceLinkLabels[link.type] }}</button>
+                    <a :href="link.url">打开 {{ resourceLinkLabels[link.type] }}</a>
+                  </template>
+                  <a v-else :href="link.url" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
+                  <small v-if="link.sourceAttributions?.length" class="resource-link-source">
+                    来源：{{ link.sourceAttributions.map((source) => source.sourceName).join("、") }}
+                  </small>
+                </template>
+              </template>
+              <template v-else>
+                <button v-if="item.magnetUri" type="button" @click="copyResourceLink(item.magnetUri, 'Magnet')">复制 Magnet</button>
+                <a v-if="item.magnetUri" :href="item.magnetUri">打开 Magnet</a>
+                <button v-if="item.ed2kUri" type="button" @click="copyResourceLink(item.ed2kUri, 'ED2K')">复制 ED2K</button>
+                <a v-if="item.ed2kUri" :href="item.ed2kUri">打开 ED2K</a>
+                <a v-if="item.torrentUrl" :href="item.torrentUrl" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
+              </template>
               <a v-for="(link, index) in item.externalLinks || []" :key="index" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
             </div>
           </div>
