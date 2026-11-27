@@ -370,8 +370,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 - AudioSilo Meta：保留为潜在有声读物元数据 Provider 候选。其事实核心数据（作品、录音、人物、系列）明确采用 CC0-1.0，但线上 API/SQLite artifact 同时组合独立的 CC BY-SA 4.0 社区层；未来若接入，必须只使用 CC0 核心字段，排除社区派生字段、出版商简介和封面图，并遵守客户端限速与 Retry-After。
 - AudiobookDB：保留为首页外链候选。官方条款要求任何第三方/多用户应用（包括免费的公共应用）在使用 API 前取得单独书面集成协议；个人 API 访问不授权目录复制、再分发或永久发现索引。
-- 本批新增 2 个候选，目录更新为 164 条去重候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。
-- 未新增 Provider、API 调用、凭据、KV 配置、来源启用或部署。目录元数据变更纳入下一次完整 CI。
+- 本批新增 2 个候选，目录更新为 164 条去重候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（标签交叉）。外部搜索模板仍为 9 条；该批结束时具体 Provider 实现为 10 个。
+- 该批结束时未新增 Provider、API 调用、凭据、KV 配置、来源启用或部署；后续 LibriVox 实现进展见下方更新。
 \n## LibriVox Provider implementation update（2026-11-27）\n
 - LibriVox 已从“未来候选”升级为代码已实现的 Provider 候选：librivox-api v1.0.0，metadata-only，有声读物分类，标题前缀搜索，单次最多 20 条，字段白名单和 5 秒共享 Durable Object 限速。
 - Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。
