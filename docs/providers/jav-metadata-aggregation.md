@@ -62,3 +62,20 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - Source validation requires every declared downloadable-link capability to have its matching selector and rejects undeclared selector/capability mismatches.
 - The parser collects up to 30 distinct selected links per result, including multiple links of the same type. It only reads anchor `href` values selected by the administrator. The Provider validates magnet info hashes, accepts only same-host HTTPS Torrent URLs without embedded credentials, and validates the ed2k file-link shape before returning them.
 - The source-management interface exposes the three selectors separately. No script execution, browser emulation, redirect following, challenge solving, or access-control workaround is introduced.
+
+
+## Current compiled Provider downloadable-link coverage (2026-11-27)
+
+| Provider | Magnet | Torrent file URL | ED2K |
+| --- | --- | --- | --- |
+| DMHY RSS | Yes | — | — |
+| Sukebei RSS | Yes | — | — |
+| Torlock Torznab | Yes | — | — |
+| The RarBg JSON | Yes | — | — |
+| YourBittorrent JSON | Yes | Yes | — |
+| AniBT Torznab | — | Yes | — |
+| Generic HTML | Configurable | Configurable | Configurable |
+
+- The YourBittorrent source-catalog entry now declares the Torrent capability as well as Magnet, so its returned `.torrent` URL is not discarded during source normalization.
+- There is currently no dedicated API/RSS Provider returning ED2K links. The generic HTML adapter can extract ED2K from an explicitly configured public search page when the source's ED2K capability and CSS selector are both configured.
+- This is a code capability matrix, not an assertion that every source is enabled, authorized for production aggregation, or currently reachable from Cloudflare. Existing source review and enablement gates remain in force.
