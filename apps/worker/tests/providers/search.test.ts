@@ -1887,6 +1887,8 @@ test("generic HTML adapter requests only the configured HTTPS origin and normali
 test("generic HTML adapter only extracts optional fields declared by the source", async () => {
   let receivedImageSelector: string | undefined;
   let receivedMagnetSelector: string | undefined;
+  let receivedTorrentSelector: string | undefined;
+  let receivedEd2kSelector: string | undefined;
   const sourceConfig = source({
     adapterId: "generic-html",
     baseUrl: "https://example.com",
@@ -1897,6 +1899,8 @@ test("generic HTML adapter only extracts optional fields declared by the source"
       link: "a",
       image: "img.cover",
       magnet: "a.magnet",
+      torrent: "a.torrent",
+      ed2k: "a.ed2k",
     },
     capabilities: ["metadata"],
   });
@@ -1913,11 +1917,15 @@ test("generic HTML adapter only extracts optional fields declared by the source"
       parseHtml: async (_response, selectors) => {
         receivedImageSelector = selectors.image;
         receivedMagnetSelector = selectors.magnet;
+        receivedTorrentSelector = selectors.torrent;
+        receivedEd2kSelector = selectors.ed2k;
         return [{
           title: "Result",
           url: "/item",
           imageUrl: "https://cdn.example/image.jpg",
           magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
+          torrentUrl: "https://example.com/file.torrent",
+          ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/",
         }];
       },
     },
@@ -1925,8 +1933,12 @@ test("generic HTML adapter only extracts optional fields declared by the source"
 
   assert.equal(receivedImageSelector, undefined);
   assert.equal(receivedMagnetSelector, undefined);
+  assert.equal(receivedTorrentSelector, undefined);
+  assert.equal(receivedEd2kSelector, undefined);
   assert.equal(resources[0]?.imageUrl, undefined);
   assert.equal(resources[0]?.magnetUri, undefined);
+  assert.equal(resources[0]?.torrentUrl, undefined);
+  assert.equal(resources[0]?.ed2kUri, undefined);
 });
 
 test("generic HTML adapter rejects declared optional capabilities without matching selectors", async () => {
@@ -1949,7 +1961,7 @@ test("generic HTML adapter rejects declared optional capabilities without matchi
         parseHtml: async () => [],
       },
     ),
-    /require matching image or Magnet selectors/,
+    /require matching optional-field selectors/,
   );
 });
 
@@ -2442,4 +2454,45 @@ test("normalizes provider-supplied resource link arrays and replaces untrusted a
     url: magnet,
     sourceAttributions: [{ sourceId: "trusted-source", sourceName: "Trusted source" }],
   }]);
+});
+
+
+test("generic HTML adapter extracts all declared downloadable link types safely", async () => {
+  const results = await genericHtmlProvider.search(
+    { query: "ABP-123", mode: "number" },
+    {
+      source: source({
+        id: "html-download-source",
+        adapterId: "generic-html",
+        baseUrl: "https://example.com",
+        providerSearchUrlTemplate: "https://example.com/search?q={query}",
+        htmlSelectors: {
+          result: "article",
+          title: "h2",
+          link: "a.title",
+          magnet: "a.magnet",
+          torrent: "a.torrent",
+          ed2k: "a.ed2k",
+        },
+        capabilities: ["metadata", "magnet", "torrent", "ed2k"],
+      }),
+      signal: new AbortController().signal,
+      fetch: async () => new Response("<html></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+      parseHtml: async () => [{
+        title: "ABP-123",
+        url: "/item/123",
+        magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
+        torrentUrl: "https://cdn.example/file.torrent",
+        ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/",
+      }],
+    },
+  );
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.magnetUri, "magnet:?xt=urn:btih:01234567890123456789012345678901");
+  assert.equal(results[0]?.torrentUrl, "https://cdn.example/file.torrent");
+  assert.equal(results[0]?.ed2kUri, "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/");
 });
