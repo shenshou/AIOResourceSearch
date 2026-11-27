@@ -508,6 +508,8 @@ async function deleteSource(source: SourceDefinition) {
               <label>图片 CSS 选择器（可选）<input v-model="form.htmlSelectors!.image" maxlength="200" placeholder="img.cover" /></label>
               <label>简介 CSS 选择器（可选）<input v-model="form.htmlSelectors!.description" maxlength="200" placeholder=".description" /></label>
               <label>Magnet 链接 CSS 选择器（可选）<input v-model="form.htmlSelectors!.magnet" maxlength="200" placeholder="a[href^='magnet:']" /></label>
+              <label>Torrent 下载链接 CSS 选择器（可选）<input v-model="form.htmlSelectors!.torrent" maxlength="200" placeholder="a[href$='.torrent']" /></label>
+              <label>ED2K 链接 CSS 选择器（可选）<input v-model="form.htmlSelectors!.ed2k" maxlength="200" placeholder="a[href^='ed2k:']" /></label>
               <label class="wide">分类专属字段选择器映射（JSON，可选）
                 <textarea v-model="htmlFieldsJson" rows="4" maxlength="5000" placeholder='{"releaseDate":".release-date","author":".author","isbn":".isbn"}'></textarea>
               </label>
@@ -526,7 +528,7 @@ async function deleteSource(source: SourceDefinition) {
             <label v-if="form.type === 'provider'" class="wide">Worker Secret 名称（可选）<input v-model="form.credentialBinding" pattern="[A-Z][A-Z0-9_]{0,63}" placeholder="例如：SOURCE_API_TOKEN" /></label>
             <label class="wide">备注（仅管理员可见）<textarea v-model="form.notes" maxlength="500" rows="2" placeholder="访问方式、授权状态或维护说明"></textarea></label>
           </div>
-          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；通用 HTML 适配器只访问基础 URL 同域的 HTTPS 搜索页，使用 CSS 选择器提取结果，拒绝重定向并限制响应体为 2 MiB；支持最多 20 个自定义元数据字段选择器；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
+          <p class="form-hint">Worker 抓取源必须选择已实现并启用的适配器；通用 HTML 适配器只访问基础 URL 同域的 HTTPS 搜索页，使用 CSS 选择器提取结果，拒绝重定向并限制响应体为 2 MiB；支持独立配置 Magnet、Torrent、ED2K 链接选择器和最多 20 个自定义元数据字段选择器；外部搜索入口只生成 HTTPS 搜索链接，不会由 Worker 请求或解析目标网站，URL 模板必须且只能包含一个 {query}。Secret 名称只引用 Worker 中已配置的 Secret；不要在此填写密码、Cookie 或 Token 的实际值。</p>
           <div class="dialog-actions">
             <button class="secondary-button" type="button" @click="closeEditor">取消</button>
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
