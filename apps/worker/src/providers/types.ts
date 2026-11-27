@@ -1,6 +1,7 @@
 import type { EpornerRemovalSyncState } from "../eporner-removals";
 import type {
   ContentCategory,
+  FieldAttribution,
   ResourceRelationship,
   ResourceLink,
   FetchMechanism,
@@ -33,6 +34,8 @@ export interface NormalizedResource {
   description?: string;
   /** Extensible category-specific metadata; values are normalized strings. */
   metadata?: Record<string, string>;
+  /** Source provenance for individually prioritized scalar and metadata fields. */
+  fieldAttributions?: Record<string, FieldAttribution>;
   magnetUri?: string;
   ed2kUri?: string;
   torrentUrl?: string;
