@@ -88,7 +88,7 @@ function validEd2k(value: string | undefined): string | undefined {
  */
 export const genericHtmlProvider: ProviderAdapter = {
   id: "generic-html",
-  version: "1.0.0",
+  version: "1.1.0",
   mechanism: "html",
   contentCategories: [...CONTENT_CATEGORIES],
   categories: [...SOURCE_CATEGORIES],
