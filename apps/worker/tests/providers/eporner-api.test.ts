@@ -38,9 +38,9 @@ const statusPayload = {
 };
 const freshSyncState = {
   version: 1 as const,
-  since: "2026-11-25T00:00:00.000Z",
-  lastCompleteAt: "2026-11-26T00:00:00.000Z",
-  lastAttemptAt: "2026-11-26T00:00:00.000Z",
+  since: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  lastCompleteAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+  lastAttemptAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
   lastPageCount: 2,
 };
 
