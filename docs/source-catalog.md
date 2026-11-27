@@ -377,3 +377,12 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。
 - 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 11。
 - 完整 CI 和非生产 Cloudflare Hosted 验证仍待完成；本次代码提交不代表已部署或可用于生产。
+
+## AudioSilo Meta Provider implementation update（2026-11-27）
+
+- AudioSilo Meta 已实现为 `audiosilo-meta-api v1.0.0`，使用官方 `/api/v1/works/search` 搜索接口，单次最多 20 条，结果回链其规范作品页。
+- Worker 仅映射 CC0 事实核心字段：作品标题/slug、作者和朗读者姓名、语言、系列名称/卷序、发行日期；忽略封面 URL、描述、流派、人物、剧情摘要、章节及其他 CC BY-SA 社区层字段。
+- 使用独立共享 Durable Object 限速通道，最小间隔 1 秒；共享协调器持久处理上游 429/503 和 Retry-After。无全量同步、批量快照、缓存、音频或封面获取。
+- Provider 已加入 Worker 注册表与预置来源目录，测试和 fixture 已补齐。来源和 adapter 仍未写入 KV、未启用；尚未执行真实上游请求、CI 或 Cloudflare Hosted 验证。
+- 目录仍为 164 条唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；项目来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 12。
+- 详细字段许可边界和验证状态见 [AudioSilo Meta Provider readiness](./providers/audiosilo-meta-readiness.md)。
