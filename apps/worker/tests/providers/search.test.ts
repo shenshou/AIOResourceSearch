@@ -1125,8 +1125,11 @@ const perverzijaFixture = {
     duration: 3661,
     studio: { slug: "sample-studio", name: "Sample Studio", image: "https://cdn.example/studio.jpg" },
     network: { slug: "sample-network", name: "Sample Network", image: "https://cdn.example/network.jpg" },
-    performers: [{ slug: "sample-performer", name: "Sample Performer", gender: "female" }],
-    tags: [{ slug: "drama", name: "Drama" }],
+    performers: [{ slug: "sample-performer", name: "Sample Performer", gender: "female", image: "https://cdn.example/performer.jpg" }],
+    tags: [{ slug: "drama", name: "Drama", image: "https://cdn.example/tag.jpg" }],
+    cover: "https://cdn.example/cover.jpg",
+    embed: "https://tube.perverzija.com/embed/sample",
+    player: { source: "https://tube.perverzija.com/player/sample" },
     urls: {
       page: "https://db.perverzija.com/scene/1611928-sample-scene",
       watch: "https://tube.perverzija.com/watch/sample-scene",
@@ -1227,6 +1230,9 @@ test("caches valid Perverzija metadata for five minutes and skips the upstream l
   assert.equal(cachedResponse?.headers.get("Cache-Control"), "public, max-age=300");
   const cachedBody = await cachedResponse?.clone().text();
   assert.equal(cachedBody?.includes("cdn.example"), false);
+  for (const unusedField of ['"slug"', '"gender"', '"image"', '"cover"', '"embed"', '"player"']) {
+    assert.equal(cachedBody?.includes(unusedField), false, `cached payload must omit ${unusedField}`);
+  }
 });
 
 test("refreshes a Perverzija cache entry with an invalid response envelope", async () => {
