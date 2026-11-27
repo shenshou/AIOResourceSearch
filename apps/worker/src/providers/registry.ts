@@ -6,6 +6,7 @@ import { anibtTorznabProvider } from "./anibt-torznab";
 import { mangaDexProvider } from "./mangadex-api";
 import { musicBrainzProvider } from "./musicbrainz-api";
 import { libriVoxProvider } from "./librivox-api";
+import { audioSiloMetaProvider } from "./audiosilo-meta-api";
 import { perverzijaDbProvider } from "./perverzija-db";
 import { sukebeiRssProvider } from "./sukebei-rss";
 import { torlockProvider } from "./torlock-torznab";
@@ -31,6 +32,7 @@ const providerAdapters: readonly ProviderAdapter[] = [
   mangaDexProvider,
   musicBrainzProvider,
   libriVoxProvider,
+  audioSiloMetaProvider,
 ];
 
 const registry = new Map<string, ProviderAdapter>(
