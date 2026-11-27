@@ -116,7 +116,18 @@ The source catalog is not a preconfigured live-source list. A catalog entry does
 
 ## 5. Smoke-test sequence
 
-Run these checks against the staging Worker only:
+Run the repository's read-only smoke-test script against the staging Worker:
+
+```powershell
+$env:WORKER_URL = "https://aio-resource-search-api-staging.<account>.workers.dev"
+$env:PAGES_ORIGIN = "https://<your-pages-preview-domain>"
+npm run smoke:worker
+Remove-Item Env:WORKER_URL, Env:PAGES_ORIGIN
+```
+
+The script verifies health, exact-origin CORS, rejection of an unlisted origin, public source/adapter response shapes, administrator preflight, and that unauthenticated administrator requests are rejected. It performs no KV writes and makes no Provider upstream requests. To additionally test an authenticated administrator read, set `ADMIN_API_TOKEN` in the current shell without placing the token in command history, then run the script again.
+
+The script complements rather than replaces the following manual checks:
 
 1. `GET /api/health` — confirms the Worker is responding.
 2. `GET /api/sources` — confirms the source KV binding is readable; an empty list is expected on first boot.

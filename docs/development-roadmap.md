@@ -150,6 +150,7 @@ Deliverables:
 - [x] Make production frontend API configuration fail closed when `VITE_API_BASE_URL` is missing; retain the localhost default only for local development.
 - [x] Add an idempotent administrator action to register all compile-time Worker adapters in KV, with every newly registered adapter disabled and no source records created or enabled.
 - [x] Document Cloudflare Pages monorepo build settings, isolated non-production Worker configuration, KV/DO bindings, CORS, secrets, first-run setup, and smoke-test order.
+- [x] Add a read-only Node.js staging smoke-test script for health, CORS, public configuration, and administrator authorization checks.
 - [ ] Create or designate a non-production Cloudflare Pages + Worker test environment.
 - [ ] Bind a test KV namespace and the SQLite rate-limit Durable Object; configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
 - [ ] Verify Durable Object slot spacing, cooldown revalidation, restart persistence, cancellation, and quota accounting in a hosted non-production environment. Do not deliberately exhaust shared account quotas or switch to a Paid plan to complete verification.

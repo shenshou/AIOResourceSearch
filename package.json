@@ -15,7 +15,8 @@
     "test:worker": "npm run test --workspace @aio-resource-search/worker",
     "lint": "eslint apps/web/src apps/worker/src apps/worker/tests apps/worker/runtime-tests packages/shared/src",
     "format": "prettier --write \"apps/**/*.{ts,vue,css,json}\" \"packages/**/*.ts\"",
-    "test:worker:runtime": "npm run test:runtime --workspace @aio-resource-search/worker"
+    "test:worker:runtime": "npm run test:runtime --workspace @aio-resource-search/worker",
+    "smoke:worker": "node scripts/smoke-test-worker.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
