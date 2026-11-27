@@ -197,6 +197,8 @@ const errorLabels: Record<string, string> = {
             <div v-if="item.relationships?.length" class="result-meta">
               <span v-for="(relationship, index) in item.relationships" :key="relationship.type + ':' + relationship.name + ':' + index">
                 {{ relationshipLabels[relationship.type] }}：<a v-if="relationship.url" :href="relationship.url" target="_blank" rel="noopener noreferrer">{{ relationship.name }}</a><template v-else>{{ relationship.name }}</template>
+                <small v-if="relationship.aliases && relationship.aliases.length > 1" class="relationship-provenance">别名：{{ relationship.aliases.filter((alias) => alias !== relationship.name).join("、") }}</small>
+                <small v-if="relationship.sourceAttributions?.length" class="relationship-provenance">来源：{{ relationship.sourceAttributions?.map((source) => source.sourceName).join("、") }}</small>
               </span>
             </div>
             <details v-if="item.fieldAttributions && Object.keys(item.fieldAttributions).length" class="field-provenance">
