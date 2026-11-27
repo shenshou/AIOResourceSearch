@@ -77,6 +77,27 @@ function durationLabel(value: unknown): string | null {
   return [hours, minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":");
 }
 
+function sceneRelationships(scene: SceneRecord) {
+  const relationships = [
+    ...(typeof scene.studio?.name === "string" && scene.studio.name.trim()
+      ? [{ type: "studio" as const, name: scene.studio.name.trim() }]
+      : []),
+    ...(Array.isArray(scene.performers)
+      ? scene.performers.flatMap((performer) =>
+          typeof performer?.name === "string" && performer.name.trim()
+            ? [{ type: "performer" as const, name: performer.name.trim() }]
+            : [])
+      : []),
+    ...(Array.isArray(scene.tags)
+      ? scene.tags.flatMap((tag) =>
+          typeof tag?.name === "string" && tag.name.trim()
+            ? [{ type: "tag" as const, name: tag.name.trim() }]
+            : [])
+      : []),
+  ];
+  return relationships.slice(0, 40);
+}
+
 function sceneDescription(scene: SceneRecord): string | undefined {
   const parts: string[] = [];
   const studio = typeof scene.studio?.name === "string" ? scene.studio.name.trim() : "";
@@ -133,6 +154,7 @@ function parseScenes(payload: unknown) {
         ? { releaseDate: scene.release_date }
         : {}),
       ...(sceneDescription(scene) ? { description: sceneDescription(scene) } : {}),
+      ...(sceneRelationships(scene).length ? { relationships: sceneRelationships(scene) } : {}),
       externalLinks: [{ label: "观看页面", url: watchUrl }],
     }];
   });

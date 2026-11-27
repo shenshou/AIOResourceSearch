@@ -814,6 +814,11 @@ test("searches the documented Perverzija DB JSON API and maps attributed metadat
   assert.match(resources[0]?.description ?? "", /Studio: Sample Studio/);
   assert.match(resources[0]?.description ?? "", /Cast: Sample Performer/);
   assert.match(resources[0]?.description ?? "", /Duration: 01:01:01/);
+  assert.deepEqual(resources[0]?.relationships, [
+    { type: "studio", name: "Sample Studio" },
+    { type: "performer", name: "Sample Performer" },
+    { type: "tag", name: "Drama" },
+  ]);
   assert.deepEqual(resources[0]?.externalLinks, [{
     label: "观看页面",
     url: "https://tube.perverzija.com/watch/sample-scene",
