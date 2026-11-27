@@ -93,10 +93,11 @@ export async function readConfig(env: Env): Promise<SourcesConfig> {
     return source;
   });
 
-  const fieldPriorities = parsed.fieldPriorities === undefined
+  const rawFieldPriorities = "fieldPriorities" in parsed ? parsed.fieldPriorities : undefined;
+  const fieldPriorities = rawFieldPriorities === undefined
     ? undefined
-    : validateFieldPriorities(parsed.fieldPriorities, sources);
-  if (parsed.fieldPriorities !== undefined && !fieldPriorities) {
+    : validateFieldPriorities(rawFieldPriorities, sources);
+  if (rawFieldPriorities !== undefined && !fieldPriorities) {
     throw new Error("Stored field-priority configuration is invalid.");
   }
 
