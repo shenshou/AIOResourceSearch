@@ -212,7 +212,7 @@ node scripts/prepare-production-config.mjs
 npx wrangler deploy --dry-run --config apps/worker/wrangler.production.local.jsonc
 ~~~
 
-The Production GitHub Actions workflow is .github/workflows/deploy-production-worker.yml. It listens for a successful CI workflow run on main and deploys the exact commit verified by that run. It also supports a manual dispatch restricted to main. It does not deploy on PRs or feature/develop branches.
+The Production GitHub Actions workflow is .github/workflows/deploy-production-worker.yml. It listens for a successful CI workflow run on main and deploys the exact commit verified by that run when Worker-affecting files changed. It also supports a manual dispatch restricted to main, which forces a Worker deployment. It does not deploy on PRs or feature/develop branches.
 
 Before enabling Production deployment, create a GitHub Environment named production and configure:
 
