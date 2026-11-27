@@ -169,21 +169,27 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
       idFromName: (name: string) => coordinator.idFromName(name),
       get: (objectId: unknown) => coordinator.get(objectId),
     };
-    const startedAt = Date.now();
+    const clockProbe = await reserve(stub, "librivox");
+    const clockOffset = clockProbe - Date.now() - 5_000;
+    let upstreamAt = 0;
     const coordinatedFetch = createCoordinatedFetch(
       namespace,
       "librivox",
       new AbortController().signal,
-      async () => new Response("rate limited", {
-        status: 429,
-        headers: { "Retry-After": "10" },
-      }),
+      async () => {
+        upstreamAt = Date.now();
+        return new Response("rate limited", {
+          status: 429,
+          headers: { "Retry-After": "10" },
+        });
+      },
     );
 
     const response = await coordinatedFetch("https://librivox.org/api/feed/audiobooks/");
     expect(response.status).toBe(429);
     const nextSlot = await reserve(stub, "librivox");
-    expect(nextSlot).toBeGreaterThanOrEqual(startedAt + 14_000);
+    // Compare timestamps in the Durable Object clock domain.
+    expect(nextSlot).toBeGreaterThanOrEqual(upstreamAt + clockOffset + 14_900);
   });
 
   it("persists a real upstream 429 cooldown through the coordinated fetch path", async () => {
