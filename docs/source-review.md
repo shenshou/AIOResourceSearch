@@ -4827,3 +4827,21 @@ References:
 - PornoTorrent historical domain record: https://pornotorrent.com.br/
 - RinTor: https://toptracker.ru/details.php?id=5675
 - XXXTor: https://toptracker.ru/details.php?id=5638
+
+
+## Prowlarr/Jackett discovery batch 7 (2026-11-27)
+
+Three more adult public tracker candidates were found in Jackett's current supported list and reviewed against its definitions:
+
+- **Sexy-Pics:** Jackett's definition describes a public adult magnet-link site and contains an HTML result selector for magnet URLs, but this is community scraper logic, not a first-party API or permission. The definition also references FlareSolverr. The first-party homepage and robots/Terms paths were inaccessible to the research browser. Name-only record; no domain, scraper, search template or challenge-solving integration.
+- **sosulki:** Jackett describes a Russian public adult tracker and its definition maps adult categories and extracts magnets. The definition's current domain was changed in the 2026-11-22 Jackett release, but a third-party definition change does not establish first-party domain ownership or reuse rights. Name-only record; do not adopt the domain or legacy mirrors.
+- **torrent-pirat:** Jackett describes a Russian public adult tracker with extensive adult categories. Its definition lists only an HTTP endpoint and notes that HTTPS is unsupported and the connection was refused. No verified first-party canonical HTTPS site, API/RSS, Terms or automation permission. Name-only record; do not use plaintext HTTP or guess a mirror.
+
+**Decision:** retain all three as name-only candidates. No Provider, external destination, search template, HTML parser, or magnet extraction was added. Torrent records increase from 40 to 43 (10 Provider records and 33 external-only/unverified); the six existing adapters are unchanged. No access workaround, source enablement, KV write, deployment or CI run.
+
+References:
+- Jackett supported trackers and architecture: https://github.com/Jackett/Jackett
+- Sexy-Pics definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sexypics.yml
+- sosulki definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sosulki.yml
+- torrent-pirat definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/torrent-pirat.yml
+- Jackett v0.25.24 release notes: https://github.com/Jackett/Jackett/releases/tag/v0.25.24

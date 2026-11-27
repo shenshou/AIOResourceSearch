@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **40 torrent-category entries**:
+The source catalog currently contains **43 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 30 | User-initiated navigation only; no Worker acquisition |
-| Total | 40 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 33 | User-initiated navigation only; no Worker acquisition |
+| Total | 43 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -57,7 +57,7 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 
 1. Keep the existing six magnet/torrent adapters and their source records intact.
 2. Do not create a fake ED2K Provider from the URI validator alone.
-3. Continue reviewing the 30 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
+3. Continue reviewing the 33 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
 4. For ED2K, only consider a source when it offers a documented public HTTP API/RSS or an explicitly authorized stable search interface. A self-hosted Kad engine would require a separate architecture decision and is not part of the current Worker topology.
 5. Preserve per-link source attribution and validate the complete URI before returning it. Never invent a magnet/ED2K link from metadata or a detail-page URL.
 
@@ -305,3 +305,27 @@ References:
 - PornoTorrent historical domain record: https://pornotorrent.com.br/
 - RinTor historical tracker listing: https://toptracker.ru/details.php?id=5675
 - XXXTor historical tracker listing: https://toptracker.ru/details.php?id=5638
+
+
+## External torrent-source review batch 7 — 2026-11-27
+
+Three further adult/public candidates were identified in the current Jackett supported-indexer catalogue and checked against the current Jackett definitions and available first-party access evidence. Jackett explicitly describes itself as a proxy that translates tracker-specific HTTP requests and parses HTML/JSON; its definitions are community-maintained scraping logic, not first-party API contracts or permission grants.
+
+| Candidate | Evidence and uncertainty | Decision |
+|---|---|---|
+| Sexy-Pics | Jackett classifies it as a public adult magnet-link site and its definition extracts magnet URLs from HTML search results. The definition also exposes a FlareSolverr configuration hint. The first-party homepage, robots.txt and likely Terms paths could not be retrieved in this review, so current operation, canonical URL, automation rules and public display/reuse rights remain unverified. | Name-only candidate. Do not reproduce the HTML scraper, use FlareSolverr/challenge solving, add a baseUrl or search template, or fetch the site. |
+| sosulki | Jackett classifies it as a Russian public adult tracker and its definition maps adult categories and extracts magnet links. Its current definition lists a recently changed domain, and Jackett's 2026-11-22 release notes confirm a definition-domain update; neither is first-party evidence of canonical ownership or permission. | Name-only candidate. Do not adopt current or legacy domains from third-party indexer configuration, reuse its scraper, or automate access. |
+| torrent-pirat | Jackett classifies it as a Russian public adult tracker with extensive adult categories. Its definition lists only an HTTP destination and explicitly notes that HTTPS is unsupported and the connection was refused. No first-party canonical HTTPS domain, Terms, API/RSS or automation/republication permission was verified. | Name-only candidate. Do not use plaintext HTTP, guess an HTTPS mirror, reuse the community scraper, or send Worker requests. |
+
+### Batch result
+- 3 additional name-only candidates retained; 0 Provider promotions; 0 clickable destinations or search templates added.
+- Torrent inventory becomes **43 entries = 10 Provider records + 33 external-only/unverified records**. Unique adapters remain 6.
+- The three candidates are not verified sources of magnet links for this project: the magnet selectors and extraction rules exist only in third-party Jackett definitions.
+- No challenge solver, access-control workaround, account, source enablement, production KV write, deployment or CI run.
+
+References:
+- Jackett current supported trackers and project description: https://github.com/Jackett/Jackett
+- Sexy-Pics third-party indexer definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sexypics.yml
+- sosulki third-party indexer definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sosulki.yml
+- torrent-pirat third-party indexer definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/torrent-pirat.yml
+- Jackett v0.25.24 release note recording the sosulki definition-domain update: https://github.com/Jackett/Jackett/releases/tag/v0.25.24
