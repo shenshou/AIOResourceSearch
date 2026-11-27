@@ -174,3 +174,12 @@ jobs:
 
       - name: Validate isolated staging Worker bundle
         run: npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
+
+      - name: Prepare isolated production configuration with test-only values
+        env:
+          CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID: "11111111111111111111111111111111"
+          CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN: "https://production.example"
+        run: node scripts/prepare-production-config.mjs
+
+      - name: Validate isolated production Worker bundle
+        run: npx wrangler deploy --dry-run --config apps/worker/wrangler.production.local.jsonc

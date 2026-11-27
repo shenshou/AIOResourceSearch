@@ -80,7 +80,7 @@ node scripts/prepare-staging-config.mjs
 
 The preparation script validates both values, fills the staging template, and writes only the ignored local config. It does not create or modify Cloudflare resources.
 
-The regular full CI also runs this preparation step with non-secret fixture values and invokes Wrangler `--dry-run` against the generated staging config. This validates the staging binding/export contract and Worker bundle without authenticating to Cloudflare or deploying resources.
+The regular full CI generates both Staging and Production Wrangler configs with non-secret fixture values and invokes Wrangler `--dry-run` against each. This validates both binding/export contracts and Worker bundles without authenticating to Cloudflare or deploying resources.
 
 From the repository root, validate the staging bundle without publishing it:
 

@@ -59,4 +59,4 @@ if (
 }
 
 writeFileSync(outputPath, output, { encoding: "utf8" });
-process.stdout.write("Prepared production Wrangler config. No Cloudflare resources were changed.\\n");
+process.stdout.write("Prepared production Wrangler config. No Cloudflare resources were changed.\n");

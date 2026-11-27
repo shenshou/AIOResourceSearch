@@ -3,6 +3,13 @@ name: Deploy staging Worker
 on:
   push:
     branches: [develop]
+    paths:
+      - "apps/worker/**"
+      - "packages/shared/**"
+      - "scripts/prepare-staging-config.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-staging-worker.yml"
   workflow_dispatch:
 
 permissions:
