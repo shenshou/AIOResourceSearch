@@ -69,14 +69,7 @@ function validMagnet(value: string | undefined): string | undefined {
 
 function validTorrentUrl(value: string | undefined, baseUrl: URL): string | undefined {
   if (!value || value.length > 4096) return undefined;
-  try {
-    const url = new URL(value, baseUrl);
-    return url.protocol === "https:" && !url.username && !url.password
-      ? url.toString()
-      : undefined;
-  } catch {
-    return undefined;
-  }
+  return resolvePageUrl(value, baseUrl) ?? undefined;
 }
 
 function validEd2k(value: string | undefined): string | undefined {
