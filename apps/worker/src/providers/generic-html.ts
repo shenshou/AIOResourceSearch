@@ -67,6 +67,25 @@ function validMagnet(value: string | undefined): string | undefined {
   }
 }
 
+function validTorrentUrl(value: string | undefined, baseUrl: URL): string | undefined {
+  if (!value || value.length > 4096) return undefined;
+  try {
+    const url = new URL(value, baseUrl);
+    return url.protocol === "https:" && !url.username && !url.password
+      ? url.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function validEd2k(value: string | undefined): string | undefined {
+  return value && value.length <= 4096 &&
+    /^ed2k:\/\/\|file\|[^|]{1,255}\|\d+\|[a-f0-9]{32}\|/i.test(value)
+    ? value
+    : undefined;
+}
+
 /**
  * Configurable HTML search adapter.
  *
@@ -80,7 +99,7 @@ export const genericHtmlProvider: ProviderAdapter = {
   mechanism: "html",
   contentCategories: [...CONTENT_CATEGORIES],
   categories: [...SOURCE_CATEGORIES],
-  capabilities: ["metadata", "image", "magnet"],
+  capabilities: ["metadata", "image", "magnet", "torrent", "ed2k"],
   searchModes: ["number", "keyword"],
   async search(input, context) {
     const { source, parseHtml, signal } = context;
@@ -121,15 +140,21 @@ export const genericHtmlProvider: ProviderAdapter = {
 
     const supportsImage = source.capabilities.includes("image");
     const supportsMagnet = source.capabilities.includes("magnet");
+    const supportsTorrent = source.capabilities.includes("torrent");
+    const supportsEd2k = source.capabilities.includes("ed2k");
     if ((supportsImage && !source.htmlSelectors.image) ||
-        (supportsMagnet && !source.htmlSelectors.magnet)) {
-      throw new Error("HTML source capabilities require matching image or Magnet selectors.");
+        (supportsMagnet && !source.htmlSelectors.magnet) ||
+        (supportsTorrent && !source.htmlSelectors.torrent) ||
+        (supportsEd2k && !source.htmlSelectors.ed2k)) {
+      throw new Error("HTML source capabilities require matching optional-field selectors.");
     }
 
     const selectors = {
       ...source.htmlSelectors,
       ...(!supportsImage ? { image: undefined } : {}),
       ...(!supportsMagnet ? { magnet: undefined } : {}),
+      ...(!supportsTorrent ? { torrent: undefined } : {}),
+      ...(!supportsEd2k ? { ed2k: undefined } : {}),
     };
     const boundedResponse = await readBoundedHtml(response);
     throwIfAborted(signal);
@@ -160,6 +185,8 @@ export const genericHtmlProvider: ProviderAdapter = {
         ...(item.description ? { description: item.description.slice(0, 4000) } : {}),
         ...(item.metadata ? { metadata: item.metadata } : {}),
         ...(supportsMagnet && validMagnet(item.magnetUri) ? { magnetUri: validMagnet(item.magnetUri) } : {}),
+        ...(supportsTorrent && validTorrentUrl(item.torrentUrl, baseUrl) ? { torrentUrl: validTorrentUrl(item.torrentUrl, baseUrl) } : {}),
+        ...(supportsEd2k && validEd2k(item.ed2kUri) ? { ed2kUri: validEd2k(item.ed2kUri) } : {}),
       });
     }
     return resources;
