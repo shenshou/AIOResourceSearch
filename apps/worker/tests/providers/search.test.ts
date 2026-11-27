@@ -7,7 +7,7 @@ import type {
   SourcesConfig,
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
-import { validateSource } from "../../src/validation.ts";
+import { validateFieldPriorities, validateSource } from "../../src/validation.ts";
 import { listProviderAdapters } from "../../src/providers/registry.ts";
 import { SOURCE_CATALOG } from "../../../web/src/modules/sources/sourceCatalog.ts";
 import type { Env } from "../../src/env.ts";
@@ -2610,4 +2610,86 @@ test("generic HTML adapter retains multiple selected links of the same type", as
     { type: "magnet", url: second },
   ]);
   assert.equal(results[0]?.magnetUri, first);
+});
+
+
+test("per-field source priorities override only the selected fields and retain provenance", async () => {
+  const first = source({ id: "first-source", name: "First source" });
+  const second = source({ id: "second-source", name: "Second source" });
+  const priorityConfig: SourcesConfig = {
+    ...sourceConfig(first, second),
+    fieldPriorities: {
+      description: ["second-source"],
+      "metadata.studio": ["second-source"],
+      title: [],
+    },
+  };
+  const fieldProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      title: `${context.source.name} title`,
+      description: `${context.source.name} description`,
+      metadata: {
+        studio: `${context.source.name} studio`,
+        country: `${context.source.name} country`,
+      },
+    }),
+  ]);
+
+  const result = await executeSearch(request, priorityConfig, adapters, resolve(fieldProvider));
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.title, "First source title");
+  assert.equal(result.results[0]?.description, "Second source description");
+  assert.equal(result.results[0]?.metadata?.studio, "Second source studio");
+  assert.equal(result.results[0]?.metadata?.country, "First source country");
+  assert.equal(result.results[0]?.fieldAttributions?.title?.sourceId, "first-source");
+  assert.equal(result.results[0]?.fieldAttributions?.description?.sourceId, "second-source");
+  assert.equal(result.results[0]?.fieldAttributions?.["metadata.studio"]?.sourceId, "second-source");
+  assert.equal(result.results[0]?.fieldAttributions?.["metadata.country"]?.sourceId, "first-source");
+});
+
+test("empty field priority arrays inherit global source order", async () => {
+  const first = source({ id: "first-source", name: "First source" });
+  const second = source({ id: "second-source", name: "Second source" });
+  const config: SourcesConfig = {
+    ...sourceConfig(first, second),
+    fieldPriorities: { description: [] },
+  };
+  const fieldProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      description: `${context.source.name} description`,
+    }),
+  ]);
+
+  const result = await executeSearch(request, config, adapters, resolve(fieldProvider));
+  assert.equal(result.results[0]?.description, "First source description");
+  assert.equal(result.results[0]?.fieldAttributions?.description?.sourceId, "first-source");
+});
+
+test("validates field priority field names and registered source IDs", () => {
+  const sources = [
+    source({ id: "first-source" }),
+    source({ id: "second-source" }),
+  ];
+  assert.deepEqual(
+    validateFieldPriorities({
+      description: ["second-source", "first-source"],
+      "metadata.studioName": ["first-source"],
+      imageUrl: [],
+    }, sources),
+    {
+      description: ["second-source", "first-source"],
+      "metadata.studioName": ["first-source"],
+      imageUrl: [],
+    },
+  );
+  assert.equal(validateFieldPriorities({ description: ["missing-source"] }, sources), null);
+  assert.equal(validateFieldPriorities({ "metadata.Bad Key": ["first-source"] }, sources), null);
+  assert.equal(validateFieldPriorities({ title: ["first-source", "first-source"] }, sources), null);
 });
