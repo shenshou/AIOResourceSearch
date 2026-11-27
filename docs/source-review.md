@@ -4902,3 +4902,18 @@ References:
 - Jackett supported trackers: https://github.com/Jackett/Jackett
 - BootyTape: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/bootytape.yml
 - Gay-Torrents.net: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/gay-torrents.yml
+
+
+## Public torrent meta-search discovery batch 11 (2026-11-27)
+
+Two first-party services were reviewed:
+
+- **Knaben Database:** the homepage exposes XXX categories including Video, ImageSet, Games and Hentai. Its API v1 documents keyword POST search, category filters, `hide_xxx`, pagination and result fields including tracker attribution, details URL, info hash and magnet URL. The API documentation does not establish permission for third-party aggregation, caching or public display; no applicable first-party reuse terms were verified, and no live API search was made.
+- **Magnetz:** its first-party API documentation describes keyword search, pagination and magnet/info-hash result fields. The same documentation explicitly states that listings do not grant rights to copy or share content; adult-category coverage was not verified.
+
+**Decision:** retain both as homepage-only external candidates. Knaben is a promising adult-capable technical candidate but is not Provider-ready without reuse permission. Magnetz remains general-category research only and is not Provider-ready under its stated rights limitation. No API calls, scraping, search templates, Provider or Adapter changes. Torrent inventory increases from 54 to 56 records (10 Provider records, 46 external-only/unverified); six existing adapters remain unchanged. No source enablement, production KV write, deployment or CI run.
+
+References:
+- Knaben homepage: https://knaben.org/
+- Knaben API v1: https://knaben.org/api/v1/
+- Magnetz API docs: https://magnetz.eu/apis

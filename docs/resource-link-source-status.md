@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **54 torrent-category entries**:
+The source catalog currently contains **56 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 44 | User-initiated navigation only; no Worker acquisition |
-| Total | 54 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 46 | User-initiated navigation only; no Worker acquisition |
+| Total | 56 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -403,3 +403,23 @@ References:
 - Jackett supported trackers and access categories: https://github.com/Jackett/Jackett
 - BootyTape definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/bootytape.yml
 - Gay-Torrents.net definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/gay-torrents.yml
+
+
+## External torrent-source review batch 11 — 2026-11-27
+
+Two public torrent meta-search services were reviewed as potential general-category additions:
+
+| Candidate | First-party capability evidence | Decision |
+|---|---|---|
+| Knaben Database | First-party homepage exposes XXX categories (Video, ImageSet, Games, Hentai). API v1 documents keyword POST search, category filters, `hide_xxx`, pagination and response fields including `tracker`, `details`, `hash`, and `magnetUrl`. | Technical candidate only. API documentation does not establish third-party aggregation, caching or public-display permission. No live search request was made. Keep homepage-only; no API call, Provider or search template. |
+| Magnetz | First-party API documentation describes keyword search, pagination, magnet URI and info-hash fields. | The documentation explicitly says listings do not grant rights to copy or share content; adult-category coverage is unverified. Keep homepage-only; no API call, Provider or search template. |
+
+### Batch result
+- 2 additional general Torrent candidates retained; 0 Provider promotions, 0 search templates and 0 adapter changes.
+- Torrent inventory becomes **56 entries = 10 Provider records + 46 external-only/unverified records**. Unique adapters remain 6.
+- No live API search was performed, no source was enabled, and no production KV write, deployment or CI run occurred.
+
+References:
+- Knaben homepage/categories: https://knaben.org/
+- Knaben API v1: https://knaben.org/api/v1/
+- Magnetz API documentation: https://magnetz.eu/apis
