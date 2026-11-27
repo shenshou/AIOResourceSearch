@@ -2486,7 +2486,7 @@ test("generic HTML adapter extracts all declared downloadable link types safely"
         title: "ABP-123",
         url: "/item/123",
         magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
-        torrentUrl: "https://cdn.example/file.torrent",
+        torrentUrl: "https://example.com/file.torrent",
         ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/",
       }],
     },
@@ -2494,7 +2494,7 @@ test("generic HTML adapter extracts all declared downloadable link types safely"
 
   assert.equal(results.length, 1);
   assert.equal(results[0]?.magnetUri, "magnet:?xt=urn:btih:01234567890123456789012345678901");
-  assert.equal(results[0]?.torrentUrl, "https://cdn.example/file.torrent");
+  assert.equal(results[0]?.torrentUrl, "https://example.com/file.torrent");
   assert.equal(results[0]?.ed2kUri, "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/");
 });
 
@@ -2526,4 +2526,33 @@ test("validates generic HTML download selectors against declared source capabili
     capabilities: ["metadata", "torrent"],
   }));
   assert.equal(missingTorrentSelector, null);
+});
+
+
+test("generic HTML adapter rejects cross-host Torrent download URLs", async () => {
+  const results = await genericHtmlProvider.search(
+    { query: "ABP-123", mode: "number" },
+    {
+      source: source({
+        adapterId: "generic-html",
+        baseUrl: "https://example.com",
+        providerSearchUrlTemplate: "https://example.com/search?q={query}",
+        htmlSelectors: { result: "article", title: "h2", link: "a.title", torrent: "a.torrent" },
+        capabilities: ["metadata", "torrent"],
+      }),
+      signal: new AbortController().signal,
+      fetch: async () => new Response("<html></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+      parseHtml: async () => [{
+        title: "ABP-123",
+        url: "/item/123",
+        torrentUrl: "https://other.example/file.torrent",
+      }],
+    },
+  );
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.torrentUrl, undefined);
 });
