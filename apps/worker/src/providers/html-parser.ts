@@ -27,6 +27,8 @@ interface MutableItem {
   imageUrl?: string;
   description: string;
   magnetUri?: string;
+  torrentUrl?: string;
+  ed2kUri?: string;
   metadata: Record<string, string>;
 }
 
@@ -39,7 +41,7 @@ const MAX_PARSED_RESULTS = 50;
 export async function parseHtmlResults(
   response: Response,
   selectors: HtmlSelectorConfig,
-): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; metadata?: Record<string, string> }>> {
+): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; torrentUrl?: string; ed2kUri?: string; metadata?: Record<string, string> }>> {
   const stack: MutableItem[] = [];
   const results: MutableItem[] = [];
   const rewriter = new HTMLRewriter()
@@ -115,6 +117,26 @@ export async function parseHtmlResults(
     });
   }
 
+  if (selectors.torrent) {
+    rewriter.on(selectors.torrent, {
+      element(element) {
+        const item = stack[stack.length - 1];
+        const href = element.getAttribute("href");
+        if (item && href && !item.torrentUrl) item.torrentUrl = href;
+      },
+    });
+  }
+
+  if (selectors.ed2k) {
+    rewriter.on(selectors.ed2k, {
+      element(element) {
+        const item = stack[stack.length - 1];
+        const href = element.getAttribute("href");
+        if (item && href?.startsWith("ed2k://") && !item.ed2kUri) item.ed2kUri = href;
+      },
+    });
+  }
+
   // HTMLRewriter runs while the transformed response body is consumed.
   await rewriter.transform(response).arrayBuffer();
   return results.map((item) => ({
@@ -123,6 +145,8 @@ export async function parseHtmlResults(
     ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
     ...(item.description ? { description: item.description } : {}),
     ...(item.magnetUri ? { magnetUri: item.magnetUri } : {}),
+    ...(item.torrentUrl ? { torrentUrl: item.torrentUrl } : {}),
+    ...(item.ed2kUri ? { ed2kUri: item.ed2kUri } : {}),
     ...(Object.keys(item.metadata).length ? { metadata: Object.fromEntries(Object.entries(item.metadata).map(([key, value]) => [key, value.replace(/\s+/g, " ").trim().slice(0, 500)]).filter(([, value]) => Boolean(value))) } : {}),
   }));
 }
