@@ -143,7 +143,6 @@ function normalizeResource(
         .map((relationship) => ({
           type: relationship.type,
           name: relationship.name.trim().replace(/\s+/g, " "),
-          aliases: [relationship.name.trim().replace(/\s+/g, " ")],
           sourceAttributions: [{ sourceId: source.id, sourceName: source.name }],
           ...(relationship.url ? { url: relationship.url } : {}),
         }))
