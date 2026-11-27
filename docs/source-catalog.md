@@ -341,7 +341,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - itch.io：第一方文档明确提供 browse-page RSS 和新游戏/精选/促销 feed；其服务器 API 需要账户凭据，主要涉及账户、购买和拥有游戏数据，不是通用公开目录搜索 API。Terms 禁止信息收集等行为，但没有确认第三方目录元数据再发布许可。暂时只保留首页入口；RSS 是未来候选，不在当前阶段轮询或聚合。
 - TIDAL：第一方 Developer Terms 将工具用途限定于非商业产品，要求有效 TIDAL 登录凭据，并禁止自动抓取/站内检索工具复制或索引平台内容，也禁止建立内容数据库。当前聚合用途不具备明确许可，仅保留首页入口。
 - Qobuz：可查到的第一方 API Terms（2011 年生效，未来使用前须复核是否仍有效）要求 Qobuz 签发的 Application ID/secret/key，并禁止将服务内容提供给非用户、广告/赞助变现、索引服务内容、收集用户信息和绕过元数据地域限制。当前不接入 API，仅保留首页入口。
-- 本批新增 3 个候选，目录更新为 156 条去重候选（JAV 28、torrent 30、forum 16、other-index 82）；AIOResourceSearch 自有来源标签 51（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。没有新增自动获取路径。
+- 本批新增 3 个候选，目录更新为 156 条去重候选（JAV 28、torrent 30、forum 16、other-index 82）；AIOResourceSearch 自有来源标签 51（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现现为 11 个。没有新增自动获取路径。
 
 
 ## 补充音乐平台外部入口（2026-11-27，第四批）
@@ -361,7 +361,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 ## 播客与有声读物来源（2026-11-27，第六批）
 
-- LibriVox：第一方明确欢迎第三方应用、档案机构、流媒体和策展者分享/再分享其公共领域录音，并提供官方目录 API，支持标题/作者/类型搜索、JSON、字段选择、分页和 since 增量更新。当前上限 500 条/请求，并要求批量请求间隔数秒。纳入未来有声读物 Provider 候选；实施时必须保守限速、分页、增量同步并保留来源链接，不托管音频。
+- LibriVox：第一方明确欢迎第三方应用、档案机构、流媒体和策展者分享/再分享其公共领域录音，并提供官方目录 API，支持标题/作者/类型搜索、JSON、字段选择、分页和 since 增量更新。当前上限 500 条/请求，并要求批量请求间隔数秒。已实现 metadata-only librivox-api Provider：标题前缀搜索、20 条上限、字段白名单、5 秒共享限速和 LibriVox 项目页回链；不获取音频、RSS、封面或 Archive.org 资源。适配器和来源仍未配置/启用，等待非生产 Cloudflare 验证。
 - Podcast Index：有播客发现 API，但其官方条款仓库标示当前版本为 v2.0，本轮未能独立核验 v2.0 正文。可访问的 v1.1 条款明确限制将 API 返回内容建立永久数据库/副本（除非内容权利人或法律另行允许），并限制缓存。暂时仅保留首页入口，不调用 API 或轮询 feed，待核实当前条款与元数据使用许可。
 - 本批新增 2 个候选，目录更新为 162 条去重候选（JAV 28、torrent 30、forum 16、other-index 88）；AIOResourceSearch 自有来源标签 57（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。未新增 Provider、凭据、KV 配置、启用状态或部署。
 
