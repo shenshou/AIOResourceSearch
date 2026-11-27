@@ -63,7 +63,25 @@ The local file is ignored by Git. In that copy:
 
 The staging config must remain in `apps/worker` so its existing `main: "src/index.ts"` path resolves correctly. Do not commit this local config or the namespace ID.
 
-From the repository root, install dependencies and validate the staging bundle without publishing it:
+For a pre-merge staging deployment from the feature branch, use the local Wrangler CLI path:
+
+```powershell
+npm install
+npx wrangler login
+npx wrangler kv namespace create SOURCES_KV
+```
+
+Copy the returned 32-character namespace ID and the Pages Preview origin into the environment, then generate the ignored staging config:
+
+```powershell
+$env:CLOUDFLARE_STAGING_KV_NAMESPACE_ID = "<returned-staging-namespace-id>"
+$env:CLOUDFLARE_STAGING_ALLOWED_ORIGIN = "https://<your-pages-preview-domain>"
+node scripts/prepare-staging-config.mjs
+```
+
+The preparation script validates both values, fills the staging template, and writes only the ignored local config. It does not create or modify Cloudflare resources.
+
+From the repository root, validate the staging bundle without publishing it:
 
 ```bash
 npm install
@@ -76,11 +94,21 @@ Only after a separate staging deployment is explicitly approved should the stagi
 npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
 ```
 
+After the first staging deployment is approved, set the administrator token interactively:
+
+```bash
+npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.staging.local.jsonc
+```
+
+Wrangler prompts for the value. Do not place the token in a command argument, shell history, or chat.
+
 Wrangler configuration is the source of truth for Worker variables and bindings. Dashboard variables can be overwritten by a later Wrangler deployment if they are not represented in the configuration. Keep the exact CORS origin in the staging config rather than relying on a dashboard-only value.
 
 ## 2.1 Optional GitHub Actions staging deployment
 
 A staging-only workflow is available at `.github/workflows/deploy-staging-worker.yml`. It is manual (`workflow_dispatch` only), runs only when the selected ref is `feature/adapter-management`, executes lint/tests/build first, validates the generated Wrangler config, deploys only the staging Worker, and then sets the staging administrator secret. It has no production target and does not run on ordinary commits.
+
+GitHub only exposes a `workflow_dispatch` workflow after its file exists on the repository's default branch. PR #1 is currently unmerged, so this workflow is prepared but will not yet appear as a runnable Actions workflow. Do not merge the feature PR just to expose it; use the local Wrangler CLI path above for pre-merge staging. After the workflow reaches the default branch, it can be manually dispatched against the feature branch.
 
 Before using it:
 
@@ -189,3 +217,5 @@ Production deployment, production KV writes, source enablement, and PR merge rem
 - [Wrangler configuration and environments](https://developers.cloudflare.com/workers/wrangler/configuration/)
 - [Worker environment variables](https://developers.cloudflare.com/workers/configuration/environment-variables/)
 - [Durable Object class exports and SQLite storage](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/)
+- [Wrangler Worker secrets](https://developers.cloudflare.com/workers/wrangler/commands/#secret)
+- [GitHub Actions workflow_dispatch default-branch requirement](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
