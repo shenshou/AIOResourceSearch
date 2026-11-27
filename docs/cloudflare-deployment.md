@@ -47,13 +47,13 @@ Do not deploy `apps/worker/wrangler.jsonc` as-is. It currently contains:
 - A local-only `ALLOWED_ORIGINS` value.
 - A 15-minute Eporner removal-feed Cron trigger.
 
-Create a new, ignored local copy beside the original:
+Copy the committed staging template to an ignored local file:
 
-```text
-apps/worker/wrangler.staging.local.jsonc
+```bash
+cp apps/worker/wrangler.staging.example.jsonc apps/worker/wrangler.staging.local.jsonc
 ```
 
-The file is ignored by Git. In that copy:
+The local file is ignored by Git. In that copy:
 
 1. Change `name` to `aio-resource-search-api-staging`.
 2. Create a new, dedicated test KV namespace and replace the placeholder ID with that namespace's ID. Never reuse the production namespace.
