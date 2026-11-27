@@ -30,8 +30,8 @@ const EPORNER_LOCK_LEASE_MS = 60_000;
 const EPORNER_LOCK_RETRY_MS = 500;
 const EPORNER_MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
-function boundedCooldownUntil(timestamp: number, now: number): number {
-  return Math.min(Math.max(now + 1_000, timestamp), now + MAX_COOLDOWN_MS);
+function boundedCooldownDuration(durationMs: number): number {
+  return Math.min(Math.max(1_000, durationMs), MAX_COOLDOWN_MS);
 }
 
 function json(value: unknown, status = 200): Response {
@@ -45,7 +45,7 @@ function isLane(value: unknown): value is RateLimitLane {
   return value === "musicbrainz" || value === "mangadex" || value === "anibt" || value === "therarbg" || value === "eporner" || value === "librivox";
 }
 
-function parseCooldownUntil(response: Response, now: number): number | null {
+function parseCooldownDuration(response: Response, now: number): number | null {
   const quotaExhausted = response.headers.get("X-RateLimit-Remaining") === "0" ||
     response.headers.get("X-RateLimit-Remaining-Day") === "0";
   if (response.status !== 429 && response.status !== 503 && !quotaExhausted) return null;
@@ -53,29 +53,28 @@ function parseCooldownUntil(response: Response, now: number): number | null {
   const mangaDexRetry = response.headers.get("X-RateLimit-Retry-After");
   if (mangaDexRetry && /^\d+(?:\.\d+)?$/.test(mangaDexRetry)) {
     const timestamp = Number(mangaDexRetry) * 1_000;
-    if (Number.isFinite(timestamp)) return boundedCooldownUntil(timestamp, now);
+    if (Number.isFinite(timestamp)) return boundedCooldownDuration(timestamp - now);
   }
 
   const retryAfter = response.headers.get("Retry-After");
   if (retryAfter) {
     if (/^\d+(?:\.\d+)?$/.test(retryAfter)) {
       const seconds = Number(retryAfter);
-      return boundedCooldownUntil(
-        Number.isFinite(seconds) ? now + seconds * 1_000 : Number.POSITIVE_INFINITY,
-        now,
+      return boundedCooldownDuration(
+        Number.isFinite(seconds) ? seconds * 1_000 : Number.POSITIVE_INFINITY,
       );
     }
     const parsed = Date.parse(retryAfter);
-    if (Number.isFinite(parsed)) return boundedCooldownUntil(parsed, now);
+    if (Number.isFinite(parsed)) return boundedCooldownDuration(parsed - now);
   }
 
   const dayReset = response.headers.get("X-RateLimit-Reset-Day");
   if (response.headers.get("X-RateLimit-Remaining-Day") === "0" && dayReset && /^\d+$/.test(dayReset)) {
     const seconds = Number(dayReset);
-    if (Number.isFinite(seconds)) return boundedCooldownUntil(now + seconds * 1_000, now);
+    if (Number.isFinite(seconds)) return boundedCooldownDuration(seconds * 1_000);
   }
 
-  return now + 1_000;
+  return 1_000;
 }
 
 /**
@@ -204,10 +203,12 @@ export class RateLimitCoordinator {
     }
 
     if (path === "/cooldown") {
-      if (!("until" in body) || typeof body.until !== "number" ||
-          !Number.isFinite(body.until) || body.until <= now || body.until > now + 86_400_000) {
+      if (!("durationMs" in body) || typeof body.durationMs !== "number" ||
+          !Number.isFinite(body.durationMs) || body.durationMs < 1_000 || body.durationMs > MAX_COOLDOWN_MS) {
         return json({ error: "invalid_cooldown" }, 400);
       }
+      // Anchor relative cooldowns to the Durable Object clock, avoiding cross-isolate clock skew.
+      const cooldownUntil = now + body.durationMs;
 
       this.ctx.storage.sql.exec(
         `INSERT INTO rate_limit_state (singleton, next_allowed_at, cooldown_until)
@@ -215,9 +216,9 @@ export class RateLimitCoordinator {
          ON CONFLICT(singleton) DO UPDATE SET
            cooldown_until = MAX(rate_limit_state.cooldown_until, ?),
            next_allowed_at = MAX(rate_limit_state.next_allowed_at, ?)`,
-        body.until,
-        body.until,
-        body.until,
+        cooldownUntil,
+        cooldownUntil,
+        cooldownUntil,
       );
       return json({ accepted: true });
     }
@@ -292,7 +293,7 @@ async function coordinatorRequest(
   path: "reserve" | "validate" | "cooldown" | "acquire" | "release",
   lane: RateLimitLane,
   signal?: AbortSignal,
-  until?: number,
+  cooldownMs?: number, 
   scheduledAt?: number,
   leaseId?: string,
 ): Promise<{ scheduledAt?: number; acquired?: boolean; retryAt?: number }> {
@@ -304,7 +305,7 @@ async function coordinatorRequest(
     body: JSON.stringify(
       path === "reserve" ? { lane }
         : path === "validate" ? { lane, scheduledAt }
-          : path === "cooldown" ? { lane, until }
+          : path === "cooldown" ? { lane, durationMs: cooldownMs }
             : { lane, leaseId },
     ),
     signal,
@@ -399,11 +400,11 @@ export function createCoordinatedFetch(
 
     try {
       let response = await fetchImpl(input, init);
-      const cooldownUntil = parseCooldownUntil(response, Date.now());
-      if (cooldownUntil !== null) {
+      const cooldownMs = parseCooldownDuration(response, Date.now());
+      if (cooldownMs !== null) {
         // Persist upstream throttling even if the initiating client disconnects
-        // after the response arrives; otherwise the shared lane can lose a 429.
-        await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownUntil);
+        // after the response arrives; the Durable Object anchors it to its own clock.
+        await coordinatorRequest(namespace, "cooldown", lane, undefined, cooldownMs);
       }
       if (lane === "eporner") response = await bufferEpornerResponse(response);
       return response;
