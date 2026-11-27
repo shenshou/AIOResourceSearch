@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "kind": "work",
+      "id": "project-hail-mary",
+      "title": "Project Hail Mary",
+      "authors": [{ "id": "andy-weir", "name": "Andy Weir" }],
+      "language": "en",
+      "series": null,
+      "release_date": "2021-05-04",
+      "cover_url": "https://images.example.test/cover.jpg",
+      "added_at": "2026-07-10T12:00:00Z",
+      "narrators": [{ "id": "ray-porter", "name": "Ray Porter" }],
+      "description": "This field is not part of the CC0 search contract.",
+      "genres": ["hard-science-fiction"],
+      "community_description": { "text": "CC BY-SA content must never be consumed." }
+    },
+    {
+      "kind": "person",
+      "id": "andy-weir",
+      "name": "Andy Weir"
+    },
+    {
+      "kind": "work",
+      "id": "bad id",
+      "title": "Invalid slug",
+      "authors": [],
+      "language": "en",
+      "series": null,
+      "narrators": []
+    }
+  ]
+}
