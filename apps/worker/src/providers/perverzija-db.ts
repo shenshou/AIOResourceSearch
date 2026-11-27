@@ -86,12 +86,15 @@ async function fetchJson(url: string, context: ProviderContext): Promise<unknown
         try {
           const cachedPayload: unknown = JSON.parse(await readLimitedText(cached));
           if (!isScenesEnvelope(cachedPayload)) throw new Error("Invalid cached scene response.");
+          throwIfAborted(context.signal);
           return cachedPayload;
         } catch {
+          throwIfAborted(context.signal);
           // Ignore a malformed/oversized cache entry and fetch a fresh response.
         }
       }
     } catch {
+      throwIfAborted(context.signal);
       // Cache is an optimization; an unavailable cache must not fail a live request.
     }
   }
@@ -148,6 +151,7 @@ async function fetchJson(url: string, context: ProviderContext): Promise<unknown
       // A cache write failure must not discard valid upstream results.
     }
   }
+  throwIfAborted(context.signal);
   return payload;
 }
 
