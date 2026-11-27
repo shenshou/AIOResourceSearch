@@ -4455,3 +4455,28 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - The same README explicitly documents Cloudflare bypass via `cloudscraper_go` and CycleTLS for protected sites, plus scrapers for sites whose current automation/data-use permission is not established. Those methods are outside this project's access-control boundary and are not reusable implementation instructions.
 - **Decision:** do not add JAVAPI as a data source, do not deploy or copy its scrapers, bypass code, embed/video-link extraction, or undocumented JavDB access. Retain only its high-level orchestration concepts as architecture research; prefer the existing Provider interface, shared request coordinator, allowlisted metadata normalization and per-source error reporting already used in AIOResourceSearch.
 - Reference: https://github.com/ANDonekey/javapi .
+
+
+## Public JAV datasets follow-up: Hugging Face and JAVINFO pricing (2026-11-27)
+
+### knighjok/japanese-adult-videos — large dataset, non-commercial licence and unclear provenance
+- The Hugging Face dataset card describes 317,852 examples (453 MB) with code, title, cast, categories, duration, release date, director, studio and image/poster URLs. It says the data was scraped from publicly available sources and declares an Attribution-NonCommercial-ShareAlike licence.
+- The card's stated research use and non-commercial restriction do not grant the project the broad reuse needed for a public multi-source aggregator, and the upstream source/authorization chain is not documented to a standard that supports ingestion. The presence of image URLs is also outside the metadata-only scope for this candidate review.
+- **Decision:** retain as a research candidate only. Do not bulk-download, ingest, cache, republish, or fetch artwork/media. Reconsider only if the dataset maintainer provides a clear provenance/authorization statement and a licence compatible with this project's use.
+- Reference: https://huggingface.co/datasets/knighjok/japanese-adult-videos .
+
+### invokeaibase/data-mv — small and incomplete dataset; reuse rights unverified
+- The Hugging Face description advertises 101 Japanese AV entries, with metadata available for 70 and fields including code, title, actress, genre and release date. The repository also describes MP4 video files alongside metadata.
+- The reviewed description did not establish a clear reuse licence, upstream provenance, or permission to redistribute the metadata. The dataset is explicitly incomplete and not a dependable broad catalogue source; its bundled media is outside this project's scope.
+- **Decision:** retain as a research candidate only. Do not download the video corpus or ingest/cache/republish metadata until a clear licence, source provenance and upstream authorization are documented.
+- Reference: https://huggingface.co/datasets/invokeaibase/data-mv .
+
+### JAVINFO pricing clarification
+- The current first-party FAQ states that new signups receive a limited free trial, after which use is charged at $0.0008 per successful `/movie` result, $0.0004 per `/query` call (up to 10 results), and $0.0005 per `/idols` call (up to 10 results). A free trial is not an ongoing free tier.
+- This confirms the existing exclusion under the project's no-paid-dependency rule. No key was requested and no API call was made.
+- References: https://javinfo.dev/faq ; https://docs.javinfo.dev/docs/quickstart .
+
+### Batch outcome
+- Added two dataset candidates to the durable catalog without enabling or implementing either: `knighjok-jav-dataset` and `data-mv-hf`.
+- Corrected the JAVINFO catalog note to distinguish a limited free trial from ongoing paid usage.
+- No Provider code, API call, credential, KV configuration, source enablement, deployment, or production data change.
