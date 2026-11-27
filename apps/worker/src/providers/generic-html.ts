@@ -167,6 +167,24 @@ export const genericHtmlProvider: ProviderAdapter = {
           // Ignore malformed optional image URLs.
         }
       }
+      const normalizedLinks = new Map<string, { type: "magnet" | "torrent" | "ed2k"; url: string }>();
+      const addLink = (type: "magnet" | "torrent" | "ed2k", value: string | undefined) => {
+        const normalized = type === "magnet"
+          ? supportsMagnet ? validMagnet(value) : undefined
+          : type === "torrent"
+            ? supportsTorrent ? validTorrentUrl(value, baseUrl) : undefined
+            : supportsEd2k ? validEd2k(value) : undefined;
+        if (!normalized) return;
+        normalizedLinks.set(type + ":" + normalized, { type, url: normalized });
+      };
+      for (const link of item.resourceLinks ?? []) addLink(link.type, link.url);
+      addLink("magnet", item.magnetUri);
+      addLink("torrent", item.torrentUrl);
+      addLink("ed2k", item.ed2kUri);
+      const resourceLinks = [...normalizedLinks.values()];
+      const magnetUri = resourceLinks.find((link) => link.type === "magnet")?.url;
+      const torrentUrl = resourceLinks.find((link) => link.type === "torrent")?.url;
+      const ed2kUri = resourceLinks.find((link) => link.type === "ed2k")?.url;
       resources.push({
         id: url,
         sourceId: source.id,
@@ -177,9 +195,10 @@ export const genericHtmlProvider: ProviderAdapter = {
         ...(imageUrl ? { imageUrl } : {}),
         ...(item.description ? { description: item.description.slice(0, 4000) } : {}),
         ...(item.metadata ? { metadata: item.metadata } : {}),
-        ...(supportsMagnet && validMagnet(item.magnetUri) ? { magnetUri: validMagnet(item.magnetUri) } : {}),
-        ...(supportsTorrent && validTorrentUrl(item.torrentUrl, baseUrl) ? { torrentUrl: validTorrentUrl(item.torrentUrl, baseUrl) } : {}),
-        ...(supportsEd2k && validEd2k(item.ed2kUri) ? { ed2kUri: validEd2k(item.ed2kUri) } : {}),
+        ...(magnetUri ? { magnetUri } : {}),
+        ...(torrentUrl ? { torrentUrl } : {}),
+        ...(ed2kUri ? { ed2kUri } : {}),
+        ...(resourceLinks.length ? { resourceLinks } : {}),
       });
     }
     return resources;
