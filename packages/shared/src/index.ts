@@ -50,6 +50,19 @@ export const SOURCE_CAPABILITIES = [
 ] as const;
 export type SourceCapability = (typeof SOURCE_CAPABILITIES)[number];
 
+export const RESOURCE_LINK_TYPES = ["magnet", "torrent", "ed2k"] as const;
+export type ResourceLinkType = (typeof RESOURCE_LINK_TYPES)[number];
+
+/** A downloadable resource URL and the provider source(s) that supplied it. */
+export interface ResourceLink {
+  type: ResourceLinkType;
+  url: string;
+  sourceAttributions: Array<{
+    sourceId: string;
+    sourceName: string;
+  }>;
+}
+
 export const SOURCE_TYPES = ["provider", "external-search"] as const;
 export type SourceType = (typeof SOURCE_TYPES)[number];
 
