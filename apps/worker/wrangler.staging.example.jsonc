@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aio-resource-search-api-staging",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-24",
+  "vars": {
+    "ALLOWED_ORIGINS": "https://REPLACE_WITH_PAGES_PREVIEW_ORIGIN"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SOURCES_KV",
+      "id": "REPLACE_WITH_STAGING_KV_NAMESPACE_ID"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RATE_LIMIT_COORDINATOR",
+        "class_name": "RateLimitCoordinator"
+      }
+    ]
+  },
+  "exports": {
+    "RateLimitCoordinator": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  }
+}

@@ -1,0 +1,769 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import {
+  RateLimitCoordinator,
+  createCoordinatedFetch,
+  type RateLimitCoordinatorNamespace,
+} from "../src/rate-limit-coordinator.ts";
+
+function namespace(
+  handler: (request: Request) => Promise<Response>,
+  calls: string[] = [],
+): RateLimitCoordinatorNamespace {
+  return {
+    idFromName: (name) => name,
+    get: () => ({
+      fetch: async (request) => {
+        calls.push(new URL(request.url).pathname);
+        return handler(request);
+      },
+    }),
+  };
+}
+
+test("reserves a slot before making the upstream request", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") {
+      const body = await request.json() as { lane: string };
+      assert.equal(body.lane, "mangadex");
+      return Response.json({ scheduledAt: Date.now() });
+    }
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    return Response.json({ accepted: true });
+  }, calls);
+  let upstreamCalls = 0;
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => {
+      upstreamCalls += 1;
+      return new Response("ok");
+    },
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 200);
+  assert.equal(upstreamCalls, 1);
+  assert.deepEqual(calls, ["/reserve", "/validate"]);
+});
+
+test("fails closed when the coordinator cannot reserve a slot", async () => {
+  const coordinator = namespace(async () => new Response("unavailable", { status: 503 }));
+  let upstreamCalls = 0;
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "musicbrainz",
+    new AbortController().signal,
+    async () => {
+      upstreamCalls += 1;
+      return new Response("must not be called");
+    },
+  );
+
+  await assert.rejects(coordinatedFetch("https://musicbrainz.org/ws/2/artist/"), /coordinator unavailable/i);
+  assert.equal(upstreamCalls, 0);
+});
+
+test("does not call upstream when a reserved slot wait is cancelled", async () => {
+  const controller = new AbortController();
+  const coordinator = namespace(async (request) => {
+    if (new URL(request.url).pathname === "/reserve") {
+      return Response.json({ scheduledAt: Date.now() + 60_000 });
+    }
+    return Response.json({ scheduledAt: Date.now() + 60_000 });
+  });
+  let upstreamCalls = 0;
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    controller.signal,
+    async () => {
+      upstreamCalls += 1;
+      return new Response("must not be called");
+    },
+  );
+
+  const pending = coordinatedFetch("https://api.mangadex.org/manga");
+  controller.abort(new DOMException("Cancelled by client.", "AbortError"));
+  await assert.rejects(pending, /cancelled/i);
+  assert.equal(upstreamCalls, 0);
+});
+
+test("extends the lane cooldown after a 429 response", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "mangadex");
+    assert.ok(body.durationMs >= 1_000 && body.durationMs <= 86_400_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "2" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+
+
+test("persists a LibriVox 429 Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "librivox");
+    assert.ok(body.durationMs >= 9_000 && body.durationMs <= 10_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "librivox",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "10" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://librivox.org/api/feed/audiobooks/");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+test("honors an exhausted MangaDex quota on a successful response", async () => {
+  const calls: string[] = [];
+  const until = Math.floor((Date.now() + 3_000) / 1_000);
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { durationMs: number };
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => new Response("ok", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Retry-After": String(until),
+      },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+test("revalidates a queued slot when a cooldown was extended after reservation", async () => {
+  let validations = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      validations += 1;
+      return Response.json({
+        scheduledAt: validations === 1 ? Date.now() + 5 : body.scheduledAt,
+      });
+    }
+    return Response.json({ accepted: true });
+  });
+  let upstreamCalls = 0;
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => {
+      upstreamCalls += 1;
+      return new Response("ok");
+    },
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 200);
+  assert.equal(validations, 2);
+  assert.equal(upstreamCalls, 1);
+});
+
+test("keeps the reserved slot when validation UPDATE affects zero rows", async () => {
+  let updateStatementSeen = false;
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          if (/^\s*UPDATE/i.test(query)) {
+            updateStatementSeen = true;
+            return {
+              one: () => { throw new Error("one() requires exactly one row"); },
+              [Symbol.iterator]: function* () {},
+            };
+          }
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const scheduledAt = Date.now() + 500;
+  const response = await coordinator.fetch(new Request("https://coordinator/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "mangadex", scheduledAt }),
+  }));
+
+  assert.equal(updateStatementSeen, true);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { scheduledAt });
+});
+test("uses one atomic SQLite UPSERT for reservation and rejects unknown lanes", async () => {
+  const statements: string[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          statements.push(query);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "musicbrainz" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.match(statements[1] ?? "", /INSERT INTO rate_limit_state/i);
+  assert.match(statements[1] ?? "", /ON CONFLICT\(singleton\) DO UPDATE/i);
+  assert.doesNotMatch(statements[1] ?? "", /SELECT/i);
+
+  const invalid = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "arbitrary" }),
+  }));
+  assert.equal(invalid.status, 400);
+});
+
+test("persists an upstream cooldown even if the client cancels after the response", async () => {
+  const controller = new AbortController();
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    calls.push(path);
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    assert.equal(request.signal.aborted, false);
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    controller.signal,
+    async () => {
+      const response = new Response("rate limited", {
+        status: 429,
+        headers: { "Retry-After": "2" },
+      });
+      controller.abort(new DOMException("Client disconnected.", "AbortError"));
+      return response;
+    },
+  );
+
+  const response = await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+test("caps an upstream Retry-After value at the coordinator's maximum cooldown", async () => {
+  let cooldownDuration = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { durationMs: number };
+    cooldownDuration = body.durationMs;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "mangadex",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "999999999" },
+    }),
+  );
+
+  await coordinatedFetch("https://api.mangadex.org/manga");
+  assert.ok(cooldownDuration <= 86_400_000);
+  assert.ok(cooldownDuration >= 86_399_000);
+});
+
+
+test("accepts the dedicated AniBT lane for coordinated public Torznab requests", async () => {
+  const statements: string[] = [];
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          statements.push(query);
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "anibt" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.match(statements[1] ?? "", /INSERT INTO rate_limit_state/i);
+  assert.equal(bindings[1]?.[1], 1_100);
+  assert.equal(bindings[1]?.[3], 1_100);
+  assert.equal(bindings[1]?.[4], 1_100);
+});
+
+
+test("serializes Eporner requests with an expiring exclusive lease", async () => {
+  let activeLease: string | null = null;
+  let leaseUntil = 0;
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          if (query.includes("UPDATE eporner_request_lock SET lease_id = ?")) {
+            if (leaseUntil <= Number(values[3])) {
+              activeLease = String(values[0]);
+              leaseUntil = Number(values[1]);
+              return {
+                one: () => ({ lease_id: activeLease } as T),
+                [Symbol.iterator]: function* () { yield { lease_id: activeLease } as T; },
+              };
+            }
+            return { one: () => null, [Symbol.iterator]: function* () {} };
+          }
+          if (query.includes("SELECT lease_until")) {
+            return {
+              one: () => ({ lease_until: leaseUntil } as T),
+              [Symbol.iterator]: function* () { yield { lease_until: leaseUntil } as T; },
+            };
+          }
+          if (query.includes("UPDATE eporner_request_lock SET lease_id = NULL")) {
+            const released = activeLease === String(values[1]);
+            if (released) {
+              activeLease = null;
+              leaseUntil = 0;
+            }
+            return {
+              one: () => released ? ({ lane: "eporner" } as T) : null,
+              [Symbol.iterator]: function* () { if (released) yield { lane: "eporner" } as T; },
+            };
+          }
+          return { one: () => null, [Symbol.iterator]: function* () {} };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const acquire = async (leaseId: string) => coordinator.fetch(new Request("https://coordinator/acquire", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner", leaseId }),
+  }));
+  const firstId = "11111111-1111-4111-8111-111111111111";
+  const secondId = "22222222-2222-4222-8222-222222222222";
+  const first = await acquire(firstId);
+  assert.deepEqual(await first.json(), { acquired: true, leaseId: firstId });
+  const blocked = await acquire(secondId);
+  const blockedPayload = await blocked.json() as { acquired: boolean; retryAt: number };
+  assert.equal(blockedPayload.acquired, false);
+  assert.ok(blockedPayload.retryAt > 0);
+
+  const released = await coordinator.fetch(new Request("https://coordinator/release", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner", leaseId: firstId }),
+  }));
+  assert.deepEqual(await released.json(), { released: true });
+  const second = await acquire(secondId);
+  assert.deepEqual(await second.json(), { acquired: true, leaseId: secondId });
+});
+
+
+test("holds the Eporner exclusive lease until the upstream response body is fully consumed", async () => {
+  const events: string[] = [];
+  const namespace = {
+    idFromName: (name: string) => name,
+    get: () => ({
+      fetch: async (request: Request) => {
+        const path = new URL(request.url).pathname;
+        const body = await request.json() as { scheduledAt?: number; leaseId?: string };
+        if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+        if (path === "/validate") return Response.json({ scheduledAt: body.scheduledAt });
+        if (path === "/acquire") {
+          events.push("acquire");
+          return Response.json({ acquired: true, leaseId: body.leaseId });
+        }
+        if (path === "/release") {
+          events.push("release");
+          return Response.json({ released: true });
+        }
+        return Response.json({ until: Date.now() + 1000 });
+      },
+    }),
+  };
+  let releaseBody!: () => void;
+  const bodyGate = new Promise<void>((resolve) => { releaseBody = () => resolve(); });
+  const upstreamBody = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      await bodyGate;
+      controller.enqueue(new TextEncoder().encode("ok"));
+      controller.close();
+    },
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    namespace,
+    "eporner",
+    new AbortController().signal,
+    async () => new Response(upstreamBody, { headers: { "Content-Type": "application/json" } }),
+  );
+
+  const pending = coordinatedFetch("https://www.eporner.com/api/v2/video/search/");
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(events, ["acquire"]);
+  releaseBody();
+  const response = await pending;
+  assert.equal(await response.text(), "ok");
+  assert.deepEqual(events, ["acquire", "release"]);
+});
+
+
+test("accepts Eporner's sequential API lane with one-second spacing", async () => {
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "eporner" }),
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 1_000);
+  assert.equal(bindings[1]?.[3], 1_000);
+  assert.equal(bindings[1]?.[4], 1_000);
+});
+
+
+test("accepts The RarBg anonymous lane with a conservative 2.1-second interval", async () => {
+  const statements: string[] = [];
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          statements.push(query);
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "therarbg" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 2_100);
+  assert.equal(bindings[1]?.[3], 2_100);
+  assert.equal(bindings[1]?.[4], 2_100);
+});
+
+
+test("accepts the LibriVox API lane with five-second shared spacing", async () => {
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "librivox" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 5_000);
+  assert.equal(bindings[1]?.[3], 5_000);
+  assert.equal(bindings[1]?.[4], 5_000);
+});
+
+test("persists an AudioSilo Meta Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "audiosilo");
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "audiosilo",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "3" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://meta.audiosilo.app/api/v1/works/search?q=test");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+test("accepts the AudioSilo Meta API lane with conservative one-second shared spacing", async () => {
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "audiosilo" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 1_000);
+  assert.equal(bindings[1]?.[3], 1_000);
+  assert.equal(bindings[1]?.[4], 1_000);
+});
+
+test("persists Perverzija Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    calls.push(path);
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "perverzija");
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "perverzija",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "3" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.perverzija.com/v1/scenes?q=test");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
+test("honors Perverzija X-RateLimit-Reset when a successful response exhausts quota", async () => {
+  let cooldownDuration = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "perverzija");
+    cooldownDuration = body.durationMs;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "perverzija",
+    new AbortController().signal,
+    async () => new Response("quota exhausted", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "12",
+      },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.perverzija.com/v1/scenes?q=test");
+  assert.equal(response.status, 200);
+  assert.equal(cooldownDuration, 12_000);
+});
+
+test("accepts the Perverzija DB lane with conservative 600 ms shared spacing", async () => {
+  const bindings: Array<string | number | null>[] = [];
+  const ctx = {
+    storage: {
+      sql: {
+        exec<T>(query: string, ...values: Array<string | number | null>): { one(): T | null; [Symbol.iterator](): Iterator<T> } {
+          bindings.push(values);
+          return {
+            one: () => ({ scheduled_at: Date.now() } as T),
+            [Symbol.iterator]: function* () { yield { scheduled_at: Date.now() } as T; },
+          };
+        },
+      },
+    },
+    blockConcurrencyWhile: async <T>(callback: () => Promise<T>) => callback(),
+  };
+  const coordinator = new RateLimitCoordinator(ctx);
+  const response = await coordinator.fetch(new Request("https://coordinator/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lane: "perverzija" }),
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(bindings[1]?.[1], 600);
+  assert.equal(bindings[1]?.[3], 600);
+  assert.equal(bindings[1]?.[4], 600);
+});
+
+test("honors The RarBg daily quota reset header", async () => {
+  let cooldownDuration = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { durationMs: number };
+    cooldownDuration = body.durationMs;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "therarbg",
+    new AbortController().signal,
+    async () => new Response("daily quota exhausted", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining-Day": "0",
+        "X-RateLimit-Reset-Day": "120",
+      },
+    }),
+  );
+
+  await coordinatedFetch("https://therarbg.com/api/v1/search/");
+  assert.ok(cooldownDuration >= 118_000);
+  assert.ok(cooldownDuration <= 120_000);
+});

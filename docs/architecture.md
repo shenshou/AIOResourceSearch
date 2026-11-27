@@ -2,26 +2,63 @@
 
 ## Product boundary
 
-AIOResourceSearch is an aggregator, not a media-management product. The user submits one query; the application queries enabled and implemented providers, normalizes their responses, deduplicates equivalent results, and presents metadata and source-supplied links.
+AIOResourceSearch is a general-purpose, multi-category resource search aggregator. A user submits one query and selects a content category (or all categories); the Worker schedules enabled sources, normalizes their metadata, deduplicates results, and returns source-attributed links.
 
-### Included capabilities
+It is a search and aggregation system, not a media-management product. It does not host or stream media.
 
-- Multi-provider search
-- JAV metadata, Torrent index, forum, and other-index source categories
-- Result normalization and deduplication
-- Metadata and optional image presentation
-- Magnet, ED2K, Torrent, and external-link actions when a permitted provider supplies them
-- Source administration (CRUD, enable/disable, connection/search diagnostics as adapters become available)
-- Theme and image-display preferences in browser storage only
+## Content categories and source kinds
 
-### Explicit non-goals
+Content categories describe what the user wants to search:
 
-- User registration or profiles
-- Cloud favorites or search history
-- Media hosting, streaming, or local media management
-- D1 database
-- Cross-device synchronization of personal user data
-- Arbitrary website scraping without a dedicated, reviewed adapter
+- `jav`: JAV / adult video metadata
+- `anime`: anime and animation
+- `film-tv`: films and television
+- `manga`: manga and comics
+- `novel`: books and novels
+- `game`: games
+- `music`: music and albums
+- `general`: other public resource indexes
+
+The existing `SourceCategory` field is retained as a source-kind classification for backward compatibility:
+
+- `jav`: JAV metadata site
+- `torrent`: torrent index / tracker
+- `forum`: forum
+- `other-index`: other metadata or resource index
+
+These two dimensions are deliberately independent. For example, a torrent index may provide JAV resources, anime resources, or general resources. New source records set `contentCategory`; legacy records without it are interpreted as `jav` so existing configurations continue to work.
+
+## Acquisition mechanisms
+
+Worker-backed adapters declare one mechanism:
+
+1. **API** — documented REST/JSON, XML, Torznab, or another reviewed structured endpoint.
+2. **RSS** — public RSS or Atom feeds.
+3. **HTML** — a reviewed HTML adapter requests a public search page and extracts configured fields with Cloudflare's native `HTMLRewriter`.
+
+External navigation is independent from Worker acquisition. An external-search-only source expands its verified HTTPS search URL template or homepage URL. A Provider source may additionally declare `externalSearchUrlTemplate` or `externalSearchBaseUrl`; the Worker returns that destination alongside Provider results but never fetches it. This allows one source record to expose both capabilities without coupling browser navigation to Worker acquisition.
+
+### Generic HTML adapter
+
+The registered `generic-html` adapter uses declarative CSS selectors stored with the source configuration:
+
+- result card selector (required)
+- title selector (required)
+- detail-link selector (required)
+- image, description, and Magnet selectors (optional)
+- same-origin HTTPS search URL template containing exactly one `{query}`
+
+Safety constraints:
+
+- The search template must use the same HTTPS origin as the configured base URL.
+- Redirects are not followed.
+- The response must be HTML/XHTML and is limited to 2 MiB while streaming.
+- Detail URLs must resolve to HTTPS on the configured source host.
+- Magnet links are accepted only when they contain a valid BitTorrent Info Hash.
+- Selectors are configuration, not executable JavaScript. No page scripts are run.
+- No login, paywall, CAPTCHA, anti-bot challenge, geo restriction, rate limit, or other access control is bypassed.
+
+HTML selectors and URL templates are site-specific. A generic adapter does not make every website compatible; each source still needs a reviewed configuration and live connectivity test.
 
 ## Runtime topology
 
@@ -32,57 +69,123 @@ Vue 3 frontend (Cloudflare Pages)
         v
 Cloudflare Worker API
         |
-        +---- Workers KV: source configuration
+        +---- Workers KV: source configuration (sources:config:v1)
         |
-        +---- Provider adapters (one adapter per supported protocol/source family)
+        +---- Workers KV: adapter metadata (adapters:config:v1)
+        |
+        +---- compile-time Provider registry
                     |
-                    +---- permitted source APIs / feeds / public endpoints
+                    +---- API adapters
+                    +---- RSS adapters
+                    +---- HTML adapters
+                              |
+                              +---- permitted public source endpoints
 ```
 
-Pages and Worker are separate deployable targets in one repository. The frontend must not call source websites directly; provider requests belong behind the Worker boundary.
+Pages and Worker are separate deployable targets in one monorepo. Source requests belong behind the Worker boundary; the browser does not directly run Provider adapters.
 
 ## Module responsibilities
 
-- `apps/web`: routes, page composition, UI components, browser-only preferences, API client.
-- `apps/worker`: HTTP routing, admin authorization, input validation, source configuration persistence, provider orchestration.
-- `packages/shared`: framework-independent API and source configuration contracts.
-- Provider adapters: translate one source's permitted protocol into the shared result contract. An adapter is code, not a URL entered in the management UI.
+- `apps/web`: search page, category selector, source/adapter administration, browser-only preferences, API clients.
+- `apps/worker`: HTTP routing, admin authorization, configuration validation/persistence, acquisition adapters, orchestration, result normalization.
+- `packages/shared`: framework-independent category, source, adapter, and API contracts.
+- Adapter metadata: identity, version, mechanism, supported source kinds, supported content categories, capabilities, and administrative state. It contains no executable code.
+- Provider adapters: reviewed TypeScript implementations that translate one source's permitted protocol into the shared result contract.
 
-A source can be added through configuration only when its `adapterId` is already implemented. A new protocol or page structure requires a reviewed code adapter first.
+A source has one of two acquisition types:
 
-## Source configuration
+- `provider`: `adapterId` must exist in adapter metadata, be enabled, and have an implementation in the Worker compile-time registry.
+- `external-search`: has an HTTPS `searchUrlTemplate` containing exactly one `{query}`, or an HTTPS `baseUrl` homepage. The Worker returns the destination but never fetches or parses it.
 
-The first implementation stores one versioned JSON document under the KV key `sources:config:v1`. This keeps the initial management model small and makes a full configuration read inexpensive.
+A Provider may independently expose user navigation through `externalSearchUrlTemplate` (exactly one `{query}`) or `externalSearchBaseUrl` (HTTPS homepage). These fields are output-only navigation metadata: they never initiate Worker requests, do not affect Provider resolution, and are shown only while the source is enabled. Legacy `external-search` records and their `searchUrlTemplate` / `baseUrl` fields remain supported.
 
-KV is eventually consistent and does not provide compare-and-swap transactions. The API uses a revision precondition to catch ordinary stale-editor updates, but this is not a distributed lock. Avoid concurrent administrator edits; if multi-admin transactional editing becomes a real requirement, revisit the storage primitive.
+## Source and adapter configuration
 
-Only source configuration belongs in KV. Search responses, images, media, favorites, and search history are not persisted there.
+Two independent versioned JSON documents use the same KV namespace:
 
-Configuration CRUD is a runtime operation. The admin page sends authenticated requests to the Worker, which validates and writes the configuration to KV. It does not modify source code or trigger a deployment. KV propagation can be delayed by its eventual-consistency model and the configured edge cache TTL. A new provider adapter or parser is code and requires a Worker deployment.
+- `sources:config:v1`: data-source definitions.
+- `adapters:config:v1`: adapter administrative metadata.
 
-## Security
+Source records include source kind, user-facing `contentCategory`, adapter ID, capabilities, search modes, timeout, and optional protocol-specific configuration. HTML sources additionally store `providerSearchUrlTemplate` and declarative `htmlSelectors`, including an optional mapping of up to 20 category-specific metadata field names to CSS selectors.
 
-- All source mutations require a Worker secret named `ADMIN_API_TOKEN`.
-- The browser must send the token as a Bearer token; never place it in a URL or commit it.
-- The frontend keeps the administrator token in component memory only; it is not persisted to LocalStorage or SessionStorage.
-- CORS must be restricted to exact frontend origins using `ALLOWED_ORIGINS`.
-- Per-source credentials belong in Worker secrets. KV may contain a credential binding name, never the credential value.
-- Source URLs must use HTTPS and must not embed credentials or query-string secrets.
-- Public source listings omit private credential-binding metadata and administrator notes.
-- Validate all management input before writing it to KV.
+KV is eventually consistent and does not provide compare-and-swap transactions. ETag/revision preconditions catch ordinary stale-editor updates but are not distributed locks. Avoid concurrent administrator edits.
+
+Only configuration belongs in KV. Adapter executable code remains in the Worker bundle. Search results, images, media, favorites, and search history are not persisted there.
+
+CRUD and enable/disable operations update KV and do not require deployment. New adapter implementations, protocols, parsers, or code changes require a Worker deployment. KV propagation and edge cache TTL may delay visibility of changes.
+
+## Adapter registry and current implementations
+
+Executable adapters are registered in `apps/worker/src/providers/registry.ts`. The registry is a compile-time allowlist and is never populated from KV. An adapter metadata record cannot make arbitrary code executable.
+
+For registered adapters, runtime-owned metadata (mechanism, implementation version, source categories, content categories, and capabilities) is derived from the compiled Provider definition when validating or reading configuration. KV can store the adapter's administrative description, display name, notes, and enabled state, but cannot redefine what the code actually supports. A source may select only a subset of the implementation's capabilities.
+
+The generic HTML adapter additionally requires its optional image and Magnet capabilities to match configured CSS selectors. It does not return image or Magnet fields when the source has not declared those capabilities, even if a parser implementation supplies such values.
+
+Current registered implementations:
+
+| Adapter | Mechanism | Content category | Role |
+|---|---|---|---|
+| Perverzija DB | API / JSON | JAV | Metadata |
+| Torlock Torznab | API / XML | JAV | Torrent search |
+| YourBittorrent | API / JSON | JAV | Torrent search |
+| Sukebei RSS | RSS | JAV | Magnet feed |
+| generic-html | HTML | Configurable | Public HTML search pages |
+
+The four site-specific providers have source-specific code and tests. `generic-html` is a reusable parser adapter; individual HTML sources still require selector configuration and review.
 
 ## Search flow
 
 ```text
 Search page
-  -> frontend API client
+  -> query + content category + search mode
   -> Worker search endpoint
-  -> enabled source configurations
-  -> implemented provider adapters
-  -> shared result normalization
-  -> deduplication
+  -> enabled source configurations matching content category
+  -> API / RSS / HTML Provider adapters
+  -> result validation and normalization
+  -> URL deduplication
   -> response to frontend
-  -> result cards and link actions
+  -> result cards and source links
+
+External-search sources
+  -> verified HTTPS search URL or homepage
+  -> user opens the original site
 ```
 
-Search orchestration is not enabled until the provider audit identifies sources and access methods that can be integrated appropriately.
+The search category defaults to `all`. Legacy sources with no `contentCategory` are treated as `jav`. Each result is stamped with the configured source identity and effective content category. The normalized result contract keeps stable common fields (title, URL, release date, image, resource links) and an optional bounded `metadata` string map for category-specific fields such as author, ISBN, publisher, season, episode, platform, or artist.
+
+The scheduler limits outbound concurrency, applies per-source timeouts, isolates failures, and caps results at 50 per source and 100 total. HTTPS result links are validated. Magnet links require a valid `xt=urn:btih`; ED2K values are checked against their expected URI format. APIs with application-wide or IP-wide quotas require a shared upstream coordinator; see [Shared Upstream Rate-Limiting Design](./provider-rate-limiting.md). Edge-local Cache API entries and KV writes are not global rate limiters.
+
+## Security and access policy
+
+- All source/adapter mutations require the Worker secret `ADMIN_API_TOKEN`.
+- The browser keeps the admin token in component memory only.
+- CORS must be restricted to exact frontend origins through `ALLOWED_ORIGINS`.
+- Credentials belong in Worker secrets. KV may contain a secret binding name, never its value.
+- Public listings omit administrator notes and secret-binding metadata.
+- Validate all management input before writing it to KV.
+- HTML adapter URLs are same-origin with the configured base URL; redirects are refused and response bodies are bounded.
+- Do not bypass authentication, paywalls, CAPTCHA, anti-bot protections, geo restrictions, rate limits, or other access controls.
+- Public visibility does not itself establish permission for automated access, republication, or image display. Review applicable site terms and legal requirements before enabling each source.
+
+## Explicit non-goals
+
+- User registration or profiles
+- Cloud favorites or search history
+- Media hosting, streaming, or local media management
+- D1 database
+- Cross-device synchronization of personal user data
+- Arbitrary JavaScript execution from KV
+- Automatic scraping of every catalog entry without per-source review
+
+## Tests
+
+Worker unit tests live under `apps/worker/tests`, grouped by responsibility (currently `providers/`, `routes/`, and `validation/`). They cover scheduler behavior, source/adapter validation, ETag and adapter-management invariants, deduplication, failure isolation, timeouts, concurrency, adapter-specific parsing, and HTTP route behavior using fixtures/mocks. Tests do not prove live Cloudflare connectivity or source permission.
+
+Run from the repository root:
+
+```bash
+npm run test:worker
+```
+
+CI runs Worker tests, frontend production build, and Worker type-check.

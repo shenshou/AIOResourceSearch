@@ -1,6 +1,6 @@
-import type { SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
+import type { SearchMode, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
+import { getApiBaseUrl } from "./apiBase";
 
 export interface VersionedSources {
   config: SourcesConfig;
@@ -32,9 +32,10 @@ async function request<T>(
   if (options.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options.etag) headers.set("If-Match", options.etag);
 
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${apiBaseUrl}${path}`, {
       method: options.method ?? "GET",
       headers,
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
@@ -59,6 +60,17 @@ async function request<T>(
   };
 }
 
+export interface SourceTestResponse {
+  sourceId: string;
+  kind: "test-connection" | "test-search";
+  status: "success" | "error" | "timeout";
+  elapsedMs: number;
+  resultCount: number;
+  sampleResults: Array<{ title: string; url: string; catalogNumber?: string; releaseDate?: string }>;
+  errorCode?: string;
+  message?: string;
+}
+
 export const sourceApi = {
   async getPublicSources() {
     const result = await request<{ version: number; sources: Omit<SourceDefinition, "credentialBinding" | "notes">[] }>("/api/sources");
@@ -71,12 +83,30 @@ export const sourceApi = {
     return { config: result.data, etag: result.etag };
   },
 
+  async updateFieldPriorities(token: string, etag: string, fieldPriorities: Record<string, string[]>) {
+    return request<SourcesConfig>("/api/admin/sources/settings/field-priorities", {
+      token,
+      method: "PATCH",
+      etag,
+      body: { fieldPriorities },
+    });
+  },
+
   async createSource(token: string, etag: string, source: SourceDefinition) {
     return request<SourcesConfig>("/api/admin/sources", {
       token,
       method: "POST",
       etag,
       body: { source },
+    });
+  },
+
+  async importExternalSources(token: string, etag: string, sources: SourceDefinition[]) {
+    return request<SourcesConfig>("/api/admin/sources", {
+      token,
+      method: "POST",
+      etag,
+      body: { sources },
     });
   },
 
@@ -95,5 +125,22 @@ export const sourceApi = {
       method: "DELETE",
       etag,
     });
+  },
+
+  async testConnection(token: string, sourceId: string): Promise<SourceTestResponse> {
+    const result = await request<SourceTestResponse>(`/api/admin/sources/${encodeURIComponent(sourceId)}/test-connection`, {
+      token,
+      method: "POST",
+    });
+    return result.data;
+  },
+
+  async testSearch(token: string, sourceId: string, query: string, mode: SearchMode): Promise<SourceTestResponse> {
+    const result = await request<SourceTestResponse>(`/api/admin/sources/${encodeURIComponent(sourceId)}/test-search`, {
+      token,
+      method: "POST",
+      body: { query, mode },
+    });
+    return result.data;
   },
 };
