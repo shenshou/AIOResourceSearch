@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
   CONTENT_CATEGORIES,
   CONTENT_CATEGORY_LABELS,
@@ -36,7 +36,13 @@ const showEditor = ref(false);
 const editingId = ref<string | null>(null);
 const catalogQuery = ref("");
 const htmlFieldsJson = ref("{}");
+const fieldPrioritiesJson = ref("{}");
 const contentCategoryLabels = CONTENT_CATEGORY_LABELS;
+
+watch(manager.fieldPriorities, (value) => {
+  fieldPrioritiesJson.value = JSON.stringify(value, null, 2);
+}, { deep: true, immediate: true });
+
 const categoryLabels: Record<SourceCategory, string> = {
   jav: "JAV 资源站",
   torrent: "BT / Torrent 搜索引擎",
@@ -115,6 +121,28 @@ onMounted(async () => {
     availableAdapters.value = [];
   }
 });
+
+async function saveFieldPriorities() {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fieldPrioritiesJson.value || "{}");
+  } catch {
+    manager.error.value = "字段优先级 JSON 格式无效。";
+    return;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    manager.error.value = "字段优先级必须是 JSON 对象。";
+    return;
+  }
+  const entries = Object.entries(parsed as Record<string, unknown>);
+  if (entries.length > 100 || entries.some(([, ids]) =>
+    !Array.isArray(ids) || ids.length > 100 || ids.some((id) => typeof id !== "string")
+  )) {
+    manager.error.value = "最多配置 100 个字段；每个字段最多列出 100 个来源 ID。";
+    return;
+  }
+  await manager.saveFieldPriorities(parsed as Record<string, string[]>);
+}
 
 async function importAllCatalogSources() {
   const candidates: SourceDefinition[] = unregisteredExternalCatalogEntries.value.map((entry) => ({
@@ -381,6 +409,21 @@ async function deleteSource(source: SourceDefinition) {
         <p v-else-if="!visibleCatalogEntries.length" class="panel-note">没有匹配的候选来源。</p>
       </details>
 
+      <section class="field-priority-panel">
+        <div>
+          <h2>字段来源优先级</h2>
+          <p>可分别指定标题、番号、发行日期、封面、简介及 metadata 子字段的来源顺序。未配置或空数组时沿用数据源列表顺序；列出的来源优先于未列出的来源。支持字段：title、catalogNumber、releaseDate、imageUrl、description、metadata.字段名。</p>
+          <p class="form-hint">来源 ID：{{ manager.sources.value.map((source) => source.id).join("、") || "暂无已登记来源" }}</p>
+        </div>
+        <label class="wide">字段优先级 JSON
+          <textarea v-model="fieldPrioritiesJson" rows="7" maxlength="12000" spellcheck="false" placeholder='{"catalogNumber":["jav-metadata-a","jav-metadata-b"],"metadata.studio":["studio-db","jav-metadata-a"]}'></textarea>
+        </label>
+        <div class="field-priority-actions">
+          <button class="primary-button small" type="button" :disabled="manager.saving.value" @click="saveFieldPriorities">保存字段优先级</button>
+          <span class="form-hint">这是运行时配置，保存后立即生效，不需要重新部署 Worker。</span>
+        </div>
+      </section>
+
       <div class="manager-toolbar">
         <div class="stats">
           <div class="stat-card"><strong>{{ manager.sources.value.length }}</strong><span>全部数据源</span></div>
@@ -549,4 +592,9 @@ async function deleteSource(source: SourceDefinition) {
 .source-test-feedback ul { margin: 0.25rem 0 0; padding-left: 1.25rem; }
 .source-test-feedback li { overflow-wrap: anywhere; }
 @media (max-width: 640px) { .source-test-actions input, .source-test-actions select { flex: 1 1 100%; max-width: none; } }
+  .field-priority-panel { display: grid; gap: 0.8rem; margin: 1rem 0 1.25rem; padding: 1rem; border: 1px solid var(--border-color, #d1d5db); border-radius: 0.75rem; background: var(--panel-bg, rgba(148,163,184,.04)); }
+  .field-priority-panel h2 { margin: 0 0 .35rem; font-size: 1rem; }
+  .field-priority-panel p { margin: .25rem 0; }
+  .field-priority-panel textarea { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+  .field-priority-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
 </style>
