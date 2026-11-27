@@ -169,6 +169,10 @@ export interface ResourceRelationship {
   name: string;
   /** Optional source-provided HTTPS page for this related entity. */
   url?: string;
+  /** Alternate names observed for the same URL-backed or unambiguous entity. */
+  aliases?: string[];
+  /** Provider sources that contributed this related-entity record. */
+  sourceAttributions?: FieldAttribution[];
 }
 
 export interface ApiError {
