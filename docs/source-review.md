@@ -4196,3 +4196,24 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added three project-owned music candidates: Audius, Jamendo, and Free Music Archive. All are homepage-only; no search templates or automated acquisition paths were added.
 - Catalog now contains 160 unique candidates (JAV 28, torrent 30, forum 16, other-index 86); AIOResourceSearch provenance tags: 55 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
 - No Provider code, credentials, KV configuration, source enablement, or deployment changed.
+
+
+## 播客与有声读物来源审查（2026-11-27，第六批）
+
+### LibriVox — eligible candidate for a future audiobook metadata Provider
+- First-party notice dated 2026-09-16 explicitly says all LibriVox recordings are in the public domain and welcomes third-party app developers, archivists, streaming channels, and curators to share and re-share them. It also expressly describes the official API as the supported mechanism for third-party applications to keep their catalogue current.
+- The released API supports title, author, and genre searches; JSON output; selecting returned fields; pagination using limit/offset; incremental updates using the `since` timestamp; and catalogue/detail URLs including RSS and Archive.org links.
+- Current API guidance (go-live target 2026-09-26) sets a maximum of 500 records per request and asks clients to separate large-dataset requests by several seconds. It warns that excessive bot/scraper traffic burdens volunteer-operated infrastructure and may lead to 429 responses.
+- **Decision:** add LibriVox as a candidate for a future dedicated audiobook metadata Provider. Any implementation must use conservative pacing, bounded pagination, incremental updates rather than repeated full-catalog pulls, and source attribution/link-back. Do not assume that every underlying source text in every language is public domain in every jurisdiction solely from the recording catalogue statement; the current project should index LibriVox-hosted recordings and their catalogue metadata, not rehost audio.
+- References: https://librivox.org/2026/09/16/librivox-api-update/ ; https://librivox.org/api/info
+
+### Podcast Index — homepage-only pending current v2.0 terms verification
+- Podcast Index provides podcast discovery APIs. Its official terms repository states that the current terms are version 2.0, but the v2.0 document was not independently retrievable in this review.
+- The accessible published v1.1 API terms explicitly prohibit scraping, building databases, or creating permanent copies of content returned by the APIs unless expressly permitted by the content owner or applicable law; they also limit caching to the cache header and require attribution. A public discussion records a developer's concern that API responses cannot be used to build a permanent catalogue database under that clause.
+- **Decision:** retain Podcast Index as a podcast discovery candidate with homepage-only navigation. Do not integrate API search, cache/index API results, or poll feeds until the current v2.0 terms and the precise rights for catalogue metadata are verified. This is a deferred review, not a claim that the service permanently forbids all integrations.
+- References: https://github.com/Podcastindex-org/terms-of-service ; https://github.com/Podcastindex-org/legal/blob/main/TermsOfService.md ; https://github.com/Podcastindex-org/podcast-namespace/discussions/558
+
+### Batch outcome
+- Added LibriVox and Podcast Index as two project-owned candidates. LibriVox is a potential future API-backed audiobook source; Podcast Index remains homepage-only pending current terms verification.
+- Catalog now contains 162 unique candidates (JAV 28, torrent 30, forum 16, other-index 88); AIOResourceSearch provenance tags: 57 (overlapping). User-opened search templates remain 9; concrete Provider implementations remain 10.
+- No Provider code, credentials, KV configuration, source enablement, or deployment changed.
