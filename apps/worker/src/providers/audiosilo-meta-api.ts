@@ -72,7 +72,10 @@ function parseReleaseDate(value: unknown): string | undefined {
     const parsed = new Date(date + "T00:00:00Z");
     if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) return undefined;
   }
-  if (date.length === 7 && Number(date.slice(5, 7)) > 12) return undefined;
+  if (date.length === 7) {
+    const month = Number(date.slice(5, 7));
+    if (month < 1 || month > 12) return undefined;
+  }
   return date;
 }
 
