@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **31 torrent-category entries**:
+The source catalog currently contains **36 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 21 | User-initiated navigation only; no Worker acquisition |
-| Total | 31 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 26 | User-initiated navigation only; no Worker acquisition |
+| Total | 36 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -57,7 +57,7 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 
 1. Keep the existing six magnet/torrent adapters and their source records intact.
 2. Do not create a fake ED2K Provider from the URI validator alone.
-3. Continue reviewing the 21 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
+3. Continue reviewing the 26 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
 4. For ED2K, only consider a source when it offers a documented public HTTP API/RSS or an explicitly authorized stable search interface. A self-hosted Kad engine would require a separate architecture decision and is not part of the current Worker topology.
 5. Preserve per-link source attribution and validate the complete URI before returning it. Never invent a magnet/ED2K link from metadata or a detail-page URL.
 
@@ -251,3 +251,31 @@ References:
 - Servarr/Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
 - Jackett 0Magnet request and operator description: https://github.com/Jackett/Jackett/issues/10738
 - FlareSolverr troubleshooting context: https://github.com/FlareSolverr/FlareSolverr/wiki/Troubleshooting
+
+
+## External torrent-source review batch 5 — 2026-11-27
+
+Five additional candidates surfaced from the current Prowlarr/Jackett public-indexer catalogues were reviewed. Their community indexer classifications establish candidate discovery only; they do not establish first-party permission to automate, reuse, cache, or publicly display data.
+
+| Source | First-party/current evidence | Decision |
+|---|---|---|
+| Free JAV Torrent | The first-party homepage is reachable and exposes JAV categories, search UI and resource metadata. No magnet URI, .torrent URL, official API/RSS contract, or stable supported query contract was verified in the extracted page. Its Terms permit only personal, non-commercial, temporary viewing and prohibit copying, public display (commercial or non-commercial), transfer and mirroring. The homepage's Tracker link points to PornXLab, but an operator relationship is not established. | Retain as JAV/Torrent external-only directory entry. No Worker fetching, metadata extraction, magnet harvesting, or search template. |
+| MyPornClub | Prowlarr/Jackett classify it as a public adult tracker; Jackett's historical request identifies https://myporn.club/. The first-party homepage returned HTTP 403 in this review. A community qBittorrent plugin demonstrates HTML parsing, not first-party authorization. No current first-party API/RSS, terms or automation/reuse permission was verified. | Retain original homepage as external-only. No scraping, community scraper reuse, or 403 bypass. |
+| PornXLab | The first-party homepage is reachable and shows search/category controls and resource listings, but the homepage extraction did not verify magnet URIs, .torrent URLs, or an official API/RSS contract. First-party Terms grant only personal, non-commercial, temporary viewing and prohibit copying, public display (commercial or non-commercial), transfer and mirroring. | Retain as external-only. The stated licence conflicts with automated aggregation/public display; no Worker fetching or metadata/link extraction. |
+| PornRips | The first-party homepage is reachable and shows a search field and recent release posts. Its Requests page says users should provide an external download link for items not downloadable from XXXClub; this does not establish PornRips as a magnet/torrent index or prove its posts contain magnet links. No first-party API/RSS or automation/reuse terms were verified. | Retain as external-only adult torrent candidate; do not treat it as a confirmed magnet provider, scrape posts, or harvest external download links. |
+| U3C3 | Prowlarr classifies it as a public tracker focused on East Asian adult media. The first-party homepage could not be read. The community u3c3/bt-btt repository provides site/domain guidance, but is not first-party API/RSS documentation or an automation/reuse grant; its access-configuration advice is not adopted. | Retain the canonical u3c3.com destination as external-only. No hosts modification, mirror switching, scraping, or challenge/access-control workaround. |
+
+### Batch result
+- 5 new directory candidates added; 0 promoted to Provider; 0 search templates added.
+- Current Torrent inventory: **36 entries = 10 Provider records + 26 external-only/unverified records**, backed by the same 6 existing Adapter implementations.
+- None of these five is confirmed as an approved source of magnet or .torrent links. Free JAV Torrent and PornXLab have first-party terms that prohibit public display/copying under their stated limited-use licences.
+- No login, account, proxy, challenge solver, region workaround, undocumented API call, source enablement, production KV write, or deployment was used.
+
+References:
+- Prowlarr supported-indexers list: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett supported trackers: https://github.com/Jackett/Jackett
+- Free JAV Torrent homepage and Terms: https://freejavtorrent.com/ ; https://freejavtorrent.com/page/tos.html
+- PornXLab homepage and Terms: https://www.pornxlab.com/ ; https://www.pornxlab.com/page/tos.html
+- MyPornClub first-party destination: https://myporn.club/
+- PornRips homepage and Requests page: https://pornrips.to/ ; https://pornrips.to/requests/
+- U3C3 community documentation: https://github.com/u3c3/bt-btt

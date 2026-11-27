@@ -4786,3 +4786,24 @@ References:
 - Servarr/Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
 - Jackett 0Magnet request: https://github.com/Jackett/Jackett/issues/10738
 - FlareSolverr troubleshooting: https://github.com/FlareSolverr/FlareSolverr/wiki/Troubleshooting
+
+
+## Prowlarr/Jackett discovery batch 5 (2026-11-27)
+
+The current public-indexer catalogues exposed five additional candidates: Free JAV Torrent, MyPornClub, PornXLab, PornRips and U3C3. They are recorded in the source catalogue and the resource-link status ledger. Their presence in community indexer lists is discovery evidence only; Jackett explicitly describes itself as a proxy that translates tracker-specific HTTP requests and parses site HTML/JSON, so a community implementation is not a first-party API or permission grant.
+
+- **Free JAV Torrent:** first-party homepage currently shows JAV categories, search controls and metadata, but no verified magnet/.torrent link or supported API/RSS contract in the extracted page. Its Terms limit use to personal, non-commercial, temporary viewing and prohibit copying, public display, transfer and mirroring. Homepage's Tracker link points to PornXLab; operator relationship not confirmed.
+- **MyPornClub:** Prowlarr/Jackett identify it as a public adult tracker and Jackett records myporn.club as its destination, but the first-party homepage returned 403. A third-party qBittorrent plugin is reverse-engineered HTML parsing, not permission. No challenge bypass or scraper reuse.
+- **PornXLab:** first-party homepage has search/category controls and listings, but no verified magnet/.torrent/API/RSS contract. Its Terms restrict use to personal, non-commercial, temporary viewing and prohibit copying and public display, so it is not suitable for automated public aggregation under the published licence.
+- **PornRips:** first-party homepage shows current release posts and search. Its Requests page asks users to provide an external download link for content not downloadable from XXXClub; this does not establish it as a magnet index. No API/RSS or automation/reuse permission verified.
+- **U3C3:** Prowlarr describes it as an East-Asian adult public tracker, but its first-party homepage could not be read. The u3c3/bt-btt repository is community site guidance, not first-party automation permission; host-file edits and access workarounds are explicitly out of scope.
+
+**Decision:** all five are retained as external-only candidates. No Provider, search template, magnet extraction, or scraping logic is added. Torrent inventory rises from 31 to 36 records (10 Provider records, 26 external-only); unique adapters remain 6. No source was enabled, no production KV was modified, and no deployment/CI was run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett project: https://github.com/Jackett/Jackett
+- First-party Free JAV Torrent Terms: https://freejavtorrent.com/page/tos.html
+- First-party PornXLab Terms: https://www.pornxlab.com/page/tos.html
+- First-party PornRips Requests: https://pornrips.to/requests/
+- U3C3 community documentation: https://github.com/u3c3/bt-btt
