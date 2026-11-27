@@ -197,7 +197,7 @@ const errorLabels: Record<string, string> = {
                   <button v-else type="button" @click="copyResourceLink(link.url, 'Torrent')">复制 Torrent 链接</button>
                   <a v-if="link.type === 'torrent'" :href="link.url" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
                   <small v-if="link.sourceAttributions?.length" class="resource-link-source">
-                    来源：{{ link.sourceAttributions.map((source) => source.sourceName).join("、") }}
+                    来源：{{ link.sourceAttributions?.map((source) => source.sourceName).join("、") }}
                   </small>
                 </template>
               </template>
