@@ -250,7 +250,7 @@ test("validateAdapter uses the registered implementation as the source of truth"
   assert.ok(result);
   assert.deepEqual(result.categories, ["other-index"]);
   assert.deepEqual(result.capabilities, ["metadata"]);
-  assert.equal(result.version, "1.0.0");
+  assert.equal(result.version, "1.1.0");
 });
 
 test("validateAdapter removes duplicate categories and capabilities for unimplemented adapters", () => {
