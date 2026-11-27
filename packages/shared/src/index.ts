@@ -77,6 +77,8 @@ export interface HtmlSelectorConfig {
   image?: string;
   description?: string;
   magnet?: string;
+  torrent?: string;
+  ed2k?: string;
   /** Optional field-name to CSS-selector mapping for category-specific metadata. */
   fields?: Record<string, string>;
 }
