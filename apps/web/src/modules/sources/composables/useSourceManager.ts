@@ -9,6 +9,7 @@ export function useSourceManager() {
   const authenticated = session.authenticated;
   const sessionGeneration = session.generation;
   const sources = ref<SourceDefinition[]>([]);
+  const fieldPriorities = ref<Record<string, string[]>>({});
   const revision = ref(0);
   const etag = ref("");
   const loading = ref(false);
@@ -37,6 +38,7 @@ export function useSourceManager() {
       const result = await sourceApi.getAdminSources(requestToken);
       if (generation !== operationGeneration || sharedGeneration !== sessionGeneration.value || sequence !== reloadSequence || token.value !== requestToken) return false;
       sources.value = result.config.sources;
+      fieldPriorities.value = result.config.fieldPriorities ?? {};
       revision.value = result.config.version;
       etag.value = result.etag;
       authenticated.value = true;
@@ -92,7 +94,7 @@ export function useSourceManager() {
     clearMessages();
   }
 
-  async function persist(action: () => Promise<{ data: { version: number; sources: SourceDefinition[] }; etag: string | null }>, successMessage: string) {
+  async function persist(action: () => Promise<{ data: { version: number; sources: SourceDefinition[]; fieldPriorities?: Record<string, string[]> }; etag: string | null }>, successMessage: string) {
     if (saving.value || !token.value) return false;
     const generation = operationGeneration;
     const sharedGeneration = sessionGeneration.value;
@@ -103,6 +105,7 @@ export function useSourceManager() {
       const result = await action();
       if (generation !== operationGeneration || sharedGeneration !== sessionGeneration.value || token.value !== requestToken) return false;
       sources.value = result.data.sources;
+      fieldPriorities.value = result.data.fieldPriorities ?? {};
       revision.value = result.data.version;
       if (result.etag) etag.value = result.etag;
       notice.value = successMessage;
@@ -133,6 +136,14 @@ export function useSourceManager() {
     );
   }
 
+  async function saveFieldPriorities(nextPriorities: Record<string, string[]>) {
+    if (!etag.value) return false;
+    return persist(
+      () => sourceApi.updateFieldPriorities(token.value, etag.value, nextPriorities),
+      "字段来源优先级已更新。",
+    );
+  }
+
   async function importExternalSources(importedSources: SourceDefinition[]) {
     if (!etag.value || importedSources.length === 0) return false;
     return persist(
@@ -154,7 +165,7 @@ export function useSourceManager() {
   }
 
   return {
-    token, authenticated, sources, revision, loading, saving, error, notice,
-    enabledCount, login, logout, reload, save, importExternalSources, remove, toggle, clearMessages,
+    token, authenticated, sources, fieldPriorities, revision, loading, saving, error, notice,
+    enabledCount, login, logout, reload, save, saveFieldPriorities, importExternalSources, remove, toggle, clearMessages,
   };
 }
