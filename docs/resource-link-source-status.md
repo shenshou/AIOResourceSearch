@@ -161,3 +161,52 @@ The next five external-only candidates were rechecked.
 - Tokyo Toshokan's 403 was not bypassed; AnimeBytes remains private; Mikan's personal token feed is not a public search API.
 - No source was enabled or deployed.
 
+
+
+## Bitsearch — magnet-link and API quota feasibility (2026-11-27)
+
+**Status: priority technical candidate; not implemented or enabled.**
+
+The first-party API docs specify:
+- `GET /api/v1/search`, `q` required, optional `category`, sort/order, page and `limit` up to 100.
+- Category `10` is explicitly labelled Adult Content.
+- Free anonymous quota: 200 requests/day per source IP; free account/API key: 1,000 requests/day per account.
+- Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+- Search records contain `infohash`, title, size, category, seeders/leechers, verified flag and createdAt. The detail endpoint returns `magnetUri`.
+
+### Important optimization: no detail call required for a basic magnet
+
+A full BTIH infohash returned by the search endpoint can be transformed deterministically into a minimal magnet URI:
+
+`magnet:?xt=urn:btih:<full-infohash>`
+
+The project normalizer already accepts a valid BTIH hash in 40-hex or 32-base32 form. Therefore a future adapter can:
+1. validate the full hash strictly;
+2. build the minimal magnet URI from that exact hash;
+3. optionally add a safely encoded display name only if useful;
+4. avoid per-result detail calls unless additional fields are actually needed.
+
+This changes the expected request pattern from `1 search + N detail calls` to `1 search call per uncached query/page`. Do not synthesize a magnet if the API returns a truncated, malformed or missing hash.
+
+### Quota and runtime design gates
+
+- Cache exact normalized search URL/query responses before contacting the upstream API; use a conservative TTL and never let a cache failure discard valid upstream results.
+- Add a dedicated shared Durable Object lane and daily request counter. A spacing-only throttle is insufficient to enforce a 200/day or 1,000/day daily budget.
+- Parse all documented rate-limit headers; on 429/403 or quota exhaustion, fail closed and honor reset information. Never rotate IPs, proxy, or otherwise evade the quota.
+- The 200/day quota is per source IP. Actual Cloudflare Worker egress/quota behavior is unverified. The optional free-account tier is 1,000/day/account, not unlimited.
+- Cap pages and results per search; do not crawl the full index.
+
+### Remaining blockers
+
+- The API docs explicitly invite programmatic access, but no separate grant for public third-party display, caching or republication of results was found.
+- Terms, Privacy and About pages could not be retrieved in this research pass.
+- The live JSON search endpoint could not be retrieved by the research browser, so live response shape and Worker reachability are not validated.
+- No account or API key was created; no live API request or production change was made.
+
+Decision: keep external-only / priority technical candidate. Reconsider implementation only after public result display/reuse terms and real Worker quota behavior are clarified.
+
+References:
+- First-party API docs: https://bitsearch.eu/api
+- First-party content-removal page: https://bitsearch.eu/content-removal
+- Current BTIH validation: `apps/worker/src/providers/search.ts`
+- Current shared rate limiter: `apps/worker/src/rate-limit-coordinator.ts`
