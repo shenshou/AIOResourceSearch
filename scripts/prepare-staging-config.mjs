@@ -41,8 +41,21 @@ const output = template
   .replace("REPLACE_WITH_STAGING_KV_NAMESPACE_ID", namespaceId)
   .replace("https://REPLACE_WITH_PAGES_PREVIEW_ORIGIN", allowedOrigin);
 
-if (output.includes("REPLACE_WITH_") || /"triggers"\s*:/.test(output)) {
-  throw new Error("The generated staging config still contains placeholders or an unexpected scheduled trigger.");
+if (output.includes("REPLACE_WITH_")) {
+  throw new Error("The generated staging config still contains an unresolved placeholder.");
+}
+
+const config = JSON.parse(output);
+if (
+  config.name !== "aio-resource-search-api-staging" ||
+  config.main !== "src/index.ts" ||
+  config.vars?.ALLOWED_ORIGINS !== allowedOrigin ||
+  !config.kv_namespaces?.some((binding) => binding.binding === "SOURCES_KV" && binding.id === namespaceId) ||
+  !config.durable_objects?.bindings?.some((binding) => binding.name === "RATE_LIMIT_COORDINATOR" && binding.class_name === "RateLimitCoordinator") ||
+  config.exports?.RateLimitCoordinator?.storage !== "sqlite" ||
+  config.triggers?.crons?.length
+) {
+  throw new Error("The generated config does not match the isolated staging Worker contract.");
 }
 
 writeFileSync(outputPath, output, { encoding: "utf8" });
