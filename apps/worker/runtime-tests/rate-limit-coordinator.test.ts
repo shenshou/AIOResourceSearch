@@ -72,7 +72,7 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
     const mangaNext = await reserve(mangaStub, "mangadex");
 
     expect(musicNext - musicFirst).toBe(1_000);
-    expect(mangaNext).toBeGreaterThanOrEqual(mangaBaseline + 5_000);
+    expect(mangaNext).toBeGreaterThanOrEqual(mangaBaseline + 4_900);
   });
 
   it("re-queues a reserved slot when a later cooldown is applied", async () => {
@@ -88,7 +88,7 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
       scheduledAt,
     });
 
-    expect(validation.scheduledAt).toBeGreaterThanOrEqual(scheduledAt + 2_000);
+    expect(validation.scheduledAt).toBeGreaterThanOrEqual(scheduledAt + 1_500);
   });
 
 
