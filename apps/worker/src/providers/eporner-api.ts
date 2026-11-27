@@ -288,7 +288,7 @@ export const epornerApiProvider: ProviderAdapter = {
   mechanism: "api",
   contentCategories: ["jav"],
   categories: ["other-index"],
-  capabilities: ["metadata"],
+  capabilities: ["metadata", "relationships"],
   searchModes: ["keyword"],
   rateLimitLane: "eporner",
   async search(input, context) {
