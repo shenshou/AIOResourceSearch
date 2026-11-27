@@ -36,7 +36,8 @@ Accept: application/json
 - Release date → result release date.
 - `urls.page` on `db.perverzija.com/scene/` → primary result URL.
 - `urls.watch` on `tube.perverzija.com` → separately labelled external link.
-- Studio, performers, tags, and duration → concise description.
+- Studio, performers, and tags → both structured relationships and concise description; duration → concise description.
+- Performer, studio, and tag names are bounded and normalized. The API response does not establish canonical performer/studio URLs, so no entity URLs are fabricated.
 
 The primary result URL is the Perverzija DB scene page, which provides the visible attribution link required by its terms. The provider intentionally does not use `cover` as `imageUrl`: the API's data model states that images belong to their respective owners and are for identification/reference, and the project's image-display conditions have not been separately confirmed.
 

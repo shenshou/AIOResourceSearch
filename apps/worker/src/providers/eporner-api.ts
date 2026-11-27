@@ -73,7 +73,7 @@ function safeEntityUrl(value: unknown, entityType: "category" | "performer"): st
   try {
     const url = new URL(value);
     const pathPattern = entityType === "performer"
-      ? /^\\/pornstar\\/[a-z0-9-]+\\/?$/i
+      ? /^\/pornstar\/[a-z0-9-]+\/?$/i
       : /^\\/cat\\/[a-z0-9-]+\\/?$/i;
     if (
       url.protocol !== "https:" ||

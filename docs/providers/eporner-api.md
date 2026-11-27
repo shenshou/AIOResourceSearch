@@ -8,7 +8,6 @@ Use only the documented Eporner API v2.1.0. The Provider supports keyword search
 
 Included fields:
 - Video title and canonical page URL.
-- Performers, categories, and comma-separated keywords are mapped into the shared structured relationship model. Performer and category links are accepted only for validated HTTPS URLs on the canonical Eporner host and expected path.
 - Keywords, view count, rating, duration in seconds, and the source's original added-time string.
 - Structured performer relationships from `fields=pornstars` and genre relationships from `fields=categories`; comma-separated keywords are exposed as tag relationships.
 
