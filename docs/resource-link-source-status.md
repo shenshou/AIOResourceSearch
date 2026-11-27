@@ -5,12 +5,12 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **30 torrent-category entries**:
+The source catalog currently contains **31 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 20 | User-initiated navigation only; no Worker acquisition |
+| External-only / unverified records | 21 | User-initiated navigation only; no Worker acquisition |
 | Total | 30 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
@@ -57,7 +57,7 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 
 1. Keep the existing six magnet/torrent adapters and their source records intact.
 2. Do not create a fake ED2K Provider from the URI validator alone.
-3. Continue reviewing the 20 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
+3. Continue reviewing the 21 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
 4. For ED2K, only consider a source when it offers a documented public HTTP API/RSS or an explicitly authorized stable search interface. A self-hosted Kad engine would require a separate architecture decision and is not part of the current Worker topology.
 5. Preserve per-link source attribution and validate the complete URI before returning it. Never invent a magnet/ED2K link from metadata or a detail-page URL.
 
@@ -236,3 +236,18 @@ References:
 - ed2k-indexer repository and setup: https://github.com/tronarite/ed2k-indexer
 - ed2k-stats hash lookup: https://ed2k.shortypower.org/
 
+
+
+## Newly discovered torrent candidate — ØMagnet / 无极磁链 (2026-11-27)
+
+- The first-party homepage at https://0cili.org identifies the service as a torrent/magnet sharing platform and magnet search engine, exposes a search field, reports approximately 2.8 million indexed magnet links, and lists its own backup domains. The catalog uses the first-party homepage domain only; no alias or mirror switching is configured.
+- The current Servarr/Prowlarr supported-indexers catalogue classifies ØMagnet as a Chinese public tracker for Asian adult/JAV material. A Jackett feature request describes it as a public mixed-adult-content magnet-sharing site, mainly JAV and films. These are third-party descriptions of the service/category, not first-party API or automation permission.
+- No first-party API documentation, RSS contract, stable supported query endpoint, Terms granting automated retrieval, or licence for public metadata/magnet aggregation was verified. Community indexer code is reverse-engineered integration evidence, not authorization. Historical FlareSolverr integration reports also show challenge-solving dependencies in some configurations; this project must not adopt those paths.
+- **Decision:** add ØMagnet as a retained JAV/Torrent external-only candidate with the verified first-party homepage. Do not add a search template, Worker Provider, HTML scraper, challenge solver, or undocumented endpoint call. Reassess only if the operator publishes a supported public interface and applicable automation/reuse terms.
+- Inventory after adding the directory record: **31 torrent-category entries = 10 Provider records + 21 external-only/unverified records**. The six existing adapter implementations are unchanged; no source was enabled or deployed.
+
+References:
+- First-party homepage: https://0cili.org/
+- Servarr/Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett 0Magnet request and operator description: https://github.com/Jackett/Jackett/issues/10738
+- FlareSolverr troubleshooting context: https://github.com/FlareSolverr/FlareSolverr/wiki/Troubleshooting

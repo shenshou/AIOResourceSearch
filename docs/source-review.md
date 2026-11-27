@@ -4769,3 +4769,20 @@ Rechecked Nyaa, Shana Project, AnimeBytes, Tokyo Toshokan and Mikan Project. The
 
 A follow-up search found no public hosted ED2K keyword-search API appropriate for the Cloudflare Worker. The MIT-licensed `tronarite/ed2k-indexer` is a self-hosted Torznab bridge that scrapes configured sources and connects to a local eMule WebInterface; its Docker setup requires host eMule, credentials and local download/media paths. It is not a public ED2K index and conflicts with the current Cloudflare-only/no-local-media-management architecture. `ed2k-stats` accepts an existing ED2K hash/link for statistics and is an enrichment lookup, not a discovery source. First-party aMule documentation confirms that ED2K file links require filename, size and MD4 hash, and that searches run against eD2K servers or Kad through a client connection. No Worker Provider was added; no Kad peers or eMule services were contacted. Detailed assessment: `docs/resource-link-source-status.md`.
 
+
+
+## Newly discovered ØMagnet candidate (2026-11-27)
+
+ØMagnet (无极磁链) is a worthwhile directory candidate because its first-party homepage identifies a magnet search/sharing service, provides a search field, reports roughly 2.8 million magnet links, and lists its own backup domains. The homepage's own backup-domain list is recorded as site information only; the catalog does not automatically rotate domains.
+
+The Servarr/Prowlarr supported-indexers catalogue currently classifies ØMagnet as a Chinese public tracker for Asian adult/JAV material. A Jackett request describes it as a public mixed-adult-content magnet-sharing site, mainly JAV and films. These third-party descriptions support retaining it in the JAV/Torrent source directory, but they do not grant automated access or data reuse rights.
+
+No first-party API/RSS contract, stable supported query endpoint, automation terms, or public aggregation/republication licence was verified. Community indexer definitions are reverse-engineered integration logic, not first-party permission. Historical FlareSolverr references show challenge-solving dependencies in some integration configurations; AIOResourceSearch must not reproduce or rely on those paths.
+
+**Decision:** add `0magnet` as an external-only source record using the first-party `https://0cili.org` homepage. Do not add a search URL template, Worker Provider, HTML scraper, undocumented endpoint, or challenge solver. No source enablement, KV write, deployment, or CI run.
+
+References:
+- First-party homepage: https://0cili.org/
+- Servarr/Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett 0Magnet request: https://github.com/Jackett/Jackett/issues/10738
+- FlareSolverr troubleshooting: https://github.com/FlareSolverr/FlareSolverr/wiki/Troubleshooting
