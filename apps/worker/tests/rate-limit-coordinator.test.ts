@@ -104,9 +104,9 @@ test("extends the lane cooldown after a 429 response", async () => {
       const body = await request.json() as { scheduledAt: number };
       return Response.json({ scheduledAt: body.scheduledAt });
     }
-    const body = await request.json() as { lane: string; until: number };
+    const body = await request.json() as { lane: string; durationMs: number };
     assert.equal(body.lane, "mangadex");
-    assert.ok(body.until >= Date.now() + 1_000);
+    assert.ok(body.durationMs >= 1_000 && body.durationMs <= 86_400_000);
     return Response.json({ accepted: true });
   }, calls);
   const coordinatedFetch = createCoordinatedFetch(
@@ -135,9 +135,9 @@ test("persists a LibriVox 429 Retry-After cooldown on its dedicated lane", async
       const body = await request.json() as { scheduledAt: number };
       return Response.json({ scheduledAt: body.scheduledAt });
     }
-    const body = await request.json() as { lane: string; until: number };
+    const body = await request.json() as { lane: string; durationMs: number };
     assert.equal(body.lane, "librivox");
-    assert.ok(body.until >= Date.now() + 9_000);
+    assert.ok(body.durationMs >= 9_000 && body.durationMs <= 10_000);
     return Response.json({ accepted: true });
   }, calls);
   const coordinatedFetch = createCoordinatedFetch(
@@ -165,8 +165,8 @@ test("honors an exhausted MangaDex quota on a successful response", async () => 
       const body = await request.json() as { scheduledAt: number };
       return Response.json({ scheduledAt: body.scheduledAt });
     }
-    const body = await request.json() as { until: number };
-    assert.ok(body.until >= until * 1_000);
+    const body = await request.json() as { durationMs: number };
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
     return Response.json({ accepted: true });
   }, calls);
   const coordinatedFetch = createCoordinatedFetch(
@@ -322,8 +322,7 @@ test("persists an upstream cooldown even if the client cancels after the respons
 });
 
 test("caps an upstream Retry-After value at the coordinator's maximum cooldown", async () => {
-  const startedAt = Date.now();
-  let cooldownUntil = 0;
+  let cooldownDuration = 0;
   const coordinator = namespace(async (request) => {
     const path = new URL(request.url).pathname;
     if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
@@ -331,8 +330,8 @@ test("caps an upstream Retry-After value at the coordinator's maximum cooldown",
       const body = await request.json() as { scheduledAt: number };
       return Response.json({ scheduledAt: body.scheduledAt });
     }
-    const body = await request.json() as { until: number };
-    cooldownUntil = body.until;
+    const body = await request.json() as { durationMs: number };
+    cooldownDuration = body.durationMs;
     return Response.json({ accepted: true });
   });
   const coordinatedFetch = createCoordinatedFetch(
@@ -346,8 +345,8 @@ test("caps an upstream Retry-After value at the coordinator's maximum cooldown",
   );
 
   await coordinatedFetch("https://api.mangadex.org/manga");
-  assert.ok(cooldownUntil <= startedAt + 86_400_000 + 1_000);
-  assert.ok(cooldownUntil >= startedAt + 86_400_000 - 1_000);
+  assert.ok(cooldownDuration <= 86_400_000);
+  assert.ok(cooldownDuration >= 86_399_000);
 });
 
 
@@ -590,7 +589,7 @@ test("accepts the LibriVox API lane with five-second shared spacing", async () =
 });
 
 test("honors The RarBg daily quota reset header", async () => {
-  let cooldownUntil = 0;
+  let cooldownDuration = 0;
   const coordinator = namespace(async (request) => {
     const path = new URL(request.url).pathname;
     if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
@@ -598,8 +597,8 @@ test("honors The RarBg daily quota reset header", async () => {
       const body = await request.json() as { scheduledAt: number };
       return Response.json({ scheduledAt: body.scheduledAt });
     }
-    const body = await request.json() as { until: number };
-    cooldownUntil = body.until;
+    const body = await request.json() as { durationMs: number };
+    cooldownDuration = body.durationMs;
     return Response.json({ accepted: true });
   });
   const coordinatedFetch = createCoordinatedFetch(
@@ -616,6 +615,6 @@ test("honors The RarBg daily quota reset header", async () => {
   );
 
   await coordinatedFetch("https://therarbg.com/api/v1/search/");
-  assert.ok(cooldownUntil >= Date.now() + 118_000);
-  assert.ok(cooldownUntil <= Date.now() + 121_000);
+  assert.ok(cooldownDuration >= 118_000);
+  assert.ok(cooldownDuration <= 120_000);
 });
