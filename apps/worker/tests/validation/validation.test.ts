@@ -54,7 +54,9 @@ test("validateSource rejects invalid source IDs", () => {
   assert.equal(validateSource(source({ id: "Invalid ID" })), null);
 });
 
-test("validateSource rejects unsupported content categories", () => {
+test("validateSource accepts the audiobook category and rejects unsupported content categories", () => {
+  const audiobook = validateSource(source({ contentCategory: "audiobook" }));
+  assert.equal(audiobook?.contentCategory, "audiobook");
   assert.equal(validateSource(source({ contentCategory: "podcast" })), null);
 });
 
