@@ -859,6 +859,32 @@ test("limits each source to 50 results", async () => {
   assert.equal(result.sources[0]?.resultCount, 50);
 });
 
+test("caps total aggregated results at 100 without changing per-source counts", async () => {
+  const sharedProvider = provider(async (_input, context) =>
+    Array.from({ length: 50 }, (_, index) => resource({
+      id: `${context.source.id}-${index}`,
+      title: `Result ${index}`,
+      url: `https://${context.source.id}.example/item/${index}`,
+    })),
+  );
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+      source({ id: "third", name: "Third source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 100);
+  assert.deepEqual(result.sources.map((item) => item.resultCount), [50, 50, 50]);
+  assert.equal(result.results.slice(0, 50).every((item) => item.sourceId === "first"), true);
+  assert.equal(result.results.slice(50).every((item) => item.sourceId === "second"), true);
+  assert.equal(result.results.some((item) => item.sourceId === "third"), false);
+});
+
 test("caps concurrent provider calls at ten", async () => {
   let active = 0;
   let maximumActive = 0;
