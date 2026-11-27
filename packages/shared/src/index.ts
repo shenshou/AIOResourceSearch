@@ -57,7 +57,8 @@ export type ResourceLinkType = (typeof RESOURCE_LINK_TYPES)[number];
 export interface ResourceLink {
   type: ResourceLinkType;
   url: string;
-  sourceAttributions: Array<{
+  /** Omitted in Provider output; Worker normalization always fills this field. */
+  sourceAttributions?: Array<{
     sourceId: string;
     sourceName: string;
   }>;
