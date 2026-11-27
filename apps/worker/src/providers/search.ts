@@ -469,10 +469,12 @@ export async function executeSearch(
         category: resource.category,
       };
       if (existingIndex === undefined) {
+        // Keep scanning after the global cap so later sources can still enrich
+        // already-collected works with attribution and missing metadata.
+        if (results.length >= MAX_TOTAL_RESULTS) continue;
         resultIndexes.set(identity.url, results.length);
         if (identity.catalog) resultIndexes.set(identity.catalog, results.length);
         results.push({ ...resource, sourceAttributions: [attribution] });
-        if (results.length >= MAX_TOTAL_RESULTS) break;
         continue;
       }
 
@@ -514,7 +516,6 @@ export async function executeSearch(
         ...(mergedRelationships?.length ? { relationships: mergedRelationships } : {}),
       };
     }
-    if (results.length >= MAX_TOTAL_RESULTS) break;
   }
 
   const sources = settled.map((item) => item.status);

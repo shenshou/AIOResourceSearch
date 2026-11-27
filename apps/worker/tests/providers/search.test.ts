@@ -885,6 +885,58 @@ test("caps total aggregated results at 100 without changing per-source counts", 
   assert.equal(result.results.some((item) => item.sourceId === "third"), false);
 });
 
+test("continues merging duplicate works after the global result cap", async () => {
+  const sharedProvider = provider(async (_input, context) => {
+    if (context.source.id === "first") {
+      return Array.from({ length: 50 }, (_, index) => resource({
+        id: `first-${index}`,
+        title: `First result ${index}`,
+        url: `https://example.com/shared/${index}`,
+      }));
+    }
+    if (context.source.id === "second") {
+      return Array.from({ length: 50 }, (_, index) => resource({
+        id: `second-${index}`,
+        title: `Second result ${index}`,
+        url: `https://example.com/second/${index}`,
+      }));
+    }
+    return [
+      resource({
+        id: "third-duplicate",
+        title: "Duplicate from third source",
+        url: "https://example.com/shared/0",
+        description: "Metadata supplied after the global cap was reached.",
+      }),
+      resource({
+        id: "third-unique",
+        title: "Unique result beyond the global cap",
+        url: "https://example.com/third/unique",
+      }),
+    ];
+  });
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+      source({ id: "third", name: "Third source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 100);
+  assert.equal(result.results.some((item) => item.url === "https://example.com/third/unique"), false);
+  const duplicate = result.results.find((item) => item.url === "https://example.com/shared/0");
+  assert.equal(duplicate?.description, "Metadata supplied after the global cap was reached.");
+  assert.deepEqual(
+    duplicate?.sourceAttributions?.map((item) => item.sourceId),
+    ["first", "third"],
+  );
+  assert.equal(result.sources[2]?.resultCount, 2);
+});
+
 test("caps concurrent provider calls at ten", async () => {
   let active = 0;
   let maximumActive = 0;
