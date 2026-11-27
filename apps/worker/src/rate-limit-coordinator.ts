@@ -49,7 +49,7 @@ function isLane(value: unknown): value is RateLimitLane {
   return value === "musicbrainz" || value === "mangadex" || value === "anibt" || value === "therarbg" || value === "eporner" || value === "librivox" || value === "audiosilo" || value === "perverzija";
 }
 
-function parseCooldownDuration(response: Response, now: number): number | null {
+function parseCooldownDuration(response: Response, now: number, lane: RateLimitLane): number | null {
   const quotaExhausted = response.headers.get("X-RateLimit-Remaining") === "0" ||
     response.headers.get("X-RateLimit-Remaining-Day") === "0";
   if (response.status !== 429 && response.status !== 503 && !quotaExhausted) return null;
@@ -70,6 +70,14 @@ function parseCooldownDuration(response: Response, now: number): number | null {
     }
     const parsed = Date.parse(retryAfter);
     if (Number.isFinite(parsed)) return boundedCooldownDuration(parsed - now);
+  }
+
+  if (lane === "perverzija") {
+    const reset = response.headers.get("X-RateLimit-Reset");
+    if (reset && /^\\d+(?:\\.\\d+)?$/.test(reset)) {
+      const seconds = Number(reset);
+      if (Number.isFinite(seconds)) return boundedCooldownDuration(seconds * 1_000);
+    }
   }
 
   const dayReset = response.headers.get("X-RateLimit-Reset-Day");
@@ -404,7 +412,7 @@ export function createCoordinatedFetch(
 
     try {
       let response = await fetchImpl(input, init);
-      const cooldownMs = parseCooldownDuration(response, Date.now());
+      const cooldownMs = parseCooldownDuration(response, Date.now(), lane);
       if (cooldownMs !== null) {
         // Persist upstream throttling even if the initiating client disconnects
         // after the response arrives; the Durable Object anchors it to its own clock.

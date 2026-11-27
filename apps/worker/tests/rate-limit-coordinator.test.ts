@@ -676,6 +676,38 @@ test("persists Perverzija Retry-After cooldown on its dedicated lane", async () 
   assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
 });
 
+test("honors Perverzija X-RateLimit-Reset when a successful response exhausts quota", async () => {
+  let cooldownDuration = 0;
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "perverzija");
+    cooldownDuration = body.durationMs;
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "perverzija",
+    new AbortController().signal,
+    async () => new Response("quota exhausted", {
+      status: 200,
+      headers: {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "12",
+      },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.perverzija.com/v1/scenes?q=test");
+  assert.equal(response.status, 200);
+  assert.equal(cooldownDuration, 12_000);
+});
+
 test("accepts the Perverzija DB lane with conservative 600 ms shared spacing", async () => {
   const bindings: Array<string | number | null>[] = [];
   const ctx = {
