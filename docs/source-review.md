@@ -4480,3 +4480,45 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Added two dataset candidates to the durable catalog without enabling or implementing either: `knighjok-jav-dataset` and `data-mv-hf`.
 - Corrected the JAVINFO catalog note to distinguish a limited free trial from ongoing paid usage.
 - No Provider code, API call, credential, KV configuration, source enablement, deployment, or production data change.
+
+
+## JAV source verification batch 25 — first five items from the reconciled backlog (2026-11-27)
+
+This batch rechecked BestJavPorn, Jable.org, JAV Ass Lover, JAV Desu and JAV Subtitle. The purpose was to seek first-party evidence that could change their current status, not to infer permission from technical reachability or third-party scans.
+
+### BestJavPorn
+- The current first-party homepage was retrievable in the research browser and exposed a search input plus categorized catalogue listings. This confirms a user-facing search UI, but it does not establish a supported public API/search contract or permission for third-party automated metadata collection.
+- The first-party homepage extract did not expose Terms, Privacy, API documentation or an automation/data-use grant. A third-party privacy scan reported that it found no privacy-policy link and recorded a historical Cloudflare challenge-platform change; these are technical observations only, not operator policy or permission.
+- **Decision:** keep homepage-only. Do not derive a Worker search template from the visible form, scrape result pages, or handle/bypass challenges. Revisit only if the operator publishes applicable terms and a supported public interface or grants written permission.
+- References: https://www.bestjavporn.com/ ; https://whogetsmydata.com/scan/157908 ; https://scanner.pcrisk.com/scan-results/bestjavporn.com
+
+### Jable.org
+- The exact catalog domain remained inaccessible to the research browser. Search did not surface a verifiable first-party Terms page, API/RSS documentation or operator-published search contract.
+- Evidence about JableTV or similarly named domains is not transferable to jable.org.
+- **Decision:** retain the name-only candidate. No alternate-domain substitution, mirror discovery, Worker request or HTML extraction. Revisit only after canonical operator identity and first-party interface/terms are established.
+- Reference: https://jable.org/
+
+### JAV Ass Lover
+- The exact first-party homepage request returned HTTP 403 in this research session. Search results surfaced only third-party traffic/technology summaries, not first-party Terms, API/RSS documentation or an authorized public search contract.
+- A fetcher-side 403 is not proof of a global block and does not authorize alternate-route probing, cookies, proxies or challenge handling.
+- **Decision:** retain the candidate without automated access. Require first-party terms and a documented public interface before reconsideration.
+- Reference: https://javass.love/
+
+### JAV Desu
+- The exact javdesu.tv homepage request returned HTTP 502 in this research session. Third-party technology/domain records show historical or recent technical observations but do not establish current operator identity, first-party terms, or a supported public search contract.
+- The similarly named jav-desu.com remains a different domain and is not substituted.
+- **Decision:** retain the exact catalog candidate; no mirror substitution, Worker fetch, HTML parsing or alternate-route probing. Revisit only with first-party canonical-domain and interface evidence.
+- Reference: https://javdesu.tv/
+
+### JAV Subtitle
+- The exact javsubtitle.xyz homepage remained inaccessible to the research browser. Search did not establish first-party current terms, API/RSS documentation or a supported public search contract.
+- Terms from jav-subtitles.com are not applicable to this separate domain.
+- **Decision:** retain the exact candidate; no domain substitution, Worker fetch, scraping or guessed search template.
+- Reference: https://javsubtitle.xyz/
+
+### Batch outcome
+- 5 candidates rechecked; 0 promoted to Provider and 0 search templates added.
+- BestJavPorn's search form is recorded as a user-facing feature only, not permission for automated collection.
+- The remaining four still lack sufficient first-party evidence; no access restriction was bypassed.
+- The JAV backlog remains **23 items requiring further evidence**. This batch did not change the 12 items already classified as having a current no-auto-integration decision.
+- No Provider code, KV configuration, source enablement, deployment or production data was changed.

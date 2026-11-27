@@ -72,3 +72,12 @@
 ## 盘点后的工作顺序
 
 优先对 23 个待补证来源做低成本的第一方证据复核；对数据集/API 候选（Data-MV、JavPlay、Kanojo、R18.dev、AV Search）分别确认授权链与正式接口。每次复核后更新本表状态，避免已完成项重新进入待办。通过验证的来源再按 JAV 元数据字段覆盖度（番号、标题、演员、发行日期、制作商）排序开发。
+
+
+## Batch log
+
+### Batch 25 — 2026-11-27
+- Rechecked: `bestjavporn`, `jable-org`, `javasslove`, `javdesu`, `javsubtitle`.
+- Result: 0 promoted; all 5 remain in the 23-item evidence backlog.
+- BestJavPorn's visible search form is not treated as an API contract or automation permission. The other four lack sufficient first-party evidence; observed HTTP errors are not bypassed.
+- Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
