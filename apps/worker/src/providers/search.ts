@@ -128,7 +128,7 @@ function normalizeResource(
     for (const key of Object.keys(metadata)) fieldAttributions[`metadata.${key}`] = fieldAttribution;
   }
 
-  const rawRelationships = source.capabilities.includes("metadata") && Array.isArray(value.relationships)
+  const rawRelationships = source.capabilities.includes("relationships") && Array.isArray(value.relationships)
     ? value.relationships
         .slice(0, 80)
         .filter((relationship) =>
@@ -142,8 +142,8 @@ function normalizeResource(
         )
         .map((relationship) => ({
           type: relationship.type,
-          name: relationship.name.trim(),
-          aliases: [relationship.name.trim()],
+          name: relationship.name.trim().replace(/\s+/g, " "),
+          aliases: [relationship.name.trim().replace(/\s+/g, " ")],
           sourceAttributions: [{ sourceId: source.id, sourceName: source.name }],
           ...(relationship.url ? { url: relationship.url } : {}),
         }))
@@ -327,7 +327,7 @@ function mergeRelationships(
         .filter((alias) => alias.length > 0 && alias.length <= 120))].slice(0, 20);
       merged.push({
         ...relationship,
-        aliases,
+        ...(aliases.length > 1 ? { aliases } : {}),
         sourceAttributions: relationship.sourceAttributions ?? [],
       });
       const index = merged.length - 1;
@@ -356,7 +356,7 @@ function mergeRelationships(
     merged[matchIndex] = {
       ...current,
       ...(!current.url && relationship.url ? { url: relationship.url } : {}),
-      aliases: [...aliasMap.values()].slice(0, 20),
+      ...(aliasMap.size > 1 ? { aliases: [...aliasMap.values()].slice(0, 20) } : {}),
       sourceAttributions: [...attributions.values()],
     };
     if (urlKey) urlIndexes.set(urlKey, matchIndex);
