@@ -4741,3 +4741,7 @@ Rechecked 141PPV, BTSOW, Empornium, iJavTorrent and JAVBEE. 141PPV's official fe
 
 Rechecked JavJunkies, LoveTorrent, MagnetDL, My JAV Bay and NextJAV. JavJunkies and LoveTorrent could not be retrieved and lack verified first-party interfaces; MagnetDL's 2019 shutdown was followed by a return, but its current `.com` endpoint is not verifiably active and similarly named domains are not confirmed mirrors; My JAV Bay currently exposes JAV VR metadata but no magnet/torrent URI in the homepage extraction and no official API/RSS permission; NextJAV's exact domain appears parked/unverified. No Provider or search template was added. See `docs/resource-link-source-status.md`.
 
+## External torrent-source review batch 3 (2026-11-27)
+
+Rechecked OneJAV, ProjectJAV, TorrentKitty, XXXClub and Bitsearch. OneJAV's official feed does not support BT links; its RSSHub BT route is third-party scraping. ProjectJAV and XXXClub returned 403 and were not bypassed. TorrentKitty's documented purpose is torrent-to-magnet conversion; third-party `/search/` parsing is not an official API. Bitsearch's first-party API docs explicitly support programmatic search with a free anonymous tier (200/day/IP), an optional free-account tier (1,000/day), and an XXX category; the detail endpoint returns `magnetUri`. It remains a priority technical candidate, not a Provider, because Terms/data-display rights are not verified and the multi-call API flow may exceed a sustainable public quota. Details: `docs/resource-link-source-status.md`.
+

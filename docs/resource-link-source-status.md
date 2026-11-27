@@ -111,3 +111,19 @@ The next five external-only candidates were rechecked.
 - MagnetDL's historical 2019 shutdown and return are documented, but current permanent closure is not confirmed by a current first-party announcement.
 - No mirror, private account, access-control bypass or paid scraping service was used.
 
+## External torrent-source review batch 3 — 2026-11-27
+
+| Source | Current evidence | Decision |
+|---|---|---|
+| OneJAV | The official `/feeds/` endpoint returned HTTP 403 in this review. RSSHub's route documentation says OneJAV's official feed does not support BT downloads; its separate BT route is a third-party HTML extraction route, not an official feed/API contract. | Keep external-only. Do not use RSSHub as permission to scrape or bypass the 403. |
+| ProjectJAV | The exact first-party homepage returned HTTP 403. Previous public observations show the site has a JAV catalogue and magnet listings, but no first-party API/RSS or applicable automation terms were verified. | Keep external-only; no cookies, proxy, challenge handling or alternate route probing. |
+| TorrentKitty | The branded `.net` landing page describes a torrent-file-to-magnet conversion service and lists `torrentkitty.tv` as a permanent domain. No official search API/RSS or automation terms were found. Third-party bots parse a `/search/{query}` page, but that is not an operator-supported API or permission. | Keep external-only; do not implement third-party scraper routes or use a mirror to work around regional blocking. |
+| XXXClub | The exact `xxxclub.to` homepage returned HTTP 403. Third-party Jackett/Prowlarr definitions and issue logs show that an indexer can query `/torrents/search`, but this is community reverse-engineering, not first-party authorization. | Keep external-only; do not reproduce the scraper or bypass the 403. |
+| Bitsearch | The first-party API documentation explicitly invites programmatic access. Anonymous tier: 200 requests/day per source IP with no key; optional free account: 1,000/day. It documents `GET /api/v1/search`, category 10 = Adult Content, pagination (max 100), rate-limit headers, and a detail endpoint that returns `magnetUri`. The first-party removal page describes its index as metadata from the public BitTorrent network and offers takedown handling. However, no applicable Terms or explicit third-party metadata-display/republication grant was found; Privacy/About requests currently return server errors. Search results expose infohash, while the magnet URI is shown in the detail response, so full links can require additional calls. | **Priority technical candidate, not yet Provider.** Public API access is documented and free, but the shared 200/day anonymous quota and multi-call detail flow may be too small for a public aggregator. Keep external-only until data-use terms and a sustainable rate-limit plan are confirmed. Do not use the optional account tier unless the project owner chooses it. |
+
+### Batch result
+- 5 existing candidates rechecked; 0 promoted to Provider.
+- Bitsearch is the strongest new technical candidate in this batch: it has a documented free API and an explicit adult category, but its terms/data-display rights and shared quota remain unresolved.
+- OneJAV, ProjectJAV and XXXClub were not accessed through 403 workarounds; TorrentKitty's third-party scraping route was not adopted.
+- No source was enabled, no API key was created, and no production request was made.
+
