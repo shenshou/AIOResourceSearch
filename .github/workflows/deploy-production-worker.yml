@@ -60,7 +60,6 @@ jobs:
 
       - name: Set up Node.js
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -68,7 +67,6 @@ jobs:
 
       - name: Validate deployment configuration
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -80,29 +78,24 @@ jobs:
 
       - name: Install dependencies
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm ci
 
       - name: Prepare production configuration
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         run: node scripts/prepare-production-config.mjs
 
       - name: Validate production Worker bundle
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npx wrangler deploy --dry-run --config apps/worker/wrangler.production.local.jsonc
 
       - name: Deploy production Worker
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy --config apps/worker/wrangler.production.local.jsonc
 
       - name: Record deployment summary
         if: steps.deployment_gate.outputs.enabled == 'true' && steps.worker_changes.outputs.deploy == 'true'
-        if: steps.deployment_gate.outputs.enabled == 'true'
         run: |
           {
             echo "## Production Worker deployment"

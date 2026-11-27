@@ -56,7 +56,7 @@ The local file is ignored by Git. In that copy:
 
 1. Confirm `name` remains `aio-resource-search-api-staging`.
 2. Create a new, dedicated test KV namespace and replace the placeholder ID with that namespace's ID. Never reuse the production namespace.
-3. Set `ALLOWED_ORIGINS` to the exact HTTPS origin of the Pages preview deployment. Do not use `*`.
+3. Set `ALLOWED_ORIGINS` to the exact HTTPS origin of the Staging Pages website. Do not use `*`.
 4. Keep the `RATE_LIMIT_COORDINATOR` Durable Object binding and the `RateLimitCoordinator` SQLite export.
 5. Keep `triggers.crons` absent in the initial smoke-test environment. The staging template deliberately omits the 15-minute Cron trigger so the Eporner removal-feed sync does not run during basic deployment verification. The scheduled workflow can be tested separately after the Worker and its rate-limit coordinator are verified.
 
