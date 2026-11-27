@@ -1,4 +1,4 @@
-import type { ProviderAdapter } from "./types";
+import type { ProviderAdapter, ProviderContext } from "./types";
 
 const API_ENDPOINT = "https://api.perverzija.com/v1/scenes";
 const API_HOST = "api.perverzija.com";
@@ -67,6 +67,78 @@ async function readLimitedText(response: Response): Promise<string> {
   } finally {
     reader.releaseLock();
   }
+}
+
+async function fetchJson(url: string, context: ProviderContext): Promise<unknown> {
+  throwIfAborted(context.signal);
+  const cacheKey = new Request(url, { method: "GET" });
+  if (context.cache) {
+    try {
+      const cached = await context.cache.match(cacheKey);
+      if (cached) {
+        try {
+          return JSON.parse(await readLimitedText(cached));
+        } catch {
+          // Ignore a malformed/oversized cache entry and fetch a fresh response.
+        }
+      }
+    } catch {
+      // Cache is an optimization; an unavailable cache must not fail a live request.
+    }
+  }
+
+  const response = await context.fetch(url, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    redirect: "manual",
+    signal: context.signal,
+  });
+  throwIfAborted(context.signal);
+  if (!response.ok) {
+    // In particular, do not retry 429 in a tight loop; the API supplies Retry-After.
+    throw new Error(`Perverzija DB returned HTTP ${response.status}.`);
+  }
+  if (response.url) {
+    const finalUrl = new URL(response.url);
+    if (finalUrl.protocol !== "https:" || finalUrl.hostname !== API_HOST) {
+      throw new Error("Perverzija DB redirected to an unexpected host.");
+    }
+  }
+
+  const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
+    throw new Error("Perverzija DB response exceeded the size limit.");
+  }
+  const contentType = response.headers.get("Content-Type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    throw new Error("Perverzija DB returned an unexpected content type.");
+  }
+
+  const responseText = await readLimitedText(response);
+  throwIfAborted(context.signal);
+  let payload: unknown;
+  try {
+    payload = JSON.parse(responseText);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error("Perverzija DB returned malformed JSON.", { cause: error });
+    }
+    throw error;
+  }
+
+  if (context.cache) {
+    try {
+      await context.cache.put(cacheKey, new Response(responseText, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=300",
+        },
+      }));
+    } catch {
+      // A cache write failure must not discard valid upstream results.
+    }
+  }
+  return payload;
 }
 
 function durationLabel(value: unknown): string | null {
@@ -178,52 +250,13 @@ export const perverzijaDbProvider: ProviderAdapter = {
   categories: ["other-index"],
   capabilities: ["metadata"],
   searchModes: ["number", "keyword"],
+  rateLimitLane: "perverzija",
   async search(input, context) {
     const url = new URL(API_ENDPOINT);
     url.searchParams.set("q", input.query);
     url.searchParams.set("per_page", "50");
 
-    const response = await context.fetch(url.toString(), {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      redirect: "manual",
-      signal: context.signal,
-    });
-
-    if (!response.ok) {
-      // In particular, do not retry 429 in a tight loop; the API supplies Retry-After.
-      throw new Error(`Perverzija DB returned HTTP ${response.status}.`);
-    }
-
-    if (response.url) {
-      const finalUrl = new URL(response.url);
-      if (finalUrl.protocol !== "https:" || finalUrl.hostname !== API_HOST) {
-        throw new Error("Perverzija DB redirected to an unexpected host.");
-      }
-    }
-
-    const declaredLength = Number(response.headers.get("Content-Length") ?? "0");
-    if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
-      throw new Error("Perverzija DB response exceeded the size limit.");
-    }
-
-    const contentType = response.headers.get("Content-Type") ?? "";
-    if (!contentType.toLowerCase().includes("application/json")) {
-      throw new Error("Perverzija DB returned an unexpected content type.");
-    }
-
-    let payload: unknown;
-    try {
-      const responseText = await readLimitedText(response);
-      throwIfAborted(context.signal);
-      payload = JSON.parse(responseText);
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        throw new Error("Perverzija DB returned malformed JSON.", { cause: error });
-      }
-      throw error;
-    }
-
+    const payload = await fetchJson(url.toString(), context);
     return parseScenes(payload);
   },
 };
