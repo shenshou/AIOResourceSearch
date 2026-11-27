@@ -77,8 +77,8 @@ jobs:
         run: |
           {
             echo "## Staging Worker deployment"
-            echo "- Worker: `aio-resource-search-api-staging`"
-            echo "- Branch: `${GITHUB_REF_NAME}`"
+            echo "- Worker: aio-resource-search-api-staging"
+            echo "- Branch: ${GITHUB_REF_NAME}
             echo "- KV: dedicated staging namespace"
             echo "- Cron: disabled in staging"
             echo "- Production resources: untouched"
