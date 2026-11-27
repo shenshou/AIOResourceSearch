@@ -261,4 +261,6 @@ test("caches only the allowlisted metadata fields, never embed or image fields",
   assert.equal(stored.some((value) => value.includes("embed")), false);
   assert.equal(stored.some((value) => value.includes("default_thumb")), false);
   assert.equal(stored.some((value) => value.includes("static-ca-cdn")), false);
+  assert.equal(stored.some((value) => value.includes("Sample Performer")), true);
+  assert.equal(stored.some((value) => value.includes("Japanese")), true);
 });
