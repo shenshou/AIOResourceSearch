@@ -27,6 +27,7 @@ test("compile-time Provider registry contains the expected adapter allowlist", (
     "generic-html",
     "mangadex-api",
     "musicbrainz-api",
+    "librivox-api",
     "perverzija-db",
     "sukebei-rss",
     "the-rarbg-json",
