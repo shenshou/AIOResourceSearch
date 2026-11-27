@@ -1,4 +1,4 @@
-import type { AdaptersConfig, ContentCategory, ResourceLink, ResourceLinkType, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
+import type { AdaptersConfig, ContentCategory, FieldAttribution, ResourceLink, ResourceLinkType, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
@@ -110,6 +110,24 @@ function normalizeResource(
   const releaseDate = typeof value.releaseDate === "string" ? value.releaseDate.trim() : "";
   const description = typeof value.description === "string" ? value.description.trim() : "";
 
+  const fieldAttribution: FieldAttribution = { sourceId: source.id, sourceName: source.name };
+  const fieldAttributions: Record<string, FieldAttribution> = { title: fieldAttribution };
+  if (source.capabilities.includes("metadata") && catalogNumber.length > 0 && catalogNumber.length <= 100) {
+    fieldAttributions.catalogNumber = fieldAttribution;
+  }
+  if (source.capabilities.includes("metadata") && releaseDate.length > 0 && releaseDate.length <= 40) {
+    fieldAttributions.releaseDate = fieldAttribution;
+  }
+  if (source.capabilities.includes("image") && isHttpsUrl(value.imageUrl)) {
+    fieldAttributions.imageUrl = fieldAttribution;
+  }
+  if (source.capabilities.includes("metadata") && description.length > 0 && description.length <= 4000) {
+    fieldAttributions.description = fieldAttribution;
+  }
+  if (source.capabilities.includes("metadata") && metadata) {
+    for (const key of Object.keys(metadata)) fieldAttributions[`metadata.${key}`] = fieldAttribution;
+  }
+
   const rawRelationships = source.capabilities.includes("metadata") && Array.isArray(value.relationships)
     ? value.relationships
         .slice(0, 80)
@@ -197,6 +215,7 @@ function normalizeResource(
       ? { description }
       : {}),
     ...(source.capabilities.includes("metadata") && metadata && Object.keys(metadata).length ? { metadata } : {}),
+    ...(Object.keys(fieldAttributions).length ? { fieldAttributions } : {}),
     ...(resourceLinks.some((link) => link.type === "magnet") ? { magnetUri: resourceLinks.find((link) => link.type === "magnet")!.url } : {}),
     ...(resourceLinks.some((link) => link.type === "ed2k") ? { ed2kUri: resourceLinks.find((link) => link.type === "ed2k")!.url } : {}),
     ...(resourceLinks.some((link) => link.type === "torrent") ? { torrentUrl: resourceLinks.find((link) => link.type === "torrent")!.url } : {}),
@@ -253,6 +272,19 @@ function resourceIdentityKeys(resource: NormalizedResource): { url: string; cata
   if ((resource.contentCategory ?? "jav") !== "jav") return { url };
   const catalogNumber = canonicalCatalogNumber(resource.catalogNumber);
   return catalogNumber ? { url, catalog: `jav:${catalogNumber}` } : { url };
+}
+
+function fieldPriorityRank(
+  field: string,
+  sourceId: string,
+  sourceConfig: SourcesConfig,
+): number {
+  const globalIndex = sourceConfig.sources.findIndex((source) => source.id === sourceId);
+  const fallbackIndex = globalIndex < 0 ? Number.MAX_SAFE_INTEGER / 2 : globalIndex;
+  const priorities = sourceConfig.fieldPriorities?.[field];
+  if (!priorities?.length) return fallbackIndex;
+  const explicitIndex = priorities.indexOf(sourceId);
+  return explicitIndex >= 0 ? explicitIndex : priorities.length + fallbackIndex;
 }
 
 function mergeRelationships(
@@ -562,7 +594,53 @@ export async function executeSearch(
         if (!uniqueLinkMap.has(link.url)) uniqueLinkMap.set(link.url, link);
       }
       const uniqueLinks = [...uniqueLinkMap.values()].slice(0, 20);
+      const fieldAttributions: Record<string, FieldAttribution> = {
+        ...(existing.fieldAttributions ?? {}),
+      };
+      const selectField = (
+        field: string,
+        existingValue: string | undefined,
+        incomingValue: string | undefined,
+      ): string | undefined => {
+        if (!incomingValue) return existingValue;
+        const existingAttribution = fieldAttributions[field] ?? {
+          sourceId: existing.sourceId,
+          sourceName: existing.sourceName,
+        };
+        const incomingAttribution = resource.fieldAttributions?.[field] ?? {
+          sourceId: resource.sourceId,
+          sourceName: resource.sourceName,
+        };
+        if (!existingValue ||
+            fieldPriorityRank(field, incomingAttribution.sourceId, sourceConfig) <
+            fieldPriorityRank(field, existingAttribution.sourceId, sourceConfig)) {
+          fieldAttributions[field] = incomingAttribution;
+          return incomingValue;
+        }
+        fieldAttributions[field] = existingAttribution;
+        return existingValue;
+      };
+
+      const title = selectField("title", existing.title, resource.title);
+      const catalogNumber = selectField("catalogNumber", existing.catalogNumber, resource.catalogNumber);
+      const releaseDate = selectField("releaseDate", existing.releaseDate, resource.releaseDate);
+      const imageUrl = selectField("imageUrl", existing.imageUrl, resource.imageUrl);
+      const description = selectField("description", existing.description, resource.description);
+      const metadata: Record<string, string> = {};
+      const metadataKeys = new Set([
+        ...Object.keys(existing.metadata ?? {}),
+        ...Object.keys(resource.metadata ?? {}),
+      ]);
+      for (const key of metadataKeys) {
+        const value = selectField(
+          `metadata.${key}`,
+          existing.metadata?.[key],
+          resource.metadata?.[key],
+        );
+        if (value !== undefined) metadata[key] = value;
+      }
       const mergedRelationships = mergeRelationships(existing.relationships, resource.relationships);
+
       const mergedResourceLinks = new Map<string, ResourceLink>();
       for (const link of [...(existing.resourceLinks ?? []), ...(resource.resourceLinks ?? [])]) {
         const key = `${link.type}:${link.url}`;
@@ -587,14 +665,13 @@ export async function executeSearch(
       results[existingIndex] = {
         ...existing,
         sourceAttributions: hasAttribution ? attributions : [...attributions, attribution],
-        catalogNumber: existing.catalogNumber ?? resource.catalogNumber,
-        releaseDate: existing.releaseDate ?? resource.releaseDate,
-        imageUrl: existing.imageUrl ?? resource.imageUrl,
-        description: existing.description ?? resource.description,
-        metadata: {
-          ...(resource.metadata ?? {}),
-          ...(existing.metadata ?? {}),
-        },
+        title: title ?? existing.title,
+        catalogNumber,
+        releaseDate,
+        imageUrl,
+        description,
+        ...(Object.keys(metadata).length ? { metadata } : {}),
+        fieldAttributions,
         magnetUri: existing.magnetUri ?? resource.magnetUri,
         ed2kUri: existing.ed2kUri ?? resource.ed2kUri,
         torrentUrl: existing.torrentUrl ?? resource.torrentUrl,
