@@ -147,12 +147,13 @@ function normalizeResource(
   const resourceLinksByKey = new Map<string, ResourceLink>();
   const addResourceLink = (type: ResourceLinkType, url: unknown) => {
     const allowed = source.capabilities.includes(type);
+    if (!allowed || typeof url !== "string") return;
     const valid = type === "magnet"
       ? isMagnetUri(url)
       : type === "ed2k"
         ? isEd2kUri(url)
         : isHttpsUrl(url);
-    if (!allowed || !valid) return;
+    if (!valid) return;
     const key = `${type}:${url}`;
     if (!resourceLinksByKey.has(key)) {
       resourceLinksByKey.set(key, {
@@ -571,9 +572,9 @@ export async function executeSearch(
           continue;
         }
         const sourceAttributions = new Map(
-          current.sourceAttributions.map((item) => [item.sourceId, item]),
+          (current.sourceAttributions ?? []).map((item) => [item.sourceId, item]),
         );
-        for (const item of link.sourceAttributions) {
+        for (const item of link.sourceAttributions ?? []) {
           if (!sourceAttributions.has(item.sourceId)) sourceAttributions.set(item.sourceId, item);
         }
         mergedResourceLinks.set(key, {
