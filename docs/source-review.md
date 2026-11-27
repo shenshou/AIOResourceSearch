@@ -4867,3 +4867,23 @@ References:
 - PussyTorrents: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pussytorrents.yml
 - ClearJAV: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/clearjav-api.yml
 - Fappaizuri: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/fappaizuri.yml
+
+
+## Prowlarr/Jackett discovery batch 9 (2026-11-27)
+
+Four further adult private trackers were retained after checking current indexer classifications and definitions:
+
+- **ExoticaZ:** private adult tracker; Jackett implements it through the AvistaZ private-tracker login framework. A legacy alias in that implementation is not treated as a canonical current destination.
+- **Femdomcult:** private fetish/adult tracker; its definition notes an account auth key and authenticated page parsing.
+- **HappyFappy:** private adult tracker; Jackett has login and separate 2FA-cookie variants.
+- **Pornorip:** private adult DVD tracker; its definition uses an account cookie for authenticated search.
+
+**Decision:** preserve these as name-only directory candidates. Do not collect credentials, cookies, auth keys, or 2FA tokens; do not access private feeds or reuse community scraper code. No Provider, clickable destination, or search template was added. Torrent inventory increases from 48 to 52 records (10 Provider records, 42 external-only/unverified); six existing adapters remain unchanged. No source enablement, production KV write, deployment or CI run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett: https://github.com/Jackett/Jackett
+- ExoticaZ: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Indexers/Definitions/ExoticaZ.cs
+- Femdomcult: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/femdomcult.yml
+- HappyFappy: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/happyfappy.yml
+- Pornorip: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pornorip.yml
