@@ -1,0 +1,74 @@
+name: Deploy production Worker
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aio-resource-search-production-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    if: >-
+      ${{ vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+        ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+         (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID: ${{ vars.CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID }}
+      CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN: ${{ vars.CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN }}
+    steps:
+      - name: Checkout verified main commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Validate deployment configuration
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          [[ "$CLOUDFLARE_ACCOUNT_ID" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID must be a 32-character hexadecimal account ID."; exit 1; }
+          [[ "$CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID must be a 32-character hexadecimal namespace ID."; exit 1; }
+          [[ "$CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN" =~ ^https://[^/]+$ ]] || { echo "CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN must be an HTTPS origin without a path."; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN secret."; exit 1; }
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare production configuration
+        run: node scripts/prepare-production-config.mjs
+
+      - name: Validate production Worker bundle
+        run: npx wrangler deploy --dry-run --config apps/worker/wrangler.production.local.jsonc
+
+      - name: Deploy production Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler deploy --config apps/worker/wrangler.production.local.jsonc
+
+      - name: Record deployment summary
+        run: |
+          {
+            echo "## Production Worker deployment"
+            echo "- Worker: aio-resource-search-api"
+            echo "- Branch: main"
+            echo "- KV: dedicated production namespace"
+            echo "- Cron: enabled (15-minute schedule)"
+            echo "- Source enablement and KV initialization: unchanged"
+          } >> "$GITHUB_STEP_SUMMARY"

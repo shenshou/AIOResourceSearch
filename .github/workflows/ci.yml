@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
     # Run an initial PR verification. Later commits are verified on demand
     # after a coherent task/module has been completed.
     types: [opened, reopened, ready_for_review]

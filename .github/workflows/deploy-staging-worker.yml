@@ -1,6 +1,8 @@
 name: Deploy staging Worker
 
 on:
+  push:
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +14,7 @@ concurrency:
 
 jobs:
   deploy-staging:
-    if: github.ref == 'refs/heads/feature/adapter-management'
+    if: vars.STAGING_DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     environment: staging
     env:
@@ -20,8 +22,10 @@ jobs:
       CLOUDFLARE_STAGING_KV_NAMESPACE_ID: ${{ vars.CLOUDFLARE_STAGING_KV_NAMESPACE_ID }}
       CLOUDFLARE_STAGING_ALLOWED_ORIGIN: ${{ vars.CLOUDFLARE_STAGING_ALLOWED_ORIGIN }}
     steps:
-      - name: Checkout selected branch
+      - name: Checkout develop
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.sha || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -29,16 +33,15 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Validate deployment credentials
+      - name: Validate deployment configuration
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ADMIN_API_TOKEN: ${{ secrets.STAGING_ADMIN_API_TOKEN }}
         run: |
           [[ "$CLOUDFLARE_ACCOUNT_ID" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID must be a 32-character hexadecimal account ID."; exit 1; }
+          [[ "$CLOUDFLARE_STAGING_KV_NAMESPACE_ID" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_STAGING_KV_NAMESPACE_ID must be a 32-character hexadecimal namespace ID."; exit 1; }
+          [[ "$CLOUDFLARE_STAGING_ALLOWED_ORIGIN" =~ ^https://[^/]+$ ]] || { echo "CLOUDFLARE_STAGING_ALLOWED_ORIGIN must be an HTTPS origin without a path."; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN secret."; exit 1; }
-          test -n "$(printf '%s' "$ADMIN_API_TOKEN" | tr -d '[:space:]')" || { echo "STAGING_ADMIN_API_TOKEN must not be empty or whitespace-only."; exit 1; }
-          [[ ${#ADMIN_API_TOKEN} -ge 32 ]] || { echo "STAGING_ADMIN_API_TOKEN must contain at least 32 characters."; exit 1; }
 
       - name: Install dependencies
         run: npm ci
@@ -66,19 +69,12 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
 
-      - name: Configure staging administrator secret
-        shell: bash
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ADMIN_API_TOKEN: ${{ secrets.STAGING_ADMIN_API_TOKEN }}
-        run: printf '%s' "$ADMIN_API_TOKEN" | npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.staging.local.jsonc
-
       - name: Record deployment summary
         run: |
           {
             echo "## Staging Worker deployment"
             echo "- Worker: aio-resource-search-api-staging"
-            echo "- Branch: ${GITHUB_REF_NAME}"
+            echo "- Branch: develop"
             echo "- KV: dedicated staging namespace"
             echo "- Cron: disabled in staging"
             echo "- Production resources: untouched"

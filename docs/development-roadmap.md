@@ -151,7 +151,9 @@ Deliverables:
 - [x] Add an idempotent administrator action to register all compile-time Worker adapters in KV, with every newly registered adapter disabled and no source records created or enabled.
 - [x] Document Cloudflare Pages monorepo build settings, isolated non-production Worker configuration, KV/DO bindings, CORS, secrets, first-run setup, and smoke-test order.
 - [x] Add a read-only Node.js staging smoke-test script for health, CORS, public configuration, and administrator authorization checks.
-- [x] Add a staging-only, manual GitHub Actions deployment workflow that runs the full verification suite before deploying the isolated Worker; production deployment remains separate.
+- [x] Add isolated Staging and Production Wrangler templates and config generators.
+- [x] Add a Staging Worker workflow for develop and a Production Worker workflow gated on successful main CI.
+- [x] Document the two-Pages-project branch mapping (develop → Staging, main → Production) and isolated GitHub Environments.
 - [x] Include non-secret staging-config generation and Wrangler `--dry-run` bundle validation in full CI; this does not authenticate to Cloudflare or deploy resources.
 - [ ] Create or designate a non-production Cloudflare Pages + Worker test environment.
 - [ ] Bind a test KV namespace and the SQLite rate-limit Durable Object; configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
