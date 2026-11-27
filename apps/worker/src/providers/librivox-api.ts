@@ -198,7 +198,7 @@ export const libriVoxProvider: ProviderAdapter = {
     url.searchParams.set("format", "json");
     url.searchParams.set("limit", String(MAX_RESULTS));
     url.searchParams.set("offset", "0");
-    url.searchParams.set("fields", REQUEST_FIELDS);
+    for (const field of REQUEST_FIELDS.split(",")) {\n      url.searchParams.append("fields[]", field);\n    }
 
     throwIfAborted(context.signal);
     const response = await context.fetch(url.toString(), {
