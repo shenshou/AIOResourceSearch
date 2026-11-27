@@ -425,6 +425,44 @@ test("discards blank optional metadata so later sources can fill those fields", 
   });
 });
 
+test("normalizes and merges structured work relationships without fuzzy matching", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      relationships: context.source.id === "first"
+        ? [
+            { type: "performer", name: "  Performer A  " },
+            { type: "studio", name: "Studio One" },
+            { type: "performer", name: "   " },
+            { type: "director", name: "Invalid URL", url: "http://invalid.example/person" },
+          ]
+        : [
+            { type: "performer", name: "performer a", url: "https://second.example/performer/a" },
+            { type: "performer", name: "Performer B", url: "https://second.example/performer/b" },
+            { type: "studio", name: "Studio Two" },
+          ],
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(result.results[0]?.relationships, [
+    { type: "performer", name: "Performer A", url: "https://second.example/performer/a" },
+    { type: "studio", name: "Studio One" },
+    { type: "performer", name: "Performer B", url: "https://second.example/performer/b" },
+  ]);
+});
+
 test("deduplicates JAV results by normalized catalogue number across different detail URLs", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({

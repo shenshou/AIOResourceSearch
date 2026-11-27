@@ -50,6 +50,16 @@ const statusLabels: Record<string, string> = {
   unavailable: "暂不可用",
 };
 
+const relationshipLabels: Record<string, string> = {
+  performer: "演员",
+  director: "导演",
+  studio: "制作商",
+  label: "发行商",
+  series: "系列",
+  genre: "类型",
+  tag: "标签",
+};
+
 const errorLabels: Record<string, string> = {
   adapter_unavailable: "适配器尚未实现或未启用",
   adapter_incompatible: "适配器能力与数据源配置不匹配",
@@ -164,6 +174,11 @@ const errorLabels: Record<string, string> = {
             <p v-if="item.description" class="result-description">{{ item.description }}</p>
             <div v-if="item.metadata && Object.keys(item.metadata).length" class="result-meta">
               <span v-for="(value, key) in item.metadata" :key="key">{{ key }}：{{ value }}</span>
+            </div>
+            <div v-if="item.relationships?.length" class="result-meta">
+              <span v-for="(relationship, index) in item.relationships" :key="relationship.type + ':' + relationship.name + ':' + index">
+                {{ relationshipLabels[relationship.type] }}：<a v-if="relationship.url" :href="relationship.url" target="_blank" rel="noopener noreferrer">{{ relationship.name }}</a><template v-else>{{ relationship.name }}</template>
+              </span>
             </div>
             <div v-if="item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
               <button v-if="item.magnetUri" type="button" @click="copyResourceLink(item.magnetUri, 'Magnet')">复制 Magnet</button>

@@ -29,3 +29,12 @@ This document defines the current Worker-side aggregation contract for JAV metad
 ## Verification
 
 Focused unit tests cover first-value-wins conflicts, filling missing metadata keys, blank-value filtering, JAV catalogue-number identity, and category isolation. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
+
+## Structured relationships
+
+- A normalized work may carry typed relationships for performers, directors, studios, labels, series, genres, and tags.
+- Relationship names are trimmed and bounded; optional entity URLs must be HTTPS and credential-free under the same URL validator used for other public links.
+- Duplicate relationships are combined by exact type plus NFKC-normalized, case-insensitive name. This is deterministic identity matching, not fuzzy person/entity resolution.
+- The first relationship name and URL remain authoritative. If the first occurrence has no URL, a later matching relationship may fill it. Distinct names remain distinct even when they may refer to the same real-world entity.
+- The search UI renders relationship names and only links them when a validated HTTPS URL is supplied.
+- This is a shared result-contract foundation. Provider-specific extraction/mapping is a separate task; no source is assumed to provide these fields until its adapter is explicitly updated and tested.

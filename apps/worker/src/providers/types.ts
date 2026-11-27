@@ -1,6 +1,7 @@
 import type { EpornerRemovalSyncState } from "../eporner-removals";
 import type {
   ContentCategory,
+  ResourceRelationship,
   FetchMechanism,
   HtmlSelectorConfig,
   SearchMode,
@@ -38,6 +39,7 @@ export interface NormalizedResource {
     label: string;
     url: string;
   }>;
+  relationships?: ResourceRelationship[];
 }
 
 export interface ProviderSearchInput {

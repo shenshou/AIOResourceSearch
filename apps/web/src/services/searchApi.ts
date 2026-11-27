@@ -1,4 +1,4 @@
-import type { ContentCategory, SearchMode } from "@aio-resource-search/shared";
+import type { ContentCategory, ResourceRelationship, SearchMode } from "@aio-resource-search/shared";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
 
@@ -24,6 +24,7 @@ export interface SearchResource {
   ed2kUri?: string;
   torrentUrl?: string;
   externalLinks?: Array<{ label: string; url: string }>;
+  relationships?: ResourceRelationship[];
 }
 
 export interface SourceSearchStatus {

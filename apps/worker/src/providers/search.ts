@@ -2,6 +2,7 @@ import type { AdaptersConfig, ContentCategory, SourceDefinition, SourcesConfig }
 import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
+import { RESOURCE_RELATIONSHIP_TYPES } from "@aio-resource-search/shared";
 import { createCoordinatedFetch, type RateLimitCoordinatorNamespace } from "../rate-limit-coordinator";
 import { readEpornerRemovalSyncState } from "../eporner-removals";
 import { readSourceCredential, type Env } from "../env";
@@ -109,6 +110,25 @@ function normalizeResource(
   const releaseDate = typeof value.releaseDate === "string" ? value.releaseDate.trim() : "";
   const description = typeof value.description === "string" ? value.description.trim() : "";
 
+  const relationships = source.capabilities.includes("metadata") && Array.isArray(value.relationships)
+    ? value.relationships
+        .filter((relationship) =>
+          relationship &&
+          typeof relationship === "object" &&
+          RESOURCE_RELATIONSHIP_TYPES.includes(relationship.type) &&
+          typeof relationship.name === "string" &&
+          relationship.name.trim().length > 0 &&
+          relationship.name.length <= 120 &&
+          (relationship.url === undefined || isHttpsUrl(relationship.url)),
+        )
+        .slice(0, 40)
+        .map((relationship) => ({
+          type: relationship.type,
+          name: relationship.name.trim(),
+          ...(relationship.url ? { url: relationship.url } : {}),
+        }))
+    : undefined;
+
   const externalLinks = Array.isArray(value.externalLinks)
     ? value.externalLinks
         .filter((link) =>
@@ -145,6 +165,7 @@ function normalizeResource(
     ...(source.capabilities.includes("ed2k") && isEd2kUri(value.ed2kUri) ? { ed2kUri: value.ed2kUri } : {}),
     ...(source.capabilities.includes("torrent") && isHttpsUrl(value.torrentUrl) ? { torrentUrl: value.torrentUrl } : {}),
     ...(externalLinks?.length ? { externalLinks } : {}),
+    ...(relationships?.length ? { relationships } : {}),
   };
 }
 
@@ -174,6 +195,24 @@ function resourceIdentityKeys(resource: NormalizedResource): { url: string; cata
   if ((resource.contentCategory ?? "jav") !== "jav") return { url };
   const catalogNumber = canonicalCatalogNumber(resource.catalogNumber);
   return catalogNumber ? { url, catalog: `jav:${catalogNumber}` } : { url };
+}
+
+function mergeRelationships(
+  existing: NormalizedResource["relationships"],
+  incoming: NormalizedResource["relationships"],
+): NormalizedResource["relationships"] {
+  const merged = new Map<string, NonNullable<NormalizedResource["relationships"]>[number]>();
+  for (const relationship of [...(existing ?? []), ...(incoming ?? [])]) {
+    const key = `${relationship.type}:${relationship.name.normalize("NFKC").toLowerCase()}`;
+    const current = merged.get(key);
+    if (!current) {
+      merged.set(key, relationship);
+    } else if (!current.url && relationship.url) {
+      merged.set(key, { ...current, url: relationship.url });
+    }
+    if (merged.size >= 40) break;
+  }
+  return [...merged.values()];
 }
 
 type ProviderResolution =
@@ -459,6 +498,9 @@ export async function executeSearch(
         ed2kUri: existing.ed2kUri ?? resource.ed2kUri,
         torrentUrl: existing.torrentUrl ?? resource.torrentUrl,
         ...(uniqueLinks.length ? { externalLinks: uniqueLinks } : {}),
+        ...(mergeRelationships(existing.relationships, resource.relationships)?.length
+          ? { relationships: mergeRelationships(existing.relationships, resource.relationships) }
+          : {}),
       };
     }
     if (results.length >= MAX_TOTAL_RESULTS) break;

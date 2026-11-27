@@ -129,6 +129,24 @@ export interface AdaptersConfig {
   adapters: AdapterDefinition[];
 }
 
+export const RESOURCE_RELATIONSHIP_TYPES = [
+  "performer",
+  "director",
+  "studio",
+  "label",
+  "series",
+  "genre",
+  "tag",
+] as const;
+export type ResourceRelationshipType = (typeof RESOURCE_RELATIONSHIP_TYPES)[number];
+
+export interface ResourceRelationship {
+  type: ResourceRelationshipType;
+  name: string;
+  /** Optional source-provided HTTPS page for this related entity. */
+  url?: string;
+}
+
 export interface ApiError {
   error: {
     code: string;
