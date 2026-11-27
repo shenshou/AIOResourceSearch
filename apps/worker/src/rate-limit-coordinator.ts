@@ -74,7 +74,7 @@ function parseCooldownDuration(response: Response, now: number, lane: RateLimitL
 
   if (lane === "perverzija") {
     const reset = response.headers.get("X-RateLimit-Reset");
-    if (reset && /^\\d+(?:\\.\\d+)?$/.test(reset)) {
+    if (reset && /^\d+(?:\.\d+)?$/.test(reset)) {
       const seconds = Number(reset);
       if (Number.isFinite(seconds)) return boundedCooldownDuration(seconds * 1_000);
     }
