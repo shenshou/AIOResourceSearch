@@ -2800,3 +2800,35 @@ test("does not merge same-name related entities when their canonical URLs differ
 
   assert.equal(result.results[0]?.relationships?.filter((item) => item.type === "studio").length, 2);
 });
+
+
+test("keeps ambiguous name-only entities separate when multiple URL identities exist", async () => {
+  const sourceA = source({ id: "entity-source-a", name: "Entity source A" });
+  const sourceB = source({ id: "entity-source-b", name: "Entity source B" });
+  const sourceC = source({ id: "entity-source-c", name: "Entity source C" });
+  const entityProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      relationships: [{
+        type: "performer",
+        name: "Ambiguous Performer",
+        ...(context.source.id === "entity-source-c"
+          ? {}
+          : { url: context.source.id === "entity-source-a"
+              ? "https://people-a.example/profile"
+              : "https://people-b.example/profile" }),
+      }],
+    }),
+  ]);
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(sourceA, sourceB, sourceC),
+    adapters,
+    resolve(entityProvider),
+  );
+
+  assert.equal(result.results[0]?.relationships?.filter((item) => item.type === "performer").length, 3);
+});
