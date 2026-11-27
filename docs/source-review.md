@@ -4275,3 +4275,41 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - **Permission gap:** the public API documentation reviewed here does not clearly state a licence or grant permitting a multi-source discovery aggregator to retain and republish its metadata fields, nor does it establish the applicable attribution, retention, downstream display, or removal obligations. An open endpoint and a stated lack of quota are not data-reuse permission.
 - **Decision:** add AdultEmbed as a durable JAV candidate under the other-index source-kind category, with homepage-only navigation. Do not call the API, feeds, dumps, embed/player, thumbnail or media endpoints until first-party data-use terms and the exact metadata reuse conditions are confirmed. No Provider code, KV configuration, enablement, or deployment is added.
 - References: https://adultembed.com/api/ ; https://adultembed.com/api/docs/ (API v1 overview, search contract, caching/limits and content endpoints).
+
+
+## Adult metadata catalogs and Stash-Box instances (2026-11-27)
+
+### StashDB — invite-gated shared adult metadata database; reuse rights unverified
+- First-party StashDB guidance describes a shared database of scene, performer and studio metadata across orientations. The official scope statement says JAV is allowed but subject to separate community guidelines; StashDB does not host video files or unofficial download links.
+- Reading requires a StashDB account created with an active invite key. New accounts receive READ access only. The documented GraphQL endpoint is `https://stashdb.org/graphql`, and access uses a personal API key.
+- The open-source Stash-Box server software is MIT-licensed, but that software licence does not establish the licence or redistribution rights of the separately operated StashDB dataset. No grant for a public multi-user aggregator to persist and republish its metadata was verified.
+- **Decision:** retain StashDB as a JAV metadata candidate with homepage-only navigation. No invite-gated account access, API token, GraphQL request, metadata caching, or ingestion until the operator's data-use terms expressly cover this product.
+
+### ThePornDB — account-token API; multi-user aggregator rights unverified
+- First-party Stash documentation lists ThePornDB's GraphQL endpoint at `https://theporndb.net/graphql` and describes account registration followed by generation of a personal API token. The official API reference also exposes a versioned REST/OpenAPI catalogue with scenes, JAV, movies, performers, studios, tags and related operations.
+- The existence of a documented API and the ability to create a personal token do not establish permission for a public multi-source search service to store, index or republish its metadata. No sufficiently clear first-party licence or aggregator-use grant, including attribution, caching, retention and removal obligations, was verified in this review.
+- **Decision:** retain ThePornDB as a JAV metadata candidate with homepage-only navigation. No API token, account integration, GraphQL/REST calls, or catalogue ingestion pending explicit permission for this use.
+
+### JAVStash — invitation-based Japanese AV metadata database
+- First-party Stash documentation lists JAVStash as a metadata database focused on Japanese Adult Video and original Japanese-language metadata, primarily driven by automated scrapers. It publishes a Stash-Box GraphQL endpoint at `https://javstash.org/graphql`.
+- The documented Join link leads to a private Discord invitation. A public self-service registration/access path and third-party metadata reuse permission were not verified. Upstream use of automated scrapers is not permission for this project to reuse the data or reproduce its collection methods.
+- **Decision:** retain JAVStash as a JAV metadata candidate with homepage-only navigation. No private invite access, API calls, or metadata ingestion pending operator approval and data-use terms.
+
+### FansDB — invite-only independent-creator metadata niche
+- First-party documentation describes FansDB as an invite-only, crowdsourced metadata database focused on approved independent adult-creator platforms. It stores performer profiles and scenes from approved networks; its published network rules require age verification and original creator-focused content and exclude some professional-studio clip sources.
+- Access requires an application, invitation, account and personal API key for the GraphQL endpoint at `https://fansdb.cc/graphql`. This scope is complementary to, but not a substitute for, professional JAV catalogues. No third-party multi-user aggregator reuse grant was verified.
+- **Decision:** retain FansDB as a distinct adult metadata candidate with homepage-only navigation. No application/API access, credentials, or metadata ingestion until both access and downstream reuse conditions are confirmed.
+
+### PMV Stash — invite-gated fan-remix metadata niche
+- First-party Stash documentation lists PMV Stash as a community database for remixed adult content such as Porn Music Videos, Cock Hero, Hypno Vids and compilations, with a Stash-Box GraphQL endpoint at `https://pmvstash.org/graphql`.
+- The documented access process requires an invite code, account registration and an API key. No public multi-user aggregator permission, metadata licence, caching terms or removal obligations were verified.
+- **Decision:** retain PMV Stash as a distinct adult metadata candidate with homepage-only navigation. No invite-gated API access or metadata ingestion pending operator approval and data-use terms.
+
+### Stash-Box software versus hosted datasets
+- `stashapp/stash-box` is an open-source implementation of the GraphQL metadata service (MIT-licensed). Its code licence applies to the software, not automatically to StashDB, ThePornDB, JAVStash, FansDB or PMV Stash hosted records. Each instance has its own scope, access model and operator; each dataset needs a separate permission review.
+
+### Batch outcome
+- Added five durable adult metadata candidates: StashDB, ThePornDB, JAVStash, FansDB and PMV Stash. They are distinct from ordinary video-hosting sources and cover different metadata niches; all remain homepage-only pending access and data-reuse review.
+- Current catalog: 170 unique candidates (JAV 28, torrent 30, forum 16, other-index 96); AIOResourceSearch provenance tags: 64 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
+- No Provider code, account credentials, API calls, KV configuration, source enablement, deployment, or production data changes.
+- First-party references: https://docs.stashapp.cc/metadata-sources/stash-box-instances/ ; https://guidelines.stashdb.org/ ; https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/ ; https://docs.fansdb.cc/ ; https://docs.fansdb.cc/networks/ ; https://api.theporndb.net/docs

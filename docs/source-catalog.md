@@ -4,7 +4,7 @@
 
 本目录汇总了 Atlas、Lustpress、FetchJAV 三个公开仓库中与本项目范围相关的候选来源，并补充少量跨分类外部入口；管理页面提供统一的预置登记入口。
 
-<badge>共 165 个去重候选</badge>
+<badge>共 170 个去重候选</badge>
 
 **重要：候选目录不等于已接入或已授权。** 所有预置来源登记后默认禁用。上游仓库提供的域名和搜索模板只作为初始参考，仍需核验站点现状、使用条款、robots 规则、自动化访问限制及 Cloudflare Workers 出口兼容性。
 
@@ -29,7 +29,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- **当前目录：165 条去重候选**：JAV 28、torrent 30、forum 16、other-index 91；AIOResourceSearch 自有来源标签 59（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选。
+- **当前目录：170 条去重候选**：JAV 28、torrent 30、forum 16、other-index 96；AIOResourceSearch 自有来源标签 64（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选；StashDB、ThePornDB、JAVStash、FansDB 和 PMV Stash 是本轮新增的成人元数据候选，均暂保留首页入口。
 - 当前保留 9 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT、Open Library、Library of Congress、Steam Store。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；Open Library 与 Library of Congress 的模板只在用户点击后由浏览器打开，Worker 不会请求目标站点。
 - **当前 12 个具体 Provider**：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON、LibriVox metadata API、AudioSilo Meta metadata API。The RarBg 的 5 条分类源记录共用一个 Provider。12 个 Provider 均已登记在代码注册表；是否可启用仍须分别完成来源审查、KV 配置和 Hosted Cloudflare 验证。另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -125,11 +125,16 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（91）
+## 其他资源索引（96）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
 | AdultEmbed | AIOResourceSearch | 有公开成人视频目录 API；接口开放不代表聚合/再展示许可，暂仅首页入口 |
+| FansDB | AIOResourceSearch | 独立成人创作者元数据；申请/邀请/API Key 门槛，暂仅首页入口 |
+| JAVStash | AIOResourceSearch | 日本 AV 日文元数据；私有 Discord 邀请和 GraphQL，暂仅首页入口 |
+| PMV Stash | AIOResourceSearch | PMV/粉丝混剪元数据；邀请/API Key 门槛，暂仅首页入口 |
+| StashDB | AIOResourceSearch | 多取向成人场景/演员/片商元数据；注册需邀请和 API Key，暂仅首页入口 |
+| ThePornDB | AIOResourceSearch | 成人场景/JAV/影片元数据；需账户 API Token，聚合再利用许可待确认 |
 | 85Tube | FetchJAV | 仅首页入口或 URL 待补 |
 | 91Porn | FetchJAV | 仅首页入口或 URL 待补 |
 | AApp11 | FetchJAV | 仅首页入口或 URL 待补 |
@@ -387,3 +392,14 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Provider 已加入 Worker 注册表与预置来源目录，测试和 fixture 已补齐。来源和 adapter 仍未写入 KV、未启用；尚未执行真实上游请求、CI 或 Cloudflare Hosted 验证。
 - 目录仍为 164 条唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；项目来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 12。
 - 详细字段许可边界和验证状态见 [AudioSilo Meta Provider readiness](./providers/audiosilo-meta-readiness.md)。
+
+
+## 成人元数据目录与 Stash-Box 实例补充审查（2026-11-27）
+
+- StashDB：官方指南确认其提供不同取向的成人场景、演员和片商元数据，JAV 可收录但适用单独社区规则；读取需邀请码注册和个人 API Key。没有核实允许公共多用户聚合器持久化、索引和再展示元数据的许可，暂仅首页入口。
+- ThePornDB：官方 Stash 文档列出其 GraphQL endpoint，并要求注册账户后生成 API Token；官方 API 文档另列出 scenes、JAV、movies、performers、studios 等目录接口。个人 API Token 不等于多源搜索服务的再利用授权；字段许可、缓存、署名、保留和删除义务未核实，暂仅首页入口。
+- JAVStash：官方 Stash 文档确认其聚焦日本 AV 原始日文元数据，提供 GraphQL endpoint，但加入入口指向私有 Discord 邀请；未核实公开注册和第三方聚合许可，暂仅首页入口。
+- FansDB：官方文档确认其为邀请制独立成人创作者元数据库，需申请、邀请码、账户和 API Key；仅收录满足其年龄验证、原创创作者导向等规则的网络，不是专业片商 JAV 目录的替代品。暂仅首页入口。
+- PMV Stash：官方 Stash 文档确认其聚焦 PMV、Cock Hero、Hypno Vids 和混剪等社区元数据，需邀请码、账户和 API Key；未核实第三方聚合许可，暂仅首页入口。
+- Stash-Box 是 MIT 许可的开源服务端软件；该软件许可证不自动覆盖各托管实例的数据集。五个候选分别保留，不能把它们合并成一个许可或访问模型。
+- 本批新增 5 个候选，目录更新为 170 条去重候选（JAV 28、torrent 30、forum 16、other-index 96）；AIOResourceSearch 自有来源标签 64（标签交叉）。外部搜索模板仍为 9 条，具体 Provider 实现仍为 12 个。未新增 Provider、凭据、API 调用、KV 配置、来源启用或部署。
