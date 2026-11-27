@@ -13,7 +13,7 @@ interface TestEnv {
   __writes: string[];
   RATE_LIMIT_COORDINATOR: {
     idFromName(name: string): string;
-    get(id: string): { fetch(request: Request): Promise<Response> };
+    get(id: unknown): { fetch(request: Request): Promise<Response> };
   };
 }
 
