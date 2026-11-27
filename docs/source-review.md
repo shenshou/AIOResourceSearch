@@ -4733,3 +4733,7 @@ No public ED2K API/RSS or permitted stable web-search source was verified in thi
 
 Detailed matrix: `docs/resource-link-source-status.md`.
 
+## External torrent-source review batch 1 (2026-11-27)
+
+Rechecked 141PPV, BTSOW, Empornium, iJavTorrent and JAVBEE. 141PPV's official feed is documented by RSSHub as not supporting BT downloads; BTSOW's separately surfaced `.live` domain is not verified as operator-controlled; Empornium is a private tracker; iJavTorrent exposes magnet links and a rich public catalogue UI but no verified Terms/API/RSS or stable search contract; JAVBEE's exact catalog domain could not be opened. None was promoted to Provider. A newly discovered Magnetz service provides magnet links and a JSON API only to paid members (one-year/lifetime membership, 1,000 requests/day), so it is incompatible with the no-paid-dependency rule. Details are in `docs/resource-link-source-status.md`.
+

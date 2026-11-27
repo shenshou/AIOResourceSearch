@@ -69,3 +69,27 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 - tg-search public API contract: https://github.com/power721/tg-search/blob/main/docs/public-api.md
 - Current project shared contract: `packages/shared/src/index.ts`
 - Current Worker normalizer and HTML parser: `apps/worker/src/providers/search.ts`, `apps/worker/src/providers/generic-html.ts`, `apps/worker/src/providers/html-parser.ts`
+
+## External torrent-source review batch 1 — 2026-11-27
+
+The first five external-only torrent candidates were rechecked for first-party resource-link interfaces and permission evidence.
+
+| Source | First-party/current observation | Decision |
+|---|---|---|
+| 141PPV | The exact official `/feeds/` page could not be retrieved in this session. RSSHub's route documentation explicitly says the official 141PPV feed does not support BT download subscriptions. | Keep homepage-only; no Worker RSS Provider and no magnet extraction from a third-party RSSHub route. |
+| BTSOW | The catalog's `.com` destination is not verified as the current operator-controlled service. A separately surfaced `btsow.live` page renders a BTSOW magnet-search UI but provides no readable policy/API details; the domain's canonical relationship to the catalog operator is unverified. | Do not silently switch to `.live`; keep the existing record unverified and external-only. |
+| Empornium | The official `.sx` homepage is reachable but presents a login path. Independent indexer documentation classifies Empornium as a private tracker. Its status page reports service health, not a public catalogue API. | Private/account-based source; no authenticated Worker access, cookies, invite flow or private-feed ingestion. |
+| iJavTorrent | The first-party homepage is currently readable and visibly exposes a search/filter UI, more than 10,000 movie records, and multiple magnet links per listing with size and seeder/leecher counts. The homepage search form does not establish a stable supported query URL or API/RSS contract. No Terms/Privacy/API/RSS text was found in the page extraction; robots.txt and sitemap.xml could not be retrieved by the research browser. | Keep external-only. Do not scrape HTML, harvest magnets or infer permission from the public UI. Reassess only after first-party terms and a supported public interface are established. |
+| JAVBEE | The exact catalog domain `javbee.org` could not be opened. No first-party API/RSS or automation permission was verified. | Keep unverified/homepage-only; no alternate domain or mirror substitution. |
+
+### Additional candidate discovered: Magnetz
+- Magnetz currently advertises free search/browsing after account confirmation, but magnet links and the JSON API are member-only. Its first-party Terms state that membership is paid (one-year and lifetime plans); members receive a personal API key with a combined limit of 1,000 requests/day for the JSON API and MCP server.
+- This violates the project's no-paid-dependency rule and is not a verified JAV-specific source. Do not register, pay, request an API key or integrate it. Keep only as a research reference; it is not added as a production source.
+- First-party references: https://magnetz.eu/about ; https://magnetz.eu/help/getting-started/start-here ; https://magnetz.eu/terms
+
+### Batch result
+- 5 existing catalog candidates rechecked; 0 promoted to Provider; 0 search templates added.
+- iJavTorrent is technically rich in magnet listings but remains external-only because the required first-party automation permission and supported interface were not established.
+- Magnetz is rejected for the current project because magnet/API access requires paid membership.
+- No access control was bypassed, no private tracker account was used, and no source was enabled or deployed.
+
