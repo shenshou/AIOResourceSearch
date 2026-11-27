@@ -82,6 +82,15 @@ export const sourceApi = {
     return { config: result.data, etag: result.etag };
   },
 
+  async updateFieldPriorities(token: string, etag: string, fieldPriorities: Record<string, string[]>) {
+    return request<SourcesConfig>("/api/admin/sources/settings/field-priorities", {
+      token,
+      method: "PATCH",
+      etag,
+      body: { fieldPriorities },
+    });
+  },
+
   async createSource(token: string, etag: string, source: SourceDefinition) {
     return request<SourcesConfig>("/api/admin/sources", {
       token,
