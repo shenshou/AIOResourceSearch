@@ -336,7 +336,7 @@ test("Perverzija DB cache hits work without reserving a coordinator slot", async
   assert.equal(result.sources[0]?.status, "ok");
   assert.equal(result.results.length, 1);
   assert.equal(result.results[0]?.sourceId, "perverzija-db");
-  assert.equal(result.results[0]?.relationships?.length, 3);
+  assert.equal(result.results[0]?.relationships?.length, 4);
 });
 
 test("normalizes provider-owned fields and validates optional resource links", async () => {
@@ -1014,6 +1014,7 @@ const perverzijaFixture = {
     release_date: "2026-11-20",
     duration: 3661,
     studio: { slug: "sample-studio", name: "Sample Studio" },
+    network: { slug: "sample-network", name: "Sample Network" },
     performers: [{ slug: "sample-performer", name: "Sample Performer", gender: "female" }],
     tags: [{ slug: "drama", name: "Drama" }],
     urls: {
@@ -1067,10 +1068,12 @@ test("searches the documented Perverzija DB JSON API and maps attributed metadat
   assert.equal(resources[0]?.url, "https://db.perverzija.com/scene/1611928-sample-scene");
   assert.equal(resources[0]?.releaseDate, "2026-11-20");
   assert.match(resources[0]?.description ?? "", /Studio: Sample Studio/);
+  assert.match(resources[0]?.description ?? "", /Network: Sample Network/);
   assert.match(resources[0]?.description ?? "", /Cast: Sample Performer/);
   assert.match(resources[0]?.description ?? "", /Duration: 01:01:01/);
   assert.deepEqual(resources[0]?.relationships, [
     { type: "studio", name: "Sample Studio" },
+    { type: "network", name: "Sample Network" },
     { type: "performer", name: "Sample Performer" },
     { type: "tag", name: "Drama" },
   ]);

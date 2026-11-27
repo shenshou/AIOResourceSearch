@@ -32,7 +32,7 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 
 ## Structured relationships
 
-- A normalized work may carry typed relationships for performers, directors, studios, labels, series, genres, and tags.
+- A normalized work may carry typed relationships for performers, directors, studios, production networks, labels, series, genres, and tags.
 - Relationship names are trimmed and bounded; optional entity URLs must be HTTPS and credential-free under the same URL validator used for other public links.
 - Duplicate relationships are combined by type plus NFKC-normalized, whitespace-collapsed, case-insensitive name. The first display name wins; a later URL may fill an empty URL. This is deterministic identity matching, not fuzzy person/entity resolution.
 - The first relationship name and URL remain authoritative. If the first occurrence has no URL, a later matching relationship may fill it. The 40-item cap limits new unique relationships but does not block URL enrichment for existing relationships. Distinct names remain distinct even when they may refer to the same real-world entity.
