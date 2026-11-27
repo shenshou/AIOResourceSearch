@@ -354,6 +354,65 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
   assert.deepEqual(result.sources.map((item) => item.resultCount), [1, 1]);
 });
 
+test("deduplicates JAV results by normalized catalogue number across different detail URLs", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: context.source.id === "first" ? "ssis-001" : "SSIS 001",
+      url: context.source.id === "first"
+        ? "https://first.example/item/ssis-001"
+        : "https://second.example/title/SSIS001",
+      ...(context.source.id === "second"
+        ? { description: "Metadata from the second catalogue" }
+        : {}),
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.catalogNumber, "ssis-001");
+  assert.deepEqual(result.results[0]?.sourceAttributions, [
+    { sourceId: "first", sourceName: "First source", category: "jav" },
+    { sourceId: "second", sourceName: "Second source", category: "jav" },
+  ]);
+  assert.equal(result.results[0]?.description, "Metadata from the second catalogue");
+  assert.equal(result.sources[0]?.resultCount, 1);
+  assert.equal(result.sources[1]?.resultCount, 1);
+});
+
+test("does not use JAV catalogue-number identity for non-JAV content", async () => {
+  const crossCategoryProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      contentCategory: "anime",
+      url: `https://${context.source.id}.example/item`,
+    }),
+  ], { contentCategories: ["anime"] });
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source", contentCategory: "anime" }),
+      source({ id: "second", name: "Second source", contentCategory: "anime" }),
+    ),
+    { version: 1, updatedAt: null, adapters: [{
+      ...adapterMetadata,
+      contentCategories: ["anime"],
+    }] },
+    resolve(crossCategoryProvider),
+  );
+
+  assert.equal(result.results.length, 2);
+});
+
 test("isolates provider failures so healthy sources still return results", async () => {
   const resilientProvider = provider(async (_input, context) => {
     if (context.source.id === "broken") throw new Error("simulated provider failure");

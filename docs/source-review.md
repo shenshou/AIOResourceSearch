@@ -4370,3 +4370,13 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Current catalog: 175 unique candidates (JAV 32, torrent 30, forum 16, other-index 97); provenance tags: 69 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
 - No Provider, API call, credential, KV configuration, source enablement, deployment, or production data change.
 - Reference: https://av-search.video/en
+
+
+## JAV cross-provider identity normalization implementation note (2026-11-27)
+
+- AIOResourceSearch previously merged results only when their canonical detail URLs matched. This missed the common JAV case where two catalogues expose the same DVD/ catalogue number under different detail URLs.
+- The Worker search aggregator now uses a conservative secondary identity key for JAV only: NFKC normalization, uppercase ASCII alphanumeric normalization, and a bounded mixed letter/digit code. It still retains canonical URL matching as the primary identity hint.
+- No title-, performer-, fuzzy-, or substring-based matching is performed. Non-JAV content never uses the JAV catalogue-number key. This avoids broad speculative cross-category merges.
+- When a match is found, source attributions and previously missing metadata fields continue to be merged using the existing result merge behavior.
+- Focused regression tests cover equivalent code spellings across distinct URLs and verify that non-JAV content is not merged by a JAV-looking code.
+- This is a code-level identity improvement only. It does not add a Provider, contact any source, change KV configuration, enable a source, or deploy anything. Full CI remains deferred until the complete large JAV metadata search/aggregation module is finished.

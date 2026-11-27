@@ -147,6 +147,26 @@ function canonicalUrl(value: string): string {
   return url.toString();
 }
 
+/**
+ * JAV catalogue numbers are stable cross-provider identity hints.
+ * Normalize only conservative ASCII alphanumeric codes; never infer identity
+ * from titles, actor names, or fuzzy similarity.
+ */
+function canonicalCatalogNumber(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 100) return null;
+  const normalized = value.normalize("NFKC").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (normalized.length < 4 || normalized.length > 40) return null;
+  if (!/[A-Z]/.test(normalized) || !/[0-9]/.test(normalized)) return null;
+  return normalized;
+}
+
+function resourceIdentityKeys(resource: NormalizedResource): { url: string; catalog?: string } {
+  const url = `url:${canonicalUrl(resource.url)}`;
+  if ((resource.contentCategory ?? "jav") !== "jav") return { url };
+  const catalogNumber = canonicalCatalogNumber(resource.catalogNumber);
+  return catalogNumber ? { url, catalog: `jav:${catalogNumber}` } : { url };
+}
+
 type ProviderResolution =
   | { provider: ProviderAdapter; errorCode?: never }
   | { provider: null; errorCode: "adapter_unavailable" | "adapter_incompatible" };
@@ -390,20 +410,26 @@ export async function executeSearch(
   const results: NormalizedResource[] = [];
   for (const item of settled) {
     for (const resource of item.resources) {
-      const key = canonicalUrl(resource.url);
-      const existingIndex = resultIndexes.get(key);
+      const identity = resourceIdentityKeys(resource);
+      const existingIndex = resultIndexes.get(identity.url) ??
+        (identity.catalog ? resultIndexes.get(identity.catalog) : undefined);
       const attribution: SourceAttribution = {
         sourceId: resource.sourceId,
         sourceName: resource.sourceName,
         category: resource.category,
       };
       if (existingIndex === undefined) {
-        resultIndexes.set(key, results.length);
+        resultIndexes.set(identity.url, results.length);
+        if (identity.catalog) resultIndexes.set(identity.catalog, results.length);
         results.push({ ...resource, sourceAttributions: [attribution] });
         if (results.length >= MAX_TOTAL_RESULTS) break;
         continue;
       }
 
+      // Register both identity hints against the surviving result so a
+      // later provider can match by URL or by JAV catalogue number.
+      resultIndexes.set(identity.url, existingIndex);
+      if (identity.catalog) resultIndexes.set(identity.catalog, existingIndex);
       const existing = results[existingIndex];
       const attributions = existing.sourceAttributions ?? [];
       const hasAttribution = attributions.some((item) => item.sourceId === attribution.sourceId);
