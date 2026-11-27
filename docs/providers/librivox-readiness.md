@@ -63,7 +63,7 @@ Proposed initial scope:
 
 1. ~~Add `audiobook` as a first-class content category.~~ Completed in the shared type/label contract; frontend filtering is driven by this shared list, and Worker validation is covered by a focused test.
 2. Capture and review a real first-party JSON response and add it as a fixture.
-3. Implement the 5-second shared lane in the existing Durable Object coordinator and its local workerd suite.
+3. ~~Implement the 5-second shared lane in the existing Durable Object coordinator and its local workerd suite.~~ Completed in the compile-time lane allowlist/interval map with Node and local workerd assertions; fail-closed and Retry-After handling reuse the existing coordinator path.
 4. Implement the metadata-only Provider and focused tests; register it only in the same change.
 5. Add the adapter/source definitions as disabled and unconfigured; no production KV mutation.
 6. Run the complete CI suite once the module is complete.
@@ -73,6 +73,7 @@ Proposed initial scope:
 
 - Candidate catalog entry exists: `librivox` (`contentCategory: audiobook`; disabled/unconfigured).
 - Provider implementation: no.
+- Shared rate-limit lane: `librivox`, 5,000 ms; Node and local workerd coverage added, pending execution in the next complete CI run.
 - Adapter registry entry: no.
 - KV configuration: none verified.
 - Enabled: no.
