@@ -69,6 +69,13 @@ async function readLimitedText(response: Response): Promise<string> {
   }
 }
 
+function isScenesEnvelope(payload: unknown): payload is { data: unknown[] } {
+  return typeof payload === "object" &&
+    payload !== null &&
+    "data" in payload &&
+    Array.isArray(payload.data);
+}
+
 async function fetchJson(url: string, context: ProviderContext): Promise<unknown> {
   throwIfAborted(context.signal);
   const cacheKey = new Request(url, { method: "GET" });
@@ -77,7 +84,9 @@ async function fetchJson(url: string, context: ProviderContext): Promise<unknown
       const cached = await context.cache.match(cacheKey);
       if (cached) {
         try {
-          return JSON.parse(await readLimitedText(cached));
+          const cachedPayload: unknown = JSON.parse(await readLimitedText(cached));
+          if (!isScenesEnvelope(cachedPayload)) throw new Error("Invalid cached scene response.");
+          return cachedPayload;
         } catch {
           // Ignore a malformed/oversized cache entry and fetch a fresh response.
         }
@@ -119,6 +128,7 @@ async function fetchJson(url: string, context: ProviderContext): Promise<unknown
   let payload: unknown;
   try {
     payload = JSON.parse(responseText);
+    if (!isScenesEnvelope(payload)) throw new Error("Perverzija DB returned an invalid JSON response.");
   } catch (error) {
     if (error instanceof SyntaxError) {
       throw new Error("Perverzija DB returned malformed JSON.", { cause: error });
@@ -199,7 +209,7 @@ function sceneDescription(scene: SceneRecord): string | undefined {
 }
 
 function parseScenes(payload: unknown) {
-  if (typeof payload !== "object" || payload === null || !("data" in payload) || !Array.isArray(payload.data)) {
+  if (!isScenesEnvelope(payload)) {
     throw new Error("Perverzija DB returned an invalid JSON response.");
   }
 
@@ -244,7 +254,7 @@ function parseScenes(payload: unknown) {
  */
 export const perverzijaDbProvider: ProviderAdapter = {
   id: "perverzija-db",
-  version: "1.0.0",
+  version: "1.1.0",
   mechanism: "api",
   contentCategories: ["jav"],
   categories: ["other-index"],

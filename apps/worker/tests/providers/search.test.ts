@@ -988,6 +988,7 @@ function perverzijaContext(fetchImpl: typeof fetch, cache?: Cache) {
 }
 
 test("searches the documented Perverzija DB JSON API and maps attributed metadata", async () => {
+  assert.equal(perverzijaDbProvider.version, "1.1.0");
   assert.equal(perverzijaDbProvider.rateLimitLane, "perverzija");
   let requestedUrl = "";
   let redirectMode: RequestRedirect | undefined;
@@ -1059,6 +1060,28 @@ test("caches valid Perverzija metadata for five minutes and skips the upstream l
   assert.deepEqual(second, first);
   assert.equal(entries.size, 1);
   assert.equal(entries.values().next().value?.headers.get("Cache-Control"), "public, max-age=300");
+});
+
+test("refreshes a Perverzija cache entry with an invalid response envelope", async () => {
+  let fetchCalls = 0;
+  const cache = {
+    match: async () => new Response(JSON.stringify({ unexpected: [] }), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
+    }),
+    put: async () => {},
+  } as unknown as Cache;
+  const resources = await perverzijaDbProvider.search(
+    { query: "sample", mode: "keyword" },
+    perverzijaContext(async () => {
+      fetchCalls += 1;
+      return new Response(JSON.stringify(perverzijaFixture), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }, cache),
+  );
+
+  assert.equal(fetchCalls, 1);
+  assert.equal(resources.length, 1);
 });
 
 test("omits impossible Perverzija calendar dates without discarding the scene", async () => {
