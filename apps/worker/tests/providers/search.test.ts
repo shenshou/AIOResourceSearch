@@ -560,6 +560,46 @@ test("deduplicates JAV results by normalized catalogue number across different d
   assert.equal(result.sources[1]?.resultCount, 1);
 });
 
+test("does not reassign a catalogue identity when a canonical URL conflicts", async () => {
+  const records: Record<string, { catalogNumber: string; url: string }> = {
+    first: { catalogNumber: "SSIS-001", url: "https://first.example/item" },
+    second: { catalogNumber: "ABP-002", url: "https://second.example/item" },
+    conflicting: { catalogNumber: "ABP-002", url: "https://first.example/item" },
+    fourth: { catalogNumber: "ABP-002", url: "https://fourth.example/item" },
+  };
+  const sharedProvider = provider(async (_input, context) => {
+    const record = records[context.source.id];
+    return [resource({
+      id: context.source.id,
+      catalogNumber: record.catalogNumber,
+      url: record.url,
+    })];
+  });
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+      source({ id: "conflicting", name: "Conflicting source" }),
+      source({ id: "fourth", name: "Fourth source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 2);
+  assert.deepEqual(result.results[0]?.sourceAttributions?.map((item) => item.sourceId), [
+    "first",
+    "conflicting",
+  ]);
+  assert.deepEqual(result.results[1]?.sourceAttributions?.map((item) => item.sourceId), [
+    "second",
+    "fourth",
+  ]);
+  assert.equal(result.results[0]?.catalogNumber, "SSIS-001");
+  assert.equal(result.results[1]?.catalogNumber, "ABP-002");
+});
+
 test("does not use JAV catalogue-number identity for non-JAV content", async () => {
   const crossCategoryProvider = provider(async (_input, context) => [
     resource({

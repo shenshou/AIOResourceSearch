@@ -473,10 +473,16 @@ export async function executeSearch(
         continue;
       }
 
-      // Register both identity hints against the surviving result so a
-      // later provider can match by URL or by JAV catalogue number.
-      resultIndexes.set(identity.url, existingIndex);
-      if (identity.catalog) resultIndexes.set(identity.catalog, existingIndex);
+      // Keep URL aliases and catalogue aliases attached to their original
+      // result. A conflicting catalogue key must never be reassigned merely
+      // because a stronger canonical-URL match was found.
+      if (!resultIndexes.has(identity.url)) resultIndexes.set(identity.url, existingIndex);
+      if (identity.catalog) {
+        const catalogueMatch = resultIndexes.get(identity.catalog);
+        if (catalogueMatch === undefined || catalogueMatch === existingIndex) {
+          resultIndexes.set(identity.catalog, existingIndex);
+        }
+      }
       const existing = results[existingIndex];
       const attributions = existing.sourceAttributions ?? [];
       const hasAttribution = attributions.some((item) => item.sourceId === attribution.sourceId);
