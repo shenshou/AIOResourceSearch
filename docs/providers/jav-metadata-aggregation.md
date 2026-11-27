@@ -51,7 +51,7 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - Each normalized link carries source attribution. When multiple Providers return the same work, distinct links are retained; identical type/URL pairs are deduplicated while their contributing source attributions are combined.
 - Existing `magnetUri`, `torrentUrl`, and `ed2kUri` single-value fields remain populated as compatibility fields for older clients and integrations.
 - Link values are accepted only when the matching source capability is declared and the value passes its protocol-specific validation. The Provider cannot override source attribution.
-- The search interface now renders every normalized link, provides copy/open actions for magnet and ed2k, exposes torrent downloads, and displays the source attribution for each link. It retains a legacy-field fallback for older API responses.
+- The search interface now renders every normalized link, provides copy/open actions for magnet and ed2k, copy/download actions for Torrent links, and displays the source attribution for each link. It retains a legacy-field fallback for older API responses.
 - Focused tests cover distinct links from separate sources, duplicate-link attribution merging, and rejection of provider-supplied forged attribution or links outside the declared capability.
 - No candidate source is automatically enabled by this change.
 
