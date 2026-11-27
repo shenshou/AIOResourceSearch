@@ -413,7 +413,7 @@ async function deleteSource(source: SourceDefinition) {
         <div>
           <h2>字段来源优先级</h2>
           <p>可分别指定标题、番号、发行日期、封面、简介及 metadata 子字段的来源顺序。未配置或空数组时沿用数据源列表顺序；列出的来源优先于未列出的来源。支持字段：title、catalogNumber、releaseDate、imageUrl、description、metadata.字段名。</p>
-          <p class="form-hint">来源 ID：{{ manager.sources.value.map((source) => source.id).join("、") || "暂无已登记来源" }}</p>
+          <p class="form-hint">来源 ID：{{ manager.sources.value.filter((source) => (source.type ?? "provider") === "provider").map((source) => source.id).join("、") || "暂无已登记来源" }}</p>
         </div>
         <label class="wide">字段优先级 JSON
           <textarea v-model="fieldPrioritiesJson" rows="7" maxlength="12000" spellcheck="false" placeholder='{"catalogNumber":["jav-metadata-a","jav-metadata-b"],"metadata.studio":["studio-db","jav-metadata-a"]}'></textarea>
