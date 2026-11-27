@@ -144,7 +144,7 @@ Acceptance:
 
 ## Phase 4 — Real Cloudflare integration verification
 
-**Status: In progress — code-side deployment preflight and first-run bootstrap are being prepared; no hosted resources have been provisioned**
+**Status: Code-side deployment preflight and first-run bootstrap complete; hosted verification remains pending and no hosted resources have been provisioned**
 
 Deliverables:
 - [x] Make production frontend API configuration fail closed when `VITE_API_BASE_URL` is missing; retain the localhost default only for local development.
@@ -152,6 +152,7 @@ Deliverables:
 - [x] Document Cloudflare Pages monorepo build settings, isolated non-production Worker configuration, KV/DO bindings, CORS, secrets, first-run setup, and smoke-test order.
 - [x] Add a read-only Node.js staging smoke-test script for health, CORS, public configuration, and administrator authorization checks.
 - [x] Add a staging-only, manual GitHub Actions deployment workflow that runs the full verification suite before deploying the isolated Worker; production deployment remains separate.
+- [x] Include non-secret staging-config generation and Wrangler `--dry-run` bundle validation in full CI; this does not authenticate to Cloudflare or deploy resources.
 - [ ] Create or designate a non-production Cloudflare Pages + Worker test environment.
 - [ ] Bind a test KV namespace and the SQLite rate-limit Durable Object; configure test-only ADMIN_API_TOKEN and exact ALLOWED_ORIGINS.
 - [ ] Verify Durable Object slot spacing, cooldown revalidation, restart persistence, cancellation, and quota accounting in a hosted non-production environment. Do not deliberately exhaust shared account quotas or switch to a Paid plan to complete verification.
