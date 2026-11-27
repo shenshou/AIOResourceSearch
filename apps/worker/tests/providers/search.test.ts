@@ -452,6 +452,58 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
   assert.deepEqual(result.sources.map((item) => item.resultCount), [1, 1]);
 });
 
+test("deduplicates canonical URLs when only tracking parameters and query order differ", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      url: context.source.id === "first"
+        ? "https://example.com/item?b=2&utm_source=directory&a=1#details"
+        : "https://EXAMPLE.com/item/?a=1&b=2&fbclid=tracking-token",
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(result.results[0]?.sourceAttributions?.map((item) => item.sourceId), [
+    "first",
+    "second",
+  ]);
+});
+
+test("preserves meaningful query parameters when canonicalizing result URLs", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      url: context.source.id === "first"
+        ? "https://example.com/item?id=1&utm_source=directory"
+        : "https://example.com/item?id=2",
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 2);
+  assert.deepEqual(result.results.map((item) => item.url), [
+    "https://example.com/item?id=1&utm_source=directory",
+    "https://example.com/item?id=2",
+  ]);
+});
+
 test("keeps the first source's label for duplicate external URLs", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({
