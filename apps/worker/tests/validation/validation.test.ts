@@ -249,7 +249,7 @@ test("validateAdapter uses the registered implementation as the source of truth"
 
   assert.ok(result);
   assert.deepEqual(result.categories, ["other-index"]);
-  assert.deepEqual(result.capabilities, ["metadata"]);
+  assert.deepEqual(result.capabilities, ["metadata", "relationships"]);
   assert.equal(result.version, "1.1.0");
 });
 
