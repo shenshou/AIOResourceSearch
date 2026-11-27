@@ -414,6 +414,7 @@ test("keeps the first source's conflicting metadata and fills only missing field
   const sharedProvider = provider(async (_input, context) => [
     resource({
       id: context.source.id,
+      title: context.source.id === "first" ? "First source title" : "Conflicting later title",
       catalogNumber: "SSIS-001",
       releaseDate: context.source.id === "first" ? "2026-01-01" : "2026-02-02",
       description: context.source.id === "first" ? "First source description" : "Conflicting later description",
@@ -438,6 +439,8 @@ test("keeps the first source's conflicting metadata and fills only missing field
 
   assert.equal(result.results.length, 1);
   assert.equal(result.results[0]?.sourceId, "first");
+  assert.equal(result.results[0]?.title, "First source title");
+  assert.equal(result.results[0]?.url, "https://first.example/item/ssis-001");
   assert.equal(result.results[0]?.releaseDate, "2026-01-01");
   assert.equal(result.results[0]?.description, "First source description");
   assert.equal(result.results[0]?.imageUrl, "https://first.example/cover.jpg");
