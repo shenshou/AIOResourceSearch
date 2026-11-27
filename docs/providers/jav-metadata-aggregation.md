@@ -28,7 +28,7 @@ This document defines the current Worker-side aggregation contract for JAV metad
 
 ## Verification
 
-Focused unit tests cover first-value-wins conflicts, filling missing metadata keys, blank-value filtering, JAV catalogue-number identity, and category isolation. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
+Focused unit tests now cover first-value-wins field and external-link conflicts, deterministic configured-source order despite out-of-order provider completion, blank-value filtering, catalogue-key collision isolation, JAV catalogue-number identity, category isolation, relationship whitespace normalization, relationship-cap URL enrichment, and Perverzija calendar-date validation. These tests are authored but not executed locally. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
 
 ## Structured relationships
 
