@@ -54,3 +54,11 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - The search interface now renders every normalized link, provides copy/open actions for magnet and ed2k, exposes torrent downloads, and displays the source attribution for each link. It retains a legacy-field fallback for older API responses.
 - Focused tests cover distinct links from separate sources, duplicate-link attribution merging, and rejection of provider-supplied forged attribution or links outside the declared capability.
 - No candidate source is automatically enabled by this change.
+
+
+## Generic HTML extraction: magnet, torrent and ed2k selectors (2026-11-27)
+
+- The declarative HTML adapter now supports independent CSS selectors for magnet, Torrent download and ed2k links, in addition to metadata, images and custom metadata fields.
+- Source validation requires every declared downloadable-link capability to have its matching selector and rejects undeclared selector/capability mismatches.
+- The parser only reads anchor `href` values selected by the administrator. The Provider validates magnet info hashes, accepts only HTTPS Torrent URLs without embedded credentials, and validates the ed2k file-link shape before returning them.
+- The source-management interface exposes the three selectors separately. No script execution, browser emulation, redirect following, challenge solving, or access-control workaround is introduced.
