@@ -143,6 +143,8 @@ function normalizeResource(
         .map((relationship) => ({
           type: relationship.type,
           name: relationship.name.trim(),
+          aliases: [relationship.name.trim()],
+          sourceAttributions: [{ sourceId: source.id, sourceName: source.name }],
           ...(relationship.url ? { url: relationship.url } : {}),
         }))
     : undefined;
@@ -287,31 +289,87 @@ function fieldPriorityRank(
   return explicitIndex >= 0 ? explicitIndex : priorities.length + fallbackIndex;
 }
 
+function normalizedEntityName(value: string): string {
+  return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 function mergeRelationships(
   existing: NormalizedResource["relationships"],
   incoming: NormalizedResource["relationships"],
 ): NormalizedResource["relationships"] {
-  const merged = new Map<string, NonNullable<NormalizedResource["relationships"]>[number]>();
+  type Relationship = NonNullable<NormalizedResource["relationships"]>[number];
+  const merged: Relationship[] = [];
+  const urlIndexes = new Map<string, number>();
+  const nameIndexes = new Map<string, number[]>();
+
   for (const relationship of [...(existing ?? []), ...(incoming ?? [])]) {
-    const key = `${relationship.type}:${relationship.name.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase()}`;
-    const current = merged.get(key);
-    if (!current) {
-      if (merged.size < 40) merged.set(key, relationship);
+    const nameKey = `${relationship.type}:${normalizedEntityName(relationship.name)}`;
+    const urlKey = relationship.url
+      ? `${relationship.type}:url:${canonicalUrl(relationship.url)}`
+      : undefined;
+    let matchIndex = urlKey ? urlIndexes.get(urlKey) : undefined;
+
+    if (matchIndex === undefined) {
+      const sameNameIndexes = nameIndexes.get(nameKey) ?? [];
+      const withoutUrl = sameNameIndexes.filter((index) => !merged[index]?.url);
+      if (relationship.url && withoutUrl.length === 1) {
+        matchIndex = withoutUrl[0];
+      } else if (!relationship.url && sameNameIndexes.length === 1) {
+        matchIndex = sameNameIndexes[0];
+      } else if (!relationship.url && withoutUrl.length === 1) {
+        matchIndex = withoutUrl[0];
+      }
+    }
+
+    if (matchIndex === undefined) {
+      if (merged.length >= 40) continue;
+      const aliases = [...new Set([relationship.name, ...(relationship.aliases ?? [])]
+        .map((alias) => alias.trim())
+        .filter((alias) => alias.length > 0 && alias.length <= 120))].slice(0, 20);
+      merged.push({
+        ...relationship,
+        aliases,
+        sourceAttributions: relationship.sourceAttributions ?? [],
+      });
+      const index = merged.length - 1;
+      for (const alias of aliases.length ? aliases : [relationship.name]) {
+        const key = `${relationship.type}:${normalizedEntityName(alias)}`;
+        const indexes = nameIndexes.get(key) ?? [];
+        indexes.push(index);
+        nameIndexes.set(key, indexes);
+      }
+      if (urlKey) urlIndexes.set(urlKey, index);
       continue;
     }
 
-    if (current.url && relationship.url) {
-      const currentUrl = new URL(current.url).toString();
-      const incomingUrl = new URL(relationship.url).toString();
-      if (currentUrl !== incomingUrl) {
-        const distinctKey = `${key}:url:${incomingUrl}`;
-        if (!merged.has(distinctKey) && merged.size < 40) merged.set(distinctKey, relationship);
-      }
-    } else if (!current.url && relationship.url) {
-      merged.set(key, { ...current, url: relationship.url });
+    const current = merged[matchIndex];
+    if (!current) continue;
+    const aliasMap = new Map<string, string>();
+    for (const alias of [current.name, ...(current.aliases ?? []), relationship.name, ...(relationship.aliases ?? [])]) {
+      const normalized = normalizedEntityName(alias);
+      if (normalized && !aliasMap.has(normalized) && alias.length <= 120) aliasMap.set(normalized, alias.trim());
+    }
+    const attributions = new Map<string, FieldAttribution>();
+    for (const attribution of current.sourceAttributions ?? []) attributions.set(attribution.sourceId, attribution);
+    for (const attribution of relationship.sourceAttributions ?? []) {
+      if (!attributions.has(attribution.sourceId)) attributions.set(attribution.sourceId, attribution);
+    }
+    merged[matchIndex] = {
+      ...current,
+      ...(!current.url && relationship.url ? { url: relationship.url } : {}),
+      aliases: [...aliasMap.values()].slice(0, 20),
+      sourceAttributions: [...attributions.values()],
+    };
+    if (urlKey) urlIndexes.set(urlKey, matchIndex);
+    for (const alias of aliasMap.values()) {
+      const key = `${relationship.type}:${normalizedEntityName(alias)}`;
+      const indexes = nameIndexes.get(key) ?? [];
+      if (!indexes.includes(matchIndex)) indexes.push(matchIndex);
+      nameIndexes.set(key, indexes);
     }
   }
-  return [...merged.values()];
+
+  return merged;
 }
 
 type ProviderResolution =
