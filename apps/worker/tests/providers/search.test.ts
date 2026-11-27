@@ -575,6 +575,38 @@ test("deduplicates repeated relationships within a single source result", async 
   ]);
 });
 
+test("keeps same-name relationships separate when both sources provide different entity URLs", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      relationships: [{
+        type: "performer",
+        name: "Performer A",
+        url: context.source.id === "first"
+          ? "https://first.example/performer/a"
+          : "https://second.example/performer/a",
+      }],
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(result.results[0]?.relationships, [
+    { type: "performer", name: "Performer A", url: "https://first.example/performer/a" },
+    { type: "performer", name: "Performer A", url: "https://second.example/performer/a" },
+  ]);
+});
+
 test("relationship identity normalizes Unicode compatibility and repeated whitespace", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({

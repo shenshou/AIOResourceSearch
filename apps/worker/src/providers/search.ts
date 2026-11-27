@@ -210,6 +210,16 @@ function mergeRelationships(
     const current = merged.get(key);
     if (!current) {
       if (merged.size < 40) merged.set(key, relationship);
+      continue;
+    }
+
+    if (current.url && relationship.url) {
+      const currentUrl = new URL(current.url).toString();
+      const incomingUrl = new URL(relationship.url).toString();
+      if (currentUrl !== incomingUrl) {
+        const distinctKey = `${key}:url:${incomingUrl}`;
+        if (!merged.has(distinctKey) && merged.size < 40) merged.set(distinctKey, relationship);
+      }
     } else if (!current.url && relationship.url) {
       merged.set(key, { ...current, url: relationship.url });
     }
