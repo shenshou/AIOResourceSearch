@@ -269,7 +269,7 @@ async function fetchJson(
 /** Metadata-only integration; search results are status-checked before return. */
 export const epornerApiProvider: ProviderAdapter = {
   id: "eporner-api",
-  version: "1.0.0",
+  version: "1.1.0",
   mechanism: "api",
   contentCategories: ["jav"],
   categories: ["other-index"],

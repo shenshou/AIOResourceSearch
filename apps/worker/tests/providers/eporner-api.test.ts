@@ -61,6 +61,7 @@ function context(fetcher: typeof fetch, cache?: Cache, syncState: unknown = fres
 
 test("registers a metadata-only adult keyword Provider on the shared Eporner lane", () => {
   assert.equal(getProviderAdapter("eporner-api"), epornerApiProvider);
+  assert.equal(epornerApiProvider.version, "1.1.0");
   assert.equal(epornerApiProvider.mechanism, "api");
   assert.deepEqual(epornerApiProvider.contentCategories, ["jav"]);
   assert.deepEqual(epornerApiProvider.categories, ["other-index"]);

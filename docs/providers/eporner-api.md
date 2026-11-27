@@ -43,7 +43,7 @@ The built-in adapter is identified by:
 |---|---|
 | Adapter ID | `eporner-api` |
 | Mechanism | `api` |
-| Version | `1.0.0` |
+| Version | `1.1.0` |
 | Source category | `other-index` |
 | Content category | `jav` |
 | Capabilities | `metadata` |
