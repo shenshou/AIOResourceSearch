@@ -49,7 +49,7 @@ test("uses the official title-prefix JSON contract and maps the real first-party
   assert.equal(url.searchParams.get("format"), "json");
   assert.equal(url.searchParams.get("limit"), "20");
   assert.equal(url.searchParams.get("offset"), "0");
-  assert.deepEqual(url.searchParams.get("fields")?.split(","), [
+  assert.deepEqual(url.searchParams.getAll("fields[]"), [
     "id", "title", "description", "language", "copyright_year", "num_sections",
     "url_librivox", "totaltime", "totaltimesecs", "authors",
   ]);
