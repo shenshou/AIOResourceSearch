@@ -4265,3 +4265,13 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Provider implementation and tests are registered in Worker code. Source and adapter remain unconfigured/disabled; no live API request, KV mutation, deployment, or Hosted Cloudflare verification was performed.
 - Provider count increases from 11 to 12. Candidate inventory remains 164 unique entries (JAV 28, torrent 30, forum 16, other-index 90); 59 project provenance tags overlap; user-opened external-search templates remain 9.
 - Detailed contract and licence allowlist: [AudioSilo Meta Provider readiness](./providers/audiosilo-meta-readiness.md).
+
+
+## AdultEmbed — public adult-video catalogue API candidate (2026-11-27)
+
+- The first-party API documentation describes a versioned JSON API for an adult-video catalogue. Search supports keyword, orientation, content type, tags, categories, performers, studios, duration, language, publication/update windows, pagination and sorting. The docs also describe incremental updates and removed-video feeds.
+- The first-party API overview says content endpoints are open without sign-up or an API key and that there is no request quota. The API documentation is explicitly presented for adult webmasters and tube-site integrations.
+- The same documentation describes player/embed URLs, thumbnails, feeds and nightly catalogue dumps. Those capabilities are not needed for AIOResourceSearch's metadata-search/external-link scope and are not being adopted.
+- **Permission gap:** the public API documentation reviewed here does not clearly state a licence or grant permitting a multi-source discovery aggregator to retain and republish its metadata fields, nor does it establish the applicable attribution, retention, downstream display, or removal obligations. An open endpoint and a stated lack of quota are not data-reuse permission.
+- **Decision:** add AdultEmbed as a durable JAV candidate under the other-index source-kind category, with homepage-only navigation. Do not call the API, feeds, dumps, embed/player, thumbnail or media endpoints until first-party data-use terms and the exact metadata reuse conditions are confirmed. No Provider code, KV configuration, enablement, or deployment is added.
+- References: https://adultembed.com/api/ ; https://adultembed.com/api/docs/ (API v1 overview, search contract, caching/limits and content endpoints).
