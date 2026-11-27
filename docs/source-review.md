@@ -4522,3 +4522,48 @@ This batch rechecked BestJavPorn, Jable.org, JAV Ass Lover, JAV Desu and JAV Sub
 - The remaining four still lack sufficient first-party evidence; no access restriction was bypassed.
 - The JAV backlog remains **23 items requiring further evidence**. This batch did not change the 12 items already classified as having a current no-auto-integration decision.
 - No Provider code, KV configuration, source enablement, deployment or production data was changed.
+
+## JAV source verification batch 26 — second five items from the reconciled backlog (2026-11-27)
+
+This batch rechecked JAV Subtitled, JAV.sb, JavBus, JAVCL and JavDoe. The review looked for first-party terms, supported public API/RSS/search contracts and explicit permission for automated metadata reuse. Third-party technical scans and domain-registration records were not treated as authorization.
+
+### JAV Subtitled
+- The exact first-party domain, `javsubtitled.com`, could not be opened by the research browser. Search surfaced domain-registration records and third-party company/traffic summaries, but no verifiable first-party Terms, API/RSS documentation or automation/data-use grant.
+- A third-party FAQ result mentioning the domain is not an operator policy or permission statement.
+- **Decision:** retain the candidate as homepage-only/pending. No guessed search route, Worker fetch, scraping or domain substitution.
+
+### JAV.sb
+- The exact catalog domain is `https://jav.sb`. The research browser could not independently retrieve it in this review. A third-party URL scan captured a page and described the site, but it did not establish first-party terms, an API/RSS contract or permission for external metadata aggregation.
+- Earlier third-party observations of Cloudflare challenge responses remain a strict stop condition; no challenge handling, cookie reuse, proxying or alternate-route probing was attempted.
+- **Decision:** retain homepage-only/pending. No Worker request, search template or automated extraction.
+
+### JavBus
+- The exact catalog domain currently redirects visitors to a first-party age-verification page, as observed by a third-party browser scan. The same scan reports that the site's robots policy excludes its privacy-policy URL from automated tools, so that policy was not read.
+- No verifiable first-party Terms/API contract or permission for third-party metadata aggregation was established. A page that asks for age verification is not an invitation for automated age-gate handling.
+- **Decision:** retain the candidate for user-initiated external navigation only. No age-gate automation, Worker fetch, cookie/session handling or metadata extraction.
+
+### JAVCL
+- The exact first-party homepage could not be independently retrieved by the research browser. A third-party browser scan from 2026-11-08 reports a visible homepage and linked pages, but found no privacy-policy link; it does not establish whether Terms exist elsewhere, nor does it grant automated collection rights.
+- No official API/RSS documentation, stable supported search contract or explicit metadata-reuse permission was verified. Third-party privacy/technology observations are not a substitute for operator terms.
+- **Decision:** retain homepage-only/pending. No Worker fetch, HTML extraction or guessed query template.
+
+### JavDoe
+- The exact catalog domain is `javdoe.to`. The research browser timed out when opening it. Domain-registration records confirm registration metadata only; they do not prove the current operator, service availability, terms or automation permission.
+- A third-party GreatFire report records mainland-China interference for the domain. This is a regional network observation, not permission to route around it; no VPN, proxy, alternate domain or mirror was used.
+- Similarly named `.us` domains are not substituted for the catalog's `.to` domain.
+- **Decision:** retain the exact `.to` candidate as homepage-only/pending. No Worker fetch, alternate-domain substitution, region bypass or search template.
+
+### Batch outcome
+- 5 candidates rechecked; 0 promoted to Provider and 0 search templates added.
+- All five remain in the evidence backlog because first-party automation permission and supported public interfaces were not established.
+- No age gate, Cloudflare challenge, regional restriction or other access control was bypassed.
+- No Provider code, KV configuration, source enablement, deployment or production data was changed.
+- The JAV backlog remains **23 items requiring further evidence**; the 12 current no-auto-integration decisions are unchanged.
+
+### Evidence references
+- JAV Subtitled: https://javsubtitled.com/ ; https://www.whois.com/whois/javsubtitled.com
+- JAV.sb: https://jav.sb/ ; https://tools.malwaretips.com/url-scan/jav.sb
+- JavBus: https://www.javbus.com/ ; https://whogetsmydata.com/website/javbus.com
+- JAVCL: https://javcl.com/ ; https://whogetsmydata.com/website/javcl.com
+- JavDoe: https://javdoe.to/ ; https://www.whois.com/whois/javdoe.to ; https://en.greatfire.org/domain/javdoe.to
+

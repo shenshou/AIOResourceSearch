@@ -81,3 +81,15 @@
 - Result: 0 promoted; all 5 remain in the 23-item evidence backlog.
 - BestJavPorn's visible search form is not treated as an API contract or automation permission. The other four lack sufficient first-party evidence; observed HTTP errors are not bypassed.
 - Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
+
+### Batch 26 — 2026-11-27
+- Rechecked: `javsubtitled`, `javsb`, `javbus`, `javcl`, `javdoe`.
+- Result: 0 promoted; all 5 remain in the 23-item evidence backlog.
+- JAV Subtitled: exact first-party domain not independently accessible; no first-party terms or supported public interface verified.
+- JAV.sb: third-party page capture is not an API contract or automation grant; previous challenge observations remain a stop condition.
+- JavBus: age-verification page observed; no age-gate automation or Worker fetching.
+- JAVCL: third-party scan found no privacy-policy link, but no API/search contract or automation permission was established.
+- JavDoe: exact `.to` domain timed out; mainland-China interference is not bypassed and similarly named domains are not substituted.
+- No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
+- Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
+
