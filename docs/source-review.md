@@ -4887,3 +4887,18 @@ References:
 - Femdomcult: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/femdomcult.yml
 - HappyFappy: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/happyfappy.yml
 - Pornorip: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pornorip.yml
+
+
+## Prowlarr/Jackett discovery batch 10 (2026-11-27)
+
+Two more adult-category tracker candidates were retained after reviewing current Jackett definitions:
+
+- **BootyTape:** semi-private adult tracker; the definition includes username/password login and account-level search configuration.
+- **Gay-Torrents.net:** semi-private adult tracker; the definition includes username/password login and login-state validation, and maps both adult and non-adult categories.
+
+**Decision:** keep both as name-only directory candidates. Do not create accounts, collect credentials, log in, access private searches/feeds, or reuse third-party scraper code. No Provider, clickable destination, or search template was added. Torrent inventory increases from 52 to 54 records (10 Provider records, 44 external-only/unverified); the six existing adapters remain unchanged. No source enablement, production KV write, deployment or CI run.
+
+References:
+- Jackett supported trackers: https://github.com/Jackett/Jackett
+- BootyTape: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/bootytape.yml
+- Gay-Torrents.net: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/gay-torrents.yml

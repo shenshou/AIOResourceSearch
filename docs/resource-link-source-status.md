@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **52 torrent-category entries**:
+The source catalog currently contains **54 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 42 | User-initiated navigation only; no Worker acquisition |
-| Total | 52 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 44 | User-initiated navigation only; no Worker acquisition |
+| Total | 54 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -383,3 +383,23 @@ References:
 - Femdomcult definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/femdomcult.yml
 - HappyFappy definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/happyfappy.yml
 - Pornorip definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pornorip.yml
+
+
+## External torrent-source review batch 10 — 2026-11-27
+
+Two additional adult trackers in the current Jackett catalogue were checked against their maintained definitions:
+
+| Candidate | Access evidence | Decision |
+|---|---|---|
+| BootyTape | Jackett classifies it as semi-private; its definition lists an account username/password login and an account-configured search flow. | Retain as name-only candidate; no account, credentials, private search, or scraper reuse. |
+| Gay-Torrents.net | Jackett classifies it as semi-private; its definition includes username/password login and login-state validation. It contains adult and non-adult categories. | Retain as name-only candidate; no account-bound integration or private result ingestion. |
+
+### Batch result
+- 2 additional name-only semi-private candidates retained; 0 Provider promotions, 0 clickable destinations, and 0 search templates added.
+- Torrent inventory becomes **54 entries = 10 Provider records + 44 external-only/unverified records**. Unique adapters remain 6.
+- No credentials were collected, no account or private feed was accessed, and no source was enabled. No production KV write, deployment or CI run.
+
+References:
+- Jackett supported trackers and access categories: https://github.com/Jackett/Jackett
+- BootyTape definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/bootytape.yml
+- Gay-Torrents.net definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/gay-torrents.yml
