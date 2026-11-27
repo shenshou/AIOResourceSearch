@@ -357,3 +357,10 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - Jamendo：官方 API v3 支持曲目/专辑/艺人搜索，非商业免费层标示每月最多 35,000 次请求；API Terms 要求遵守每项内容的 Creative Commons 许可、署名创作者和 Jamendo 并提供作品页回链，商业用途（包括广告/联盟收入）需联系授权团队，可能收费。当前仅保留首页入口，不配置 API。
 - Free Music Archive：官方说明旧 API 已关闭；未经明确批准不得转发用户搜索词并抓取返回 HTML，也不得热链其音乐文件。仅保留首页入口。
 - 本批新增 3 个候选，目录更新为 160 条去重候选（JAV 28、torrent 30、forum 16、other-index 86）；AIOResourceSearch 自有来源标签 55（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。没有新增自动获取路径。
+
+
+## 播客与有声读物来源（2026-11-27，第六批）
+
+- LibriVox：第一方明确欢迎第三方应用、档案机构、流媒体和策展者分享/再分享其公共领域录音，并提供官方目录 API，支持标题/作者/类型搜索、JSON、字段选择、分页和 since 增量更新。当前上限 500 条/请求，并要求批量请求间隔数秒。纳入未来有声读物 Provider 候选；实施时必须保守限速、分页、增量同步并保留来源链接，不托管音频。
+- Podcast Index：有播客发现 API，但其官方条款仓库标示当前版本为 v2.0，本轮未能独立核验 v2.0 正文。可访问的 v1.1 条款明确限制将 API 返回内容建立永久数据库/副本（除非内容权利人或法律另行允许），并限制缓存。暂时仅保留首页入口，不调用 API 或轮询 feed，待核实当前条款与元数据使用许可。
+- 本批新增 2 个候选，目录更新为 162 条去重候选（JAV 28、torrent 30、forum 16、other-index 88）；AIOResourceSearch 自有来源标签 57（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。未新增 Provider、凭据、KV 配置、启用状态或部署。
