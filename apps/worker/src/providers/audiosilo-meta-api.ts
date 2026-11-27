@@ -67,7 +67,7 @@ function parseSeries(value: unknown): { name?: string; position?: string } {
 
 function parseReleaseDate(value: unknown): string | undefined {
   const date = boundedString(value, 10);
-  if (!date || !/^\\d{4}(?:-\\d{2}(?:-\\d{2})?)?$/.test(date)) return undefined;
+  if (!date || !/^\d{4}(?:-\d{2}(?:-\d{2})?)?$/.test(date)) return undefined;
   if (date.length === 10) {
     const parsed = new Date(date + "T00:00:00Z");
     if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) return undefined;
