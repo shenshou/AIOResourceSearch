@@ -7,7 +7,7 @@ import {
   saveAdaptersConfig,
   saveConfig,
 } from "./config-store";
-import { validateAdapter, validateSource } from "./validation";
+import { validateAdapter, validateFieldPriorities, validateSource } from "./validation";
 import { executeSourceTest } from "./providers/search";
 
 async function authorize(request: Request, env: Env): Promise<boolean> {
@@ -138,6 +138,31 @@ export async function handleAdmin(
 
   const current = await readConfig(env);
   const path = url.pathname.replace(/^\/api\/admin\/sources/, "").replace(/\/$/, "");
+
+  if (path === "/settings/field-priorities") {
+    if (request.method !== "PATCH") {
+      return json({ error: { code: "method_not_allowed", message: "Method not allowed." } }, 405);
+    }
+    const version = expectedVersion(request);
+    if (version === null) return json({ error: { code: "precondition_required", message: "Send the current ETag in If-Match." } }, 428);
+    if (version !== current.version) return json({ error: { code: "version_conflict", message: "The source configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
+
+    let body: unknown;
+    try {
+      body = await readJsonBody(request);
+    } catch {
+      return json({ error: { code: "invalid_json", message: "The request body must be valid JSON and within the size limit." } }, 400);
+    }
+    const fieldPriorities = validateFieldPriorities(
+      (body as { fieldPriorities?: unknown } | null)?.fieldPriorities,
+      current.sources,
+    );
+    if (!fieldPriorities) {
+      return json({ error: { code: "invalid_field_priorities", message: "Field priorities must map supported fields to unique, registered source IDs." } }, 422);
+    }
+    const next = await saveConfig(env, current, current.sources, fieldPriorities);
+    return withEtag(json(next), next.version);
+  }
 
   const testMatch = path.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(test-connection|test-search)$/);
   if (testMatch && request.method === "POST") {
