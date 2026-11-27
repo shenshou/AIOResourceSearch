@@ -162,6 +162,30 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
     expect(released.released).toBe(true);
   });
 
+  it("persists a LibriVox Retry-After cooldown across its dedicated SQLite lane", async () => {
+    const stub = createStub("librivox");
+    const id = coordinator.idFromName("librivox");
+    const namespace = {
+      idFromName: (name: string) => coordinator.idFromName(name),
+      get: (objectId: unknown) => coordinator.get(objectId),
+    };
+    const startedAt = Date.now();
+    const coordinatedFetch = createCoordinatedFetch(
+      namespace,
+      "librivox",
+      new AbortController().signal,
+      async () => new Response("rate limited", {
+        status: 429,
+        headers: { "Retry-After": "10" },
+      }),
+    );
+
+    const response = await coordinatedFetch("https://librivox.org/api/feed/audiobooks/");
+    expect(response.status).toBe(429);
+    const nextSlot = await reserve(stub, "librivox");
+    expect(nextSlot).toBeGreaterThanOrEqual(startedAt + 14_000);
+  });
+
   it("persists a real upstream 429 cooldown through the coordinated fetch path", async () => {
     // The coordinated fetch resolves the canonical production lane ID via idFromName("mangadex").
     const id = coordinator.idFromName("mangadex");
