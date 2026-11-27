@@ -17,6 +17,8 @@ const searchPayload = {
       rate: "4.13",
       length_sec: 2539,
       added: "2026-11-17 21:41:44",
+      categories: [{ id: 49, name: "Japanese", slug: "japanese", url: "https://www.eporner.com/cat/japanese/" }],
+      pornstars: [{ id: 4211, name: "Sample Performer", url: "https://www.eporner.com/pornstar/sample-performer/" }],
       embed: "https://www.eporner.com/embed/AbCdEfGhIjK/",
       default_thumb: { src: "https://static-ca-cdn.eporner.com/thumb.jpg" },
     },
@@ -87,6 +89,7 @@ test("uses documented search and status endpoints, suppresses removed IDs, and m
   assert.equal(requests[0]?.searchParams.get("per_page"), "50");
   assert.equal(requests[0]?.searchParams.get("thumbs"), "none");
   assert.equal(requests[0]?.searchParams.get("gay"), "1");
+  assert.equal(requests[0]?.searchParams.get("fields"), "pornstars,categories");
   assert.equal(requests[1]?.origin + requests[1]?.pathname, "https://www.eporner.com/api/v2/video/status/");
   assert.equal(requests[1]?.searchParams.get("id"), activeId + "," + removedId);
   assert.deepEqual(results, [{
@@ -98,6 +101,12 @@ test("uses documented search and status endpoints, suppresses removed IDs, and m
     title: "Sample adult metadata title",
     url: "https://www.eporner.com/video-AbCdEfGhIjK/sample-title/",
     description: "sample, metadata",
+    relationships: [
+      { type: "performer", name: "Sample Performer", url: "https://www.eporner.com/pornstar/sample-performer/" },
+      { type: "genre", name: "Japanese", url: "https://www.eporner.com/cat/japanese/" },
+      { type: "tag", name: "sample" },
+      { type: "tag", name: "metadata" },
+    ],
     metadata: {
       keywords: "sample, metadata",
       views: "12345",
@@ -106,6 +115,45 @@ test("uses documented search and status endpoints, suppresses removed IDs, and m
       addedAtSource: "2026-11-17 21:41:44",
     },
   }]);
+});
+
+test("rejects untrusted Eporner relationship URLs while retaining validated names", async () => {
+  const payload = {
+    videos: [{
+      ...searchPayload.videos[0],
+      categories: [
+        { name: "Japanese", url: "https://www.eporner.com/cat/japanese/" },
+        { name: "Spoofed category", url: "https://evil.example/cat/spoofed/" },
+      ],
+      pornstars: [
+        { name: "Valid Performer", url: "https://www.eporner.com/pornstar/valid-performer/" },
+        { name: "Spoofed Performer", url: "https://evil.example/pornstar/spoofed/" },
+        { name: "Name Only Performer", url: "http://www.eporner.com/pornstar/name-only/" },
+      ],
+    }],
+  };
+  const fetcher: typeof fetch = async (input) => {
+    const url = new URL(String(input));
+    return new Response(JSON.stringify(url.pathname.endsWith("/video/search/")
+      ? payload
+      : { videos: [{ id: activeId, status: "active" }] }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+  const results = await epornerApiProvider.search(
+    { query: "sample", mode: "keyword" },
+    context(fetcher),
+  );
+
+  assert.deepEqual(results[0]?.relationships, [
+    { type: "performer", name: "Valid Performer", url: "https://www.eporner.com/pornstar/valid-performer/" },
+    { type: "performer", name: "Spoofed Performer" },
+    { type: "performer", name: "Name Only Performer" },
+    { type: "genre", name: "Japanese", url: "https://www.eporner.com/cat/japanese/" },
+    { type: "genre", name: "Spoofed category" },
+    { type: "tag", name: "sample" },
+    { type: "tag", name: "metadata" },
+  ]);
 });
 
 test("fails closed when the daily removal feed has not completed a fresh sync", async () => {

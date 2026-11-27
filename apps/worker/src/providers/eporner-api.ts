@@ -1,3 +1,4 @@
+import type { ResourceRelationship } from "@aio-resource-search/shared";
 import type { ProviderAdapter, ProviderContext } from "./types";
 import { isEpornerRemovalSyncFresh } from "../eporner-removals";
 
@@ -18,6 +19,8 @@ interface EpornerVideo {
   rate?: unknown;
   length_sec?: unknown;
   added?: unknown;
+  categories?: unknown;
+  pornstars?: unknown;
 }
 
 function throwIfAborted(signal: AbortSignal): void {
@@ -65,6 +68,64 @@ function safeVideoUrl(value: unknown, id: string): string | null {
   }
 }
 
+function safeEntityUrl(value: unknown, entityType: "category" | "performer"): string | undefined {
+  if (typeof value !== "string" || value.length > 2048) return undefined;
+  try {
+    const url = new URL(value);
+    const pathPattern = entityType === "performer"
+      ? /^\\/pornstar\\/[a-z0-9-]+\\/?$/i
+      : /^\\/cat\\/[a-z0-9-]+\\/?$/i;
+    if (
+      url.protocol !== "https:" ||
+      url.hostname !== API_HOST ||
+      url.username ||
+      url.password ||
+      url.port ||
+      url.search ||
+      url.hash ||
+      !pathPattern.test(url.pathname)
+    ) return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function videoRelationships(video: EpornerVideo): ResourceRelationship[] {
+  const relationships: ResourceRelationship[] = [];
+  if (Array.isArray(video.pornstars)) {
+    for (const raw of video.pornstars.slice(0, 30)) {
+      if (typeof raw !== "object" || raw === null || !("name" in raw) ||
+          typeof raw.name !== "string" || !raw.name.trim() || raw.name.trim().length > 120) continue;
+      const url = "url" in raw ? safeEntityUrl(raw.url, "performer") : undefined;
+      relationships.push({
+        type: "performer",
+        name: raw.name.trim(),
+        ...(url ? { url } : {}),
+      });
+    }
+  }
+  if (Array.isArray(video.categories)) {
+    for (const raw of video.categories.slice(0, 20)) {
+      if (typeof raw !== "object" || raw === null || !("name" in raw) ||
+          typeof raw.name !== "string" || !raw.name.trim() || raw.name.trim().length > 120) continue;
+      const url = "url" in raw ? safeEntityUrl(raw.url, "category") : undefined;
+      relationships.push({
+        type: "genre",
+        name: raw.name.trim(),
+        ...(url ? { url } : {}),
+      });
+    }
+  }
+  if (typeof video.keywords === "string") {
+    for (const keyword of video.keywords.split(",").slice(0, 20)) {
+      const name = keyword.trim();
+      if (name && name.length <= 120) relationships.push({ type: "tag", name });
+    }
+  }
+  return relationships.slice(0, 40);
+}
+
 function parseSearchResults(payload: unknown): EpornerVideo[] {
   if (typeof payload !== "object" || payload === null ||
       !("videos" in payload) || !Array.isArray(payload.videos)) {
@@ -84,6 +145,8 @@ function sanitizeSearchPayload(payload: unknown): unknown {
       rate: video.rate,
       length_sec: video.length_sec,
       added: video.added,
+      categories: video.categories,
+      pornstars: video.pornstars,
     })),
   };
 }
@@ -230,6 +293,7 @@ export const epornerApiProvider: ProviderAdapter = {
     searchUrl.searchParams.set("thumbs", "none");
     searchUrl.searchParams.set("format", "json");
     searchUrl.searchParams.set("gay", "1");
+    searchUrl.searchParams.set("fields", "pornstars,categories");
 
     const searchPayload = await fetchJson(searchUrl, context, SEARCH_CACHE_TTL_SECONDS, sanitizeSearchPayload);
     const rawVideos = parseSearchResults(searchPayload).slice(0, 50);
@@ -263,6 +327,7 @@ export const epornerApiProvider: ProviderAdapter = {
       // The legacy added field has no timezone offset; retain it verbatim.
       if (typeof video.added === "string" && video.added.length <= 40) metadata.addedAtSource = video.added;
 
+      const relationships = videoRelationships(video);
       return [{
         id,
         sourceId: context.source.id,
@@ -273,6 +338,7 @@ export const epornerApiProvider: ProviderAdapter = {
         url,
         ...(metadata.keywords ? { description: metadata.keywords } : {}),
         ...(Object.keys(metadata).length ? { metadata } : {}),
+        ...(relationships.length ? { relationships } : {}),
       }];
     });
   },

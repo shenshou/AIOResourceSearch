@@ -8,7 +8,9 @@ Use only the documented Eporner API v2.1.0. The Provider supports keyword search
 
 Included fields:
 - Video title and canonical page URL.
+- Performers, categories, and comma-separated keywords are mapped into the shared structured relationship model. Performer and category links are accepted only for validated HTTPS URLs on the canonical Eporner host and expected path.
 - Keywords, view count, rating, duration in seconds, and the source's original added-time string.
+- Structured performer relationships from `fields=pornstars` and genre relationships from `fields=categories`; comma-separated keywords are exposed as tag relationships.
 
 Explicitly excluded:
 - Thumbnail/image URLs.
@@ -20,7 +22,7 @@ The legacy added-time value has no timezone offset in the API contract. It is re
 ## Request flow
 
 1. The Worker checks that the official removal-feed sync has completed within the last 36 hours and has no pending continuation cursor. Missing, malformed, stale, or incomplete sync state fails closed.
-2. Search uses `GET https://www.eporner.com/api/v2/video/search/` with `query`, `per_page=50`, `page=1`, `thumbs=none`, `format=json`, and `gay=1`.
+2. Search uses `GET https://www.eporner.com/api/v2/video/search/` with `query`, `per_page=50`, `page=1`, `thumbs=none`, `format=json`, `gay=1`, and `fields=pornstars,categories`. These optional fields are returned in the same search response; no extra performer/category request is added.
 3. The Worker validates each result's 11-character case-sensitive ID and canonical same-host video URL.
 4. The Worker calls `GET https://www.eporner.com/api/v2/video/status/` for the returned IDs and retains only records explicitly marked `active`. Missing, unknown, removed, or unavailable statuses are not returned.
 5. Search and status responses use edge-cache TTLs matching the documented five-minute and one-minute intervals. Cache failures do not discard valid upstream responses.
