@@ -79,3 +79,13 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - The YourBittorrent source-catalog entry now declares the Torrent capability as well as Magnet, so its returned `.torrent` URL is not discarded during source normalization.
 - There is currently no dedicated API/RSS Provider returning ED2K links. The generic HTML adapter can extract ED2K from an explicitly configured public search page when the source's ED2K capability and CSS selector are both configured.
 - This is a code capability matrix, not an assertion that every source is enabled, authorized for production aggregation, or currently reachable from Cloudflare. Existing source review and enablement gates remain in force.
+
+
+## Per-field metadata source priority and provenance (2026-11-27)
+
+- Runtime source configuration now supports `fieldPriorities`, a map from field key to an ordered list of Provider source IDs. Supported scalar fields are `title`, `catalogNumber`, `releaseDate`, `imageUrl`, and `description`; dynamic metadata keys use `metadata.<key>`.
+- A missing field entry or an empty list preserves the existing global source order. Sources listed for a field are ranked first in the listed order; unlisted sources follow in their global source order. Only registered Provider source IDs are accepted.
+- Field priorities are edited in the source-management interface and saved through an ETag-protected Worker admin endpoint. The setting is persisted in the existing source KV config and takes effect at runtime without redeployment.
+- Every normalized scalar/metadata field records its winning `sourceId` and `sourceName` in `fieldAttributions`. The search UI exposes this provenance in a collapsible “字段来源” section.
+- Source creation/import preserves the current priority map. Source deletion removes that source ID from all priority lists; an emptied list naturally falls back to global order.
+- This does not change relationship aggregation (actors/studios/labels remain a deduplicated union) or downloadable-link attribution. The original global source order remains the deterministic tie-breaker.
