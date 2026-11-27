@@ -2,6 +2,7 @@ import type { EpornerRemovalSyncState } from "../eporner-removals";
 import type {
   ContentCategory,
   ResourceRelationship,
+  ResourceLinkType,
   FetchMechanism,
   HtmlSelectorConfig,
   SearchMode,
@@ -35,6 +36,8 @@ export interface NormalizedResource {
   magnetUri?: string;
   ed2kUri?: string;
   torrentUrl?: string;
+  /** Multiple downloadable links, each retaining the source that supplied it. */
+  resourceLinks?: Array<{ type: ResourceLinkType; url: string }>;
   externalLinks?: Array<{
     label: string;
     url: string;
