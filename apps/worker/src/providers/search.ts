@@ -315,7 +315,7 @@ function mergeRelationships(
         const candidateIndex = sameNameIndexes[0];
         if (candidateIndex !== undefined) {
           const candidate = merged[candidateIndex];
-          if (!relationship.url || !candidate?.url) matchIndex = candidateIndex;
+          if (candidate && !candidate.url) matchIndex = candidateIndex;
         }
       }
     }
