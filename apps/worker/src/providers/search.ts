@@ -311,13 +311,10 @@ function mergeRelationships(
 
     if (matchIndex === undefined) {
       const sameNameIndexes = nameIndexes.get(nameKey) ?? [];
-      const withoutUrl = sameNameIndexes.filter((index) => !merged[index]?.url);
-      if (relationship.url && withoutUrl.length === 1) {
-        matchIndex = withoutUrl[0];
-      } else if (!relationship.url && sameNameIndexes.length === 1) {
-        matchIndex = sameNameIndexes[0];
-      } else if (!relationship.url && withoutUrl.length === 1) {
-        matchIndex = withoutUrl[0];
+      if (sameNameIndexes.length === 1) {
+        const candidateIndex = sameNameIndexes[0];
+        const candidate = merged[candidateIndex];
+        if (!relationship.url || !candidate?.url) matchIndex = candidateIndex;
       }
     }
 
