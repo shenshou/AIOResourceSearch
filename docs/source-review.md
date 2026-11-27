@@ -3026,7 +3026,7 @@ Decision: remove the clickable catalog destination and retain a name-only record
 
 The Eporner public API integration has now been implemented in the feature branch.
 
-- Registered `eporner-api` in the compile-time Provider registry as a keyword-only, metadata-only JAV Provider.
+- Registered `eporner-api` in the compile-time Provider registry as a keyword-only JAV Provider with explicit `metadata` and `relationships` capabilities.
 - Search requests use the documented API with `thumbs=none`; returned video IDs are checked through the official status endpoint and only `active` records are returned.
 - Search metadata is restricted to title, canonical URL, keywords, view count, rating, duration, and the original timezone-unspecified added-time string.
 - Embed/player markup, image URLs, downloads, and media fields are neither returned to the UI nor retained in the edge cache. The cache stores an allowlisted metadata projection only.
