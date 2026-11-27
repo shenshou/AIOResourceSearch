@@ -307,7 +307,7 @@ export const perverzijaDbProvider: ProviderAdapter = {
   mechanism: "api",
   contentCategories: ["jav"],
   categories: ["other-index"],
-  capabilities: ["metadata"],
+  capabilities: ["metadata", "relationships"],
   searchModes: ["number", "keyword"],
   rateLimitLane: "perverzija",
   async search(input, context) {
