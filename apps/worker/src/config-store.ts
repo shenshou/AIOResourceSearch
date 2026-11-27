@@ -1,5 +1,5 @@
 import { isProviderImplemented } from "./providers/registry";
-import { validateAdapter, validateSource } from "./validation";
+import { validateAdapter, validateFieldPriorities, validateSource } from "./validation";
 import type {
   AdapterDefinition,
   AdaptersConfig,
@@ -93,10 +93,18 @@ export async function readConfig(env: Env): Promise<SourcesConfig> {
     return source;
   });
 
+  const fieldPriorities = parsed.fieldPriorities === undefined
+    ? undefined
+    : validateFieldPriorities(parsed.fieldPriorities, sources);
+  if (parsed.fieldPriorities !== undefined && !fieldPriorities) {
+    throw new Error("Stored field-priority configuration is invalid.");
+  }
+
   return {
     version: parsed.version,
     updatedAt: "updatedAt" in parsed && typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
     sources,
+    ...(fieldPriorities ? { fieldPriorities } : {}),
   };
 }
 
@@ -114,11 +122,24 @@ export async function saveAdaptersConfig(
   return next;
 }
 
-export async function saveConfig(env: Env, current: SourcesConfig, sources: SourceDefinition[]): Promise<SourcesConfig> {
+export async function saveConfig(
+  env: Env,
+  current: SourcesConfig,
+  sources: SourceDefinition[],
+  fieldPriorities: Record<string, string[]> | undefined = current.fieldPriorities,
+): Promise<SourcesConfig> {
+  const validSourceIds = new Set(sources.map((source) => source.id));
+  const cleanedPriorities = fieldPriorities
+    ? Object.fromEntries(Object.entries(fieldPriorities).map(([field, ids]) => [
+        field,
+        ids.filter((id) => validSourceIds.has(id)),
+      ]))
+    : undefined;
   const next: SourcesConfig = {
     version: current.version + 1,
     updatedAt: new Date().toISOString(),
     sources,
+    ...(cleanedPriorities ? { fieldPriorities: cleanedPriorities } : {}),
   };
   await env.SOURCES_KV.put(CONFIG_KEY, JSON.stringify(next));
   return next;
