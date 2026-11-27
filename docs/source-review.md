@@ -4567,3 +4567,44 @@ This batch rechecked JAV Subtitled, JAV.sb, JavBus, JAVCL and JavDoe. The review
 - JAVCL: https://javcl.com/ ; https://whogetsmydata.com/website/javcl.com
 - JavDoe: https://javdoe.to/ ; https://www.whois.com/whois/javdoe.to ; https://en.greatfire.org/domain/javdoe.to
 
+## JAV source verification batch 27 — third five items from the reconciled backlog (2026-11-27)
+
+This batch rechecked JAVHDPorn.net, JAVLeak, JavLibrary, JavMost and JAVOut. The review sought first-party terms, supported public API/RSS/search contracts and explicit permission for automated metadata reuse. A visible search interface alone is not an automation grant.
+
+### JAVHDPorn.net
+- The exact catalog domain `javhdporn.net` could not be opened by the research browser. Search did not establish a verifiable first-party Terms page, API/RSS documentation or supported public search contract.
+- **Decision:** retain the exact candidate as pending/homepage-only. No similarly named domain substitution, Worker fetch, scraping or guessed search route.
+
+### JAVLeak
+- The exact first-party homepage is currently retrievable and exposes a search input, an Advanced Search page, paginated catalogue records and metadata such as code, release date, length, director, maker/label and cast.
+- The homepage extract and its linked Contact/Advanced Search pages did not expose Terms, Privacy, API/RSS documentation or an explicit automation/data-use grant. A visible form and structured HTML metadata are not a documented API contract or permission to collect and republish the data.
+- **Decision:** keep homepage-only for user-initiated external navigation. Do not restore the search template, scrape HTML, or probe undocumented endpoints. Reassess if the operator publishes applicable terms and a supported public interface or gives written permission.
+
+### JavLibrary
+- The exact catalog homepage request returned HTTP 403 in the research browser. A first-party public-topic page contains historical community discussion about Cloudflare/DDoS protection, but it is not current policy or authorization.
+- No current first-party Terms, public API/RSS contract or explicit third-party metadata-reuse permission was verified. Do not use cookies, browser sessions, proxying or challenge workarounds.
+- **Decision:** retain external-homepage reference/pending status; no automated access.
+
+### JavMost
+- The historical catalog domain `javmost.com` could not be opened. The currently reachable `javmost.ws` homepage exposes catalogue navigation, code, maker/director and advanced-search pages, but this does not establish that it is the canonical operator-approved replacement for every historical URL or authorize automated collection.
+- Its linked Legal page is an 18 U.S.C. §2257 compliance statement. It is not a Terms of Service, API licence or automation policy. The linked DMCA page returned HTTP 451 in this research environment; that result is not permission to probe alternate routes.
+- **Decision:** retain the existing catalog record and external navigation only. Do not silently rewrite the canonical URL, scrape the site, or infer automation permission from its search/navigation UI.
+
+### JAVOut
+- The exact catalog domain `javout.co` could not be opened by the research browser. Search did not surface verifiable first-party terms, API/RSS documentation or a supported public search contract.
+- **Decision:** retain the exact candidate as pending/homepage-only. No mirror substitution, Worker fetch, HTML parsing or guessed query template.
+
+### Batch outcome
+- 5 candidates rechecked; 0 promoted to Provider and 0 search templates added.
+- JAVLeak's richer visible catalogue and search UI are recorded as interface observations only; no automated use permission was established.
+- JavMost's currently reachable `.ws` domain and its 2257 legal notice do not establish canonical-domain migration or automated metadata rights.
+- No access controls were bypassed; no Provider code, KV configuration, source enablement, deployment or production data was changed.
+- The JAV backlog remains **23 items requiring further evidence**; the 12 current no-auto-integration decisions are unchanged.
+
+### Evidence references
+- JAVHDPorn.net: https://javhdporn.net/
+- JAVLeak: https://javleak.com/ ; https://javleak.com/advanced-search/ ; https://javleak.com/contact-us/
+- JavLibrary: https://www.javlibrary.com/en/ ; https://www.javlibrary.com/en/publictopic.php?id=124661
+- JavMost: https://javmost.com/ ; https://www.javmost.ws/ ; https://www.javmost.ws/legal/ ; https://www.javmost.ws/dmca
+- JAVOut: https://javout.co/
+

@@ -93,3 +93,13 @@
 - No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
 - Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
 
+### Batch 27 — 2026-11-27
+- Rechecked: `javhdporn2`, `javleak`, `javlibrary`, `javmost`, `javout`.
+- Result: 0 promoted; all 5 remain in the 23-item evidence backlog.
+- JAVHDPorn.net and JAVOut: exact catalog domains could not be independently accessed; no first-party interface/terms evidence found.
+- JAVLeak: homepage and Advanced Search expose search UI and rich catalogue metadata, but no first-party terms, supported API/RSS contract or automation/data-use grant was verified.
+- JavLibrary: research fetch returned HTTP 403; no cookies, proxies or challenge workarounds used.
+- JavMost: `.ws` homepage is reachable and has catalogue/search navigation; its Legal page is only a 2257 compliance statement, not a Terms/API licence. No canonical-domain migration or automation permission inferred.
+- No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
+- Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
+
