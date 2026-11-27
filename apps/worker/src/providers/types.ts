@@ -62,7 +62,7 @@ export interface ProviderContext {
   /** Eporner requires a recent completed official removal-feed sync before returning results. */
   getEpornerSyncState?: () => Promise<EpornerRemovalSyncState | null>;
   /** Cloudflare HTMLRewriter-backed parser, injected by the Worker runtime. */
-  parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; torrentUrl?: string; ed2kUri?: string; metadata?: Record<string, string> }>>;
+  parseHtml?: (response: Response, selectors: HtmlSelectorConfig) => Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; torrentUrl?: string; ed2kUri?: string; resourceLinks?: Array<{ type: "magnet" | "torrent" | "ed2k"; url: string }>; metadata?: Record<string, string> }>>;
 }
 
 export interface ProviderAdapter {
