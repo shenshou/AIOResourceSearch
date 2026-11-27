@@ -28,7 +28,7 @@ This document defines the current Worker-side aggregation contract for JAV metad
 
 ## Verification
 
-Focused unit tests now cover first-value-wins field and external-link conflicts, deterministic configured-source order despite out-of-order provider completion, blank-value filtering, catalogue-key collision isolation, JAV catalogue-number identity, category isolation, within-source relationship deduplication, relationship whitespace normalization, relationship-cap URL enrichment, Perverzija calendar-date validation, and Eporner performer/category/tag mapping plus URL validation. These tests are authored but not executed locally. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
+Focused unit tests now cover first-value-wins field and external-link conflicts, deterministic configured-source order despite out-of-order provider completion, blank-value filtering, catalogue-key collision isolation, JAV catalogue-number identity, category isolation, within-source relationship deduplication, relationship whitespace normalization, relationship-cap URL enrichment, Perverzija calendar-date validation, shared-lane Retry-After handling, cache hit/miss and invalid-cache behavior, coordinator fail-closed behavior, and Eporner performer/category/tag mapping plus URL validation. These tests are authored but not executed locally. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
 
 ## Structured relationships
 
