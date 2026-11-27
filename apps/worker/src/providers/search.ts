@@ -206,11 +206,10 @@ function mergeRelationships(
     const key = `${relationship.type}:${relationship.name.normalize("NFKC").toLowerCase()}`;
     const current = merged.get(key);
     if (!current) {
-      merged.set(key, relationship);
+      if (merged.size < 40) merged.set(key, relationship);
     } else if (!current.url && relationship.url) {
       merged.set(key, { ...current, url: relationship.url });
     }
-    if (merged.size >= 40) break;
   }
   return [...merged.values()];
 }

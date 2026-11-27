@@ -427,6 +427,41 @@ test("discards blank optional metadata so later sources can fill those fields", 
   });
 });
 
+test("relationship cap does not prevent later sources from filling existing relationship URLs", async () => {
+  const firstRelationships = Array.from({ length: 40 }, (_, index) => ({
+    type: "performer" as const,
+    name: `Performer ${index + 1}`,
+  }));
+  const secondRelationships = [
+    { type: "performer" as const, name: "Performer 1", url: "https://second.example/performer/1" },
+    { type: "performer" as const, name: "Performer 40", url: "https://second.example/performer/40" },
+    { type: "performer" as const, name: "Performer 41", url: "https://second.example/performer/41" },
+  ];
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      relationships: context.source.id === "first" ? firstRelationships : secondRelationships,
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  const relationships = result.results[0]?.relationships ?? [];
+  assert.equal(relationships.length, 40);
+  assert.equal(relationships[0]?.url, "https://second.example/performer/1");
+  assert.equal(relationships[39]?.url, "https://second.example/performer/40");
+  assert.equal(relationships.some((item) => item.name === "Performer 41"), false);
+});
+
 test("normalizes and merges structured work relationships without fuzzy matching", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({
