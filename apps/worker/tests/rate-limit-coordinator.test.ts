@@ -588,6 +588,35 @@ test("accepts the LibriVox API lane with five-second shared spacing", async () =
   assert.equal(bindings[1]?.[4], 5_000);
 });
 
+test("persists an AudioSilo Meta Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "audiosilo");
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "audiosilo",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "3" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://meta.audiosilo.app/api/v1/works/search?q=test");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
 test("accepts the AudioSilo Meta API lane with conservative one-second shared spacing", async () => {
   const bindings: Array<string | number | null>[] = [];
   const ctx = {
