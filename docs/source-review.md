@@ -4737,3 +4737,7 @@ Detailed matrix: `docs/resource-link-source-status.md`.
 
 Rechecked 141PPV, BTSOW, Empornium, iJavTorrent and JAVBEE. 141PPV's official feed is documented by RSSHub as not supporting BT downloads; BTSOW's separately surfaced `.live` domain is not verified as operator-controlled; Empornium is a private tracker; iJavTorrent exposes magnet links and a rich public catalogue UI but no verified Terms/API/RSS or stable search contract; JAVBEE's exact catalog domain could not be opened. None was promoted to Provider. A newly discovered Magnetz service provides magnet links and a JSON API only to paid members (one-year/lifetime membership, 1,000 requests/day), so it is incompatible with the no-paid-dependency rule. Details are in `docs/resource-link-source-status.md`.
 
+## External torrent-source review batch 2 (2026-11-27)
+
+Rechecked JavJunkies, LoveTorrent, MagnetDL, My JAV Bay and NextJAV. JavJunkies and LoveTorrent could not be retrieved and lack verified first-party interfaces; MagnetDL's 2019 shutdown was followed by a return, but its current `.com` endpoint is not verifiably active and similarly named domains are not confirmed mirrors; My JAV Bay currently exposes JAV VR metadata but no magnet/torrent URI in the homepage extraction and no official API/RSS permission; NextJAV's exact domain appears parked/unverified. No Provider or search template was added. See `docs/resource-link-source-status.md`.
+

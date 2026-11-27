@@ -93,3 +93,21 @@ The first five external-only torrent candidates were rechecked for first-party r
 - Magnetz is rejected for the current project because magnet/API access requires paid membership.
 - No access control was bypassed, no private tracker account was used, and no source was enabled or deployed.
 
+## External torrent-source review batch 2 — 2026-11-27
+
+The next five external-only candidates were rechecked.
+
+| Source | Current evidence | Decision |
+|---|---|---|
+| JavJunkies | The exact `javjunkies.org` homepage could not be retrieved. Existing third-party observations report a "No Access" response and possible phishing/malware reputation signals; these signals are not definitive, but there is no first-party API/RSS, terms or public search contract to rely on. | Keep as historical/unverified directory record; no clickable alternate domain, credentials, scraping or Worker requests. |
+| LoveTorrent | The exact `lovetorrent.net` homepage could not be retrieved. No current operator-controlled service, first-party Terms, API/RSS or stable public search contract was verified. | Keep as name-only unverified candidate; do not guess mirrors or automate access. |
+| MagnetDL | The exact `magnetdl.com` homepage could not be retrieved. TorrentFreak documented an official shutdown announcement in May 2019 followed by a quick return; later third-party monitoring currently reports the main domain down, but no current first-party closure/migration announcement was found. Similar `.io` and `.co` domains are not confirmed official mirrors. | Keep historical name-only record. No mirror substitution, scraping or Provider. Do not claim permanent closure as a verified current fact. |
+| My JAV Bay | The first-party homepage is reachable and shows a current VR JAV metadata catalogue with title/code, cast, release date and size information. No magnet or torrent URI appears in the homepage extraction, and no official API/RSS or explicit third-party automation permission was verified. A third-party paid scraper explicitly says it does not use an official MyJAVBay API. | Metadata/navigation candidate only, not a resource-link Provider. Keep external-only; do not use paid scraper services or harvest page metadata/magnets. |
+| NextJAV | The exact `nextjav.com` homepage could not be retrieved. Current third-party domain observations show registrar/parking indicators; no first-party operator-controlled service or official replacement domain was verified. | Keep historical name-only record; remove/avoid clickable destination and do not substitute mirrors. |
+
+### Batch result
+- 5 existing candidates rechecked; 0 promoted to Provider; 0 search templates added.
+- My JAV Bay is confirmed as a metadata catalogue from the current homepage view, not a magnet/torrent source in the extracted page.
+- MagnetDL's historical 2019 shutdown and return are documented, but current permanent closure is not confirmed by a current first-party announcement.
+- No mirror, private account, access-control bypass or paid scraping service was used.
+
