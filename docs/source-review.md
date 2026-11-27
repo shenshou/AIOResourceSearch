@@ -4393,3 +4393,13 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Current catalog after this addition: 176 unique candidates (JAV 32, torrent 30, forum 16, other-index 98); AIOResourceSearch provenance tags: 69 (overlapping). External search templates remain 9; concrete Provider implementations remain 12.
 - No Provider code, API call, credential, paid service, KV configuration, source enablement, deployment or production data change.
 - First-party references: https://cadrame.org/ ; https://cadrame.org/data ; https://cadrame.org/refuses ; https://cadrame.org/sign-up
+
+
+## Search aggregation: conservative URL identity canonicalization (2026-11-27)
+
+- The search aggregator's canonical URL identity now removes URL fragments, normalizes host casing and trailing slashes (existing behavior), removes only common analytics parameters (utm_* and fbclid, gclid, dclid, msclkid, mc_cid, mc_eid), and sorts remaining query parameters before building the URL identity key.
+- The change intentionally does **not** remove arbitrary parameters such as id, code, q, or page, because these may identify distinct catalogue records. The displayed result URL is not rewritten; canonicalization is used only for cross-source identity matching.
+- Two focused regression tests cover (1) equivalent URLs with tracking parameters, fragment, host casing, trailing slash and reordered query parameters, and (2) preservation of distinct meaningful query values.
+- No title/performer fuzzy matching, new Provider, upstream request, source enablement, KV change, deployment or production data mutation was introduced.
+- Full CI remains deferred until the complete JAV search/aggregation module is finished, consistent with the project's module-level validation rule.
+- Architecture references reviewed for this module: Javinizer-Go's layered aggregation and per-field metadata priority model; Stash-Box's separate performer/studio/scene identity model. These are design references only; no code or access method was copied.
