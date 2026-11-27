@@ -112,7 +112,7 @@ Acceptance:
 Deliverables:
 - [x] Provider registry and shared result contract.
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
-- [x] Ten site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, and Eporner Providers) and the reusable generic-html adapter.
+- [x] Eleven site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, Eporner, and LibriVox Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
 - [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
