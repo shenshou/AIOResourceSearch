@@ -142,6 +142,8 @@ function parseScenes(payload: unknown) {
     const watchUrl = safeUrl(scene.urls?.watch, WATCH_HOST, "/");
     if (!pageUrl || !watchUrl) return [];
 
+    const relationships = sceneRelationships(scene);
+    const description = sceneDescription(scene);
     return [{
       id: String(scene.id),
       sourceId: "perverzija-db",
@@ -153,8 +155,8 @@ function parseScenes(payload: unknown) {
         /^\d{4}-\d{2}-\d{2}$/.test(scene.release_date)
         ? { releaseDate: scene.release_date }
         : {}),
-      ...(sceneDescription(scene) ? { description: sceneDescription(scene) } : {}),
-      ...(sceneRelationships(scene).length ? { relationships: sceneRelationships(scene) } : {}),
+      ...(description ? { description } : {}),
+      ...(relationships.length ? { relationships } : {}),
       externalLinks: [{ label: "观看页面", url: watchUrl }],
     }];
   });

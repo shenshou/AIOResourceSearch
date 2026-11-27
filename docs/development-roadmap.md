@@ -114,7 +114,7 @@ Acceptance:
 
 Deliverables:
 - [x] Provider registry and shared result contract.
-- [ ] Complete the JAV metadata aggregation module: normalized catalogue-number identity, deterministic first-valid-value field merging, and the shared structured-relationship contract/UI are implemented. Provider-specific relationship extraction, orchestration refinements, integrated regression coverage, and acceptance review remain open. See [JAV metadata aggregation](./providers/jav-metadata-aggregation.md).
+- [ ] Complete the JAV metadata aggregation module: normalized catalogue-number identity, deterministic first-valid-value field merging, and the shared structured-relationship contract/UI are implemented. Perverzija DB now maps its documented performer, studio, and tag fields; other Provider mappings, orchestration refinements, integrated regression coverage, and acceptance review remain open. See [JAV metadata aggregation](./providers/jav-metadata-aggregation.md).
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
 - [x] Twelve site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, Eporner, LibriVox, and AudioSilo Meta Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
