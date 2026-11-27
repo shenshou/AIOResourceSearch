@@ -165,3 +165,12 @@ jobs:
 
       - name: Build frontend and type-check Worker
         run: npm run build
+
+      - name: Prepare isolated staging configuration with test-only values
+        env:
+          CLOUDFLARE_STAGING_KV_NAMESPACE_ID: "00000000000000000000000000000000"
+          CLOUDFLARE_STAGING_ALLOWED_ORIGIN: "https://preview.example"
+        run: node scripts/prepare-staging-config.mjs
+
+      - name: Validate isolated staging Worker bundle
+        run: npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
