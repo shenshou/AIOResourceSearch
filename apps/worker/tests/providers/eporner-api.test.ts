@@ -65,7 +65,7 @@ test("registers a metadata-only adult keyword Provider on the shared Eporner lan
   assert.equal(epornerApiProvider.mechanism, "api");
   assert.deepEqual(epornerApiProvider.contentCategories, ["jav"]);
   assert.deepEqual(epornerApiProvider.categories, ["other-index"]);
-  assert.deepEqual(epornerApiProvider.capabilities, ["metadata"]);
+  assert.deepEqual(epornerApiProvider.capabilities, ["metadata", "relationships"]);
   assert.deepEqual(epornerApiProvider.searchModes, ["keyword"]);
   assert.equal(epornerApiProvider.rateLimitLane, "eporner");
 });
