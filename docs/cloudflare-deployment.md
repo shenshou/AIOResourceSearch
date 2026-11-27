@@ -125,7 +125,17 @@ npm run smoke:worker
 Remove-Item Env:WORKER_URL, Env:PAGES_ORIGIN
 ```
 
-The script verifies health, exact-origin CORS, rejection of an unlisted origin, public source/adapter response shapes, administrator preflight, and that unauthenticated administrator requests are rejected. It performs no KV writes and makes no Provider upstream requests. To additionally test an authenticated administrator read, set `ADMIN_API_TOKEN` in the current shell without placing the token in command history, then run the script again.
+The script verifies health, exact-origin CORS, rejection of an unlisted origin, public source/adapter response shapes, administrator preflight, and that unauthenticated administrator requests are rejected. It performs no KV writes and makes no Provider upstream requests. To additionally test an authenticated administrator read in PowerShell, enter the token through a secure prompt:
+
+```powershell
+$secureToken = Read-Host "Staging admin token" -AsSecureString
+$env:ADMIN_API_TOKEN = [System.Net.NetworkCredential]::new("", $secureToken).Password
+npm run smoke:worker
+Remove-Item Env:ADMIN_API_TOKEN
+Remove-Variable secureToken
+```
+
+The script never prints the token.
 
 The script complements rather than replaces the following manual checks:
 
