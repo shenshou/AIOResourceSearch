@@ -203,7 +203,7 @@ function mergeRelationships(
 ): NormalizedResource["relationships"] {
   const merged = new Map<string, NonNullable<NormalizedResource["relationships"]>[number]>();
   for (const relationship of [...(existing ?? []), ...(incoming ?? [])]) {
-    const key = `${relationship.type}:${relationship.name.normalize("NFKC").toLowerCase()}`;
+    const key = `${relationship.type}:${relationship.name.normalize("NFKC").trim().replace(/\\s+/g, " ").toLowerCase()}`;
     const current = merged.get(key);
     if (!current) {
       if (merged.size < 40) merged.set(key, relationship);

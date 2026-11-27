@@ -427,6 +427,32 @@ test("discards blank optional metadata so later sources can fill those fields", 
   });
 });
 
+test("relationship identity normalizes Unicode compatibility and repeated whitespace", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      relationships: context.source.id === "first"
+        ? [{ type: "performer", name: "Ａｎｎａ   Smith" }]
+        : [{ type: "performer", name: "Anna Smith", url: "https://second.example/performer/anna" }],
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.deepEqual(result.results[0]?.relationships, [
+    { type: "performer", name: "Ａｎｎａ Smith", url: "https://second.example/performer/anna" },
+  ]);
+});
+
 test("relationship cap does not prevent later sources from filling existing relationship URLs", async () => {
   const firstRelationships = Array.from({ length: 40 }, (_, index) => ({
     type: "performer" as const,
