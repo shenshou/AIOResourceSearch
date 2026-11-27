@@ -571,9 +571,10 @@ export async function executeSearch(
           mergedResourceLinks.set(key, link);
           continue;
         }
-        const sourceAttributions = new Map(
-          (current.sourceAttributions ?? []).map((item) => [item.sourceId, item]),
-        );
+        const sourceAttributions = new Map<string, { sourceId: string; sourceName: string }>();
+        for (const item of current.sourceAttributions ?? []) {
+          sourceAttributions.set(item.sourceId, item);
+        }
         for (const item of link.sourceAttributions ?? []) {
           if (!sourceAttributions.has(item.sourceId)) sourceAttributions.set(item.sourceId, item);
         }
