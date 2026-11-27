@@ -89,3 +89,12 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - Every normalized scalar/metadata field records its winning `sourceId` and `sourceName` in `fieldAttributions`. The search UI exposes this provenance in a collapsible “字段来源” section.
 - Source creation/import preserves the current priority map. Source deletion removes that source ID from all priority lists; an emptied list naturally falls back to global order.
 - This does not change relationship aggregation (actors/studios/labels remain a deduplicated union) or downloadable-link attribution. The original global source order remains the deterministic tie-breaker.
+
+
+## Related-entity identity and provenance (2026-11-27)
+
+- Performer, studio, director and tag relationships retain the original display name and now record observed aliases plus the Provider source(s) that supplied the relationship.
+- When a related-entity URL is present, matching uses relationship type plus canonical URL (tracking parameters and fragments are ignored). This can unify different display names that resolve to the same entity page.
+- Name-only matching remains conservative: NFKC normalization, whitespace folding and case-insensitive comparison. If the same name points to different canonical URLs, the records remain separate; no fuzzy-name or transliteration guessing is performed.
+- If exactly one same-name relationship has no URL, a later URL-backed record can enrich it. Ambiguous same-name records are not merged.
+- Provider-supplied source attribution is discarded and replaced by the Worker source identity. The search UI displays aliases and contributing sources with each related entity.
