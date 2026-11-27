@@ -157,10 +157,7 @@ function parseScenes(payload: unknown) {
       category: "other-index" as const,
       title: scene.title.trim(),
       url: pageUrl,
-      ...(typeof scene.release_date === "string" &&
-        /^\d{4}-\d{2}-\d{2}$/.test(scene.release_date)
-        ? { releaseDate: scene.release_date }
-        : {}),
+      ...(isDateOnly(scene.release_date) ? { releaseDate: scene.release_date } : {}),
       ...(description ? { description } : {}),
       ...(relationships.length ? { relationships } : {}),
       externalLinks: [{ label: "观看页面", url: watchUrl }],
