@@ -98,3 +98,10 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - Name-only matching remains conservative: NFKC normalization, whitespace folding and case-insensitive comparison. If the same name points to different canonical URLs, the records remain separate; no fuzzy-name or transliteration guessing is performed.
 - If exactly one same-name relationship has no URL, a later URL-backed record can enrich it. Ambiguous same-name records are not merged.
 - Provider-supplied source attribution is discarded and replaced by the Worker source identity. The search UI displays aliases and contributing sources with each related entity.
+
+
+### Explicit relationship capability
+
+- Related entities are a distinct source capability, `relationships`, rather than being implicitly exposed by the scalar `metadata` capability.
+- Sources must declare `relationships` before Worker normalization will expose performer, studio, director, genre, network, or tag records. The source catalog and source-management UI expose this capability explicitly.
+- Eporner and Perverzija DB declare both `metadata` and `relationships`; sources that declare only `metadata` cannot leak relationship fields.
