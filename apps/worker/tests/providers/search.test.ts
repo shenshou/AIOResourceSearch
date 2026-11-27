@@ -2692,4 +2692,11 @@ test("validates field priority field names and registered source IDs", () => {
   assert.equal(validateFieldPriorities({ description: ["missing-source"] }, sources), null);
   assert.equal(validateFieldPriorities({ "metadata.Bad Key": ["first-source"] }, sources), null);
   assert.equal(validateFieldPriorities({ title: ["first-source", "first-source"] }, sources), null);
+  assert.equal(
+    validateFieldPriorities(
+      { title: ["external-source"] },
+      [...sources, source({ id: "external-source", type: "external-search", capabilities: [] })],
+    ),
+    null,
+  );
 });
