@@ -38,72 +38,42 @@ Configure build watch paths on both projects to avoid duplicate builds for unrel
 
 The frontend uses http://localhost:8787 only in Vite development mode. A production build without VITE_API_BASE_URL fails at API-request time with an explicit configuration error; it never silently calls the visitor's own localhost. Each configured API origin must be HTTPS and must not contain a path, query, fragment, username, or password.
 
-## 2. Prepare an isolated staging Worker configuration
+## 2. Prepare an isolated Staging Worker configuration
 
-Do not deploy `apps/worker/wrangler.jsonc` as-is. It currently contains:
-- The generic Worker name `aio-resource-search-api`.
-- A placeholder KV namespace ID.
-- A local-only `ALLOWED_ORIGINS` value.
-- A 15-minute Eporner removal-feed Cron trigger.
+Do not deploy apps/worker/wrangler.jsonc as-is. It is the local-development baseline and contains a placeholder KV ID, localhost CORS origin, and the production Cron schedule.
 
-Copy the committed staging template to an ignored local file:
+The Staging template is apps/worker/wrangler.staging.example.jsonc:
+- Worker name: aio-resource-search-api-staging.
+- KV binding: SOURCES_KV points to the dedicated Staging namespace.
+- ALLOWED_ORIGINS: exact HTTPS origin of the Staging Pages website.
+- Durable Object: RATE_LIMIT_COORDINATOR with SQLite storage.
+- Cron: intentionally absent during Staging verification.
 
-```bash
-cp apps/worker/wrangler.staging.example.jsonc apps/worker/wrangler.staging.local.jsonc
-```
+Create a dedicated Staging KV namespace in Cloudflare. Never reuse the Production namespace. For local preparation or one-time bootstrap, set the values and run the generator:
 
-The local file is ignored by Git. In that copy:
-
-1. Confirm `name` remains `aio-resource-search-api-staging`.
-2. Create a new, dedicated test KV namespace and replace the placeholder ID with that namespace's ID. Never reuse the production namespace.
-3. Set `ALLOWED_ORIGINS` to the exact HTTPS origin of the Staging Pages website. Do not use `*`.
-4. Keep the `RATE_LIMIT_COORDINATOR` Durable Object binding and the `RateLimitCoordinator` SQLite export.
-5. Keep `triggers.crons` absent in the initial smoke-test environment. The staging template deliberately omits the 15-minute Cron trigger so the Eporner removal-feed sync does not run during basic deployment verification. The scheduled workflow can be tested separately after the Worker and its rate-limit coordinator are verified.
-
-The staging config must remain in `apps/worker` so its existing `main: "src/index.ts"` path resolves correctly. Do not commit this local config or the namespace ID.
-
-For initial Staging bootstrap before the GitHub Environment is configured, use the local Wrangler CLI path. This is an alternative to the automated workflow, not a separate permanent deployment process:
-
-```powershell
-npm install
-npx wrangler login
-npx wrangler kv namespace create SOURCES_KV
-```
-
-Copy the returned 32-character namespace ID and the Pages Preview origin into the environment, then generate the ignored staging config:
-
-```powershell
-$env:CLOUDFLARE_STAGING_KV_NAMESPACE_ID = "<returned-staging-namespace-id>"
-$env:CLOUDFLARE_STAGING_ALLOWED_ORIGIN = "https://<your-pages-preview-domain>"
+~~~powershell
+$env:CLOUDFLARE_STAGING_KV_NAMESPACE_ID = "<staging-kv-namespace-id>"
+$env:CLOUDFLARE_STAGING_ALLOWED_ORIGIN = "https://<staging-pages-domain>"
 node scripts/prepare-staging-config.mjs
-```
+~~~
 
-The preparation script validates both values, fills the staging template, and writes only the ignored local config. It does not create or modify Cloudflare resources.
+The generator validates both values and writes the ignored file apps/worker/wrangler.staging.local.jsonc. It does not create or modify Cloudflare resources. Do not commit the generated file or namespace ID.
 
-The regular full CI generates both Staging and Production Wrangler configs with non-secret fixture values and invokes Wrangler `--dry-run` against each. This validates both binding/export contracts and Worker bundles without authenticating to Cloudflare or deploying resources.
+The full CI generates both Staging and Production Wrangler configs with non-secret fixture values and invokes Wrangler --dry-run against each. This validates the binding/export contracts and Worker bundles without authenticating to Cloudflare or deploying resources.
 
-From the repository root, validate the staging bundle without publishing it:
+For local validation:
 
-```bash
-npm install
+~~~powershell
 npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
-```
+~~~
 
-When the GitHub Staging Environment is configured and STAGING_DEPLOY_ENABLED is true, the develop workflow publishes the Staging Worker automatically. For a one-time manual bootstrap or recovery, the local CLI command is:
+For a one-time manual Staging bootstrap or recovery, after wrangler login and explicit authorization:
 
-```bash
+~~~powershell
 npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
-```
+~~~
 
-After the first staging deployment is approved, set the administrator token interactively:
-
-```bash
-npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.staging.local.jsonc
-```
-
-Wrangler prompts for the value. Do not place the token in a command argument, shell history, or chat.
-
-Wrangler configuration is the source of truth for Worker variables and bindings. Dashboard variables can be overwritten by a later Wrangler deployment if they are not represented in the configuration. Keep the exact CORS origin in the staging config rather than relying on a dashboard-only value.
+The normal deployment path is the GitHub Actions workflow described below. Wrangler configuration is the source of truth for Worker variables and bindings; do not rely on dashboard-only variables that a later deployment could overwrite.
 
 ## 2.1 Automatic Staging Worker deployment
 
@@ -134,7 +104,7 @@ Use a unique, long random token for the staging Worker. Never reuse a production
 
 For local Wrangler development, use the ignored `apps/worker/.dev.vars` file.
 
-For a hosted staging Worker, configure the secret only after the staging Worker has been designated and its first deployment is approved:
+For a hosted Staging Worker, configure the secret once after its first deployment completes:
 
 ```bash
 npx wrangler secret put ADMIN_API_TOKEN --config apps/worker/wrangler.staging.local.jsonc
@@ -149,7 +119,7 @@ A new KV namespace starts with no source or adapter configuration. The Worker in
 - `sources:config:v1`
 - `adapters:config:v1`
 
-After the staging Worker and Pages preview are connected:
+After the Staging Worker and Staging Pages website are connected:
 
 1. Open the Pages preview site and enter the staging administrator token in the Adapter Management view.
 2. Select **登记内置适配器**. The authenticated endpoint registers all 13 compiled Worker adapters in KV. The operation is idempotent and uses the current ETag.
@@ -157,6 +127,8 @@ After the staging Worker and Pages preview are connected:
 4. Enable only an adapter needed by a separately reviewed source.
 5. In Source Management, register the corresponding Provider source with its canonical endpoint, supported search modes, content category, capabilities, timeout, and any required Worker Secret binding.
 6. Keep the source disabled until its own policy and technical review is complete. External-search candidates can be bulk-imported from the catalog, but they remain disabled and are never fetched by the Worker.
+
+For Production, repeat the initialization independently against the Production Pages website and Production Worker using the Production administrator token. Register built-in adapters in the Production KV namespace only after the Production environment is ready. The operation is idempotent and new adapters remain disabled. Do not copy the Staging KV contents into Production; configure and enable each source in Production only after its separate review and acceptance.
 
 The source catalog is not a preconfigured live-source list. A catalog entry does not automatically become a KV source, Provider, or enabled search target.
 
