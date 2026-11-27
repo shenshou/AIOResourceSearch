@@ -623,6 +623,7 @@ test("does not reassign a catalogue identity when a canonical URL conflicts", as
   };
   const sharedProvider = provider(async (_input, context) => {
     const record = records[context.source.id];
+    if (!record) throw new Error("Missing test fixture for source.");
     return [resource({
       id: context.source.id,
       catalogNumber: record.catalogNumber,
