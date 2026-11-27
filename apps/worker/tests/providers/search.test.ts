@@ -8,6 +8,7 @@ import type {
 } from "@aio-resource-search/shared";
 import { executeSearch } from "../../src/providers/search.ts";
 import { validateFieldPriorities, validateSource } from "../../src/validation.ts";
+import { readConfig, saveConfig } from "../../src/config-store.ts";
 import { listProviderAdapters } from "../../src/providers/registry.ts";
 import { SOURCE_CATALOG } from "../../../web/src/modules/sources/sourceCatalog.ts";
 import type { Env } from "../../src/env.ts";
@@ -2699,4 +2700,30 @@ test("validates field priority field names and registered source IDs", () => {
     ),
     null,
   );
+});
+
+
+test("persists field priorities and removes deleted Provider IDs from their lists", async () => {
+  const values = new Map<string, string>();
+  const env = {
+    SOURCES_KV: {
+      get: async (key: string) => values.get(key) ?? null,
+      put: async (key: string, value: string) => { values.set(key, value); },
+    },
+  } as unknown as Env;
+  const first = source({ id: "first-source" });
+  const second = source({ id: "second-source" });
+  const current: SourcesConfig = {
+    version: 4,
+    updatedAt: null,
+    sources: [first, second],
+    fieldPriorities: { description: ["second-source", "first-source"] },
+  };
+
+  const saved = await saveConfig(env, current, [first]);
+  const reloaded = await readConfig(env);
+
+  assert.equal(saved.version, 5);
+  assert.deepEqual(saved.fieldPriorities, { description: ["first-source"] });
+  assert.deepEqual(reloaded.fieldPriorities, { description: ["first-source"] });
 });
