@@ -310,9 +310,11 @@ test("drops optional result fields that the source has not declared", async () =
       magnetUri: "magnet:?xt=urn:btih:01234567890123456789012345678901",
       ed2kUri: "ed2k://|file|example.bin|10|0123456789abcdef0123456789abcdef|/",
       torrentUrl: "https://example.com/file.torrent",
+      relationships: [{ type: "performer", name: "Must not leak without metadata capability" }],
     })])),
   );
 
+  assert.equal(result.results[0]?.relationships, undefined);
   assert.equal(result.results[0]?.imageUrl, undefined);
   assert.equal(result.results[0]?.magnetUri, undefined);
   assert.equal(result.results[0]?.ed2kUri, undefined);

@@ -17,7 +17,7 @@ export interface NormalizedResource {
   sourceId: string;
   sourceName: string;
   category: SourceCategory;
-  /** All configured sources that returned the same canonical resource URL. */
+  /** All configured sources that contributed to the same aggregated work identity. */
   sourceAttributions?: Array<{
     sourceId: string;
     sourceName: string;
