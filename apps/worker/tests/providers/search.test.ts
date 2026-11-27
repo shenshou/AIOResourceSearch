@@ -47,7 +47,7 @@ const adapterMetadata: AdapterDefinition = {
   version: "1.0.0",
   enabled: true,
   categories: ["jav"],
-  capabilities: ["metadata", "image", "magnet", "ed2k", "torrent"],
+  capabilities: ["metadata", "relationships", "image", "magnet", "ed2k", "torrent"],
   implemented: true,
 };
 
