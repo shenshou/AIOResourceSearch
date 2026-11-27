@@ -15,6 +15,7 @@ const CATEGORY_BY_CONTENT: Record<ContentCategory, string | null> = {
   novel: null,
   game: "Games",
   music: "Music",
+  audiobook: null,
   general: null,
 };
 
