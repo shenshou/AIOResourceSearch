@@ -52,6 +52,7 @@ export function useSourceManager() {
         loading.value = false;
         saving.value = false;
         sources.value = [];
+        fieldPriorities.value = {};
         etag.value = "";
         revision.value = 0;
         error.value = "管理员令牌无效，请重新输入。";
@@ -89,6 +90,7 @@ export function useSourceManager() {
     loading.value = false;
     saving.value = false;
     sources.value = [];
+    fieldPriorities.value = {};
     etag.value = "";
     revision.value = 0;
     clearMessages();
