@@ -126,6 +126,35 @@ test("extends the lane cooldown after a 429 response", async () => {
 
 
 
+test("persists a LibriVox 429 Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; until: number };
+    assert.equal(body.lane, "librivox");
+    assert.ok(body.until >= Date.now() + 9_000);
+    return Response.json({ accepted: true });
+  }, calls);
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "librivox",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "10" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://librivox.org/api/feed/audiobooks/");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
 test("honors an exhausted MangaDex quota on a successful response", async () => {
   const calls: string[] = [];
   const until = Math.floor((Date.now() + 3_000) / 1_000);
