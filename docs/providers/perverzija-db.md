@@ -3,7 +3,8 @@
 ## Registration
 
 - Adapter ID: `perverzija-db`
-- Version: `1.1.0`
+- Provider implementation version: `1.1.0`
+- Upstream API version: `v1.2.0` (backwards-compatible v1; the 2026-11-06 release added performer profile/image fields that this scene-search Provider does not request or consume)
 - Category: `other-index`
 - Capabilities: `metadata`, `relationships`
 - Search modes: `number`, `keyword`

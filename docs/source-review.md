@@ -4413,3 +4413,20 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - The official API page request in this research environment redirected to DMM's first-party “not available in your region” notice. No proxy, alternate-region access, or restriction bypass was attempted.
 - **Decision:** retain DMM / FANZA in the JAV catalog as a user-initiated external destination only. Do not register credentials, call the API, cache or display API data, or implement a Provider unless DMM gives written permission that expressly covers a public multi-source aggregator and its storage/display model. Do not attempt to bypass the regional restriction.
 - First-party references: https://terms.dmm.com/affiliate_web_service/ ; https://support.dmm.com/affiliate/article/44077 ; https://support.dmm.com/affiliate/article/47546 ; https://affiliate.dmm.com/api/ .
+
+
+## AdultEmbed and Cadrame follow-up verification (2026-11-27)
+
+### AdultEmbed — API is intended for external apps, but endpoint identity and reuse scope remain unresolved
+- The first-party API documentation describes a free, keyless, no-quota JSON API for tube sites, apps and bots. Its search contract exposes title, description, duration, orientation, content type, release time, tags, categories, performers and studio; it also exposes thumbnails/posters, mirrors, iframe markup and permanent player URLs. The project would use only allowlisted text metadata and validated external links, never image, player, mirror, embed, feed or dump fields.
+- The API v1 OpenAPI document identifies its server as `https://pornalizer.app/api/v1`, while the human-readable API documentation and website use `https://adultembed.com/api/v1`. No first-party migration note explaining this host difference was found. The API spec also states that its content is 18+ only and that integrators must comply with the laws where it is displayed.
+- The first-party docs describe the API as open for external integrations, but no separate metadata licence or sufficiently explicit grant for a public multi-source aggregator to retain and republish its metadata was located. The API endpoints could not be verified with a live JSON response in this research environment; this is not evidence that the upstream API is down.
+- **Decision:** retain AdultEmbed as a homepage-only candidate. Before Provider work, obtain clarification of the canonical API host and written confirmation that a public multi-source metadata-search service may display/cache the selected fields, along with attribution, takedown/removal and age-assurance requirements. If approved, use only a strict metadata allowlist and never consume its player/embed, images, mirrors, media, feeds or bulk dumps.
+- References: https://adultembed.com/api/docs/ ; https://adultembed.com/api/v1/openapi.json ; https://adultembed.com/ .
+
+### Cadrame — CC0 data rights are clear; adult coverage and ordinary API verification remain pending
+- The first-party Data page states that Cadrame's data are CC0 1.0, permits copying and republication, and documents anonymous read-only JSON endpoints whose responses may be cached.
+- The homepage's adult-content section is hidden by default and requires a separate 18+ confirmation. No confirmation was made and no adult records were inspected in this review. Search-indexed public examples surfaced mainstream catalogue records only; no evidence of meaningful JAV coverage was found.
+- Direct API endpoint inspection did not produce a usable JSON response from the current research environment. The failure is treated as an environment/tool limitation, not proof of upstream unavailability.
+- **Decision:** keep Cadrame as a high-potential, homepage-only JAV metadata candidate. Do not add a Provider until an ordinary read-only test (without bypassing any age gate or access restriction) verifies real JAV coverage, response schema and stability, and the product's applicable age-assurance requirements are addressed.
+- References: https://cadrame.org/ ; https://cadrame.org/data ; https://cadrame.org/adult-content .
