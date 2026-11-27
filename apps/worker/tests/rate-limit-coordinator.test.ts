@@ -646,6 +646,36 @@ test("accepts the AudioSilo Meta API lane with conservative one-second shared sp
   assert.equal(bindings[1]?.[4], 1_000);
 });
 
+test("persists Perverzija Retry-After cooldown on its dedicated lane", async () => {
+  const calls: string[] = [];
+  const coordinator = namespace(async (request) => {
+    const path = new URL(request.url).pathname;
+    calls.push(path);
+    if (path === "/reserve") return Response.json({ scheduledAt: Date.now() });
+    if (path === "/validate") {
+      const body = await request.json() as { scheduledAt: number };
+      return Response.json({ scheduledAt: body.scheduledAt });
+    }
+    const body = await request.json() as { lane: string; durationMs: number };
+    assert.equal(body.lane, "perverzija");
+    assert.ok(body.durationMs >= 2_000 && body.durationMs <= 3_000);
+    return Response.json({ accepted: true });
+  });
+  const coordinatedFetch = createCoordinatedFetch(
+    coordinator,
+    "perverzija",
+    new AbortController().signal,
+    async () => new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": "3" },
+    }),
+  );
+
+  const response = await coordinatedFetch("https://api.perverzija.com/v1/scenes?q=test");
+  assert.equal(response.status, 429);
+  assert.deepEqual(calls, ["/reserve", "/validate", "/cooldown"]);
+});
+
 test("accepts the Perverzija DB lane with conservative 600 ms shared spacing", async () => {
   const bindings: Array<string | number | null>[] = [];
   const ctx = {
