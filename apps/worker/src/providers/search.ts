@@ -1,4 +1,4 @@
-import type { AdaptersConfig, ContentCategory, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
+import type { AdaptersConfig, ContentCategory, ResourceLink, ResourceLinkType, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 import { getProviderAdapter } from "./registry";
 import { parseHtmlResults } from "./html-parser";
 import type { NormalizedResource, ProviderAdapter } from "./types";
@@ -144,6 +144,38 @@ function normalizeResource(
         .slice(0, 20)
         .map((link) => ({ label: link.label.trim(), url: link.url }))
     : undefined;
+  const resourceLinksByKey = new Map<string, ResourceLink>();
+  const addResourceLink = (type: ResourceLinkType, url: unknown) => {
+    const allowed = source.capabilities.includes(type);
+    const valid = type === "magnet"
+      ? isMagnetUri(url)
+      : type === "ed2k"
+        ? isEd2kUri(url)
+        : isHttpsUrl(url);
+    if (!allowed || !valid) return;
+    const key = `${type}:${url}`;
+    if (!resourceLinksByKey.has(key)) {
+      resourceLinksByKey.set(key, {
+        type,
+        url,
+        sourceAttributions: [{ sourceId: source.id, sourceName: source.name }],
+      });
+    }
+  };
+  if (Array.isArray(value.resourceLinks)) {
+    for (const link of value.resourceLinks.slice(0, 30)) {
+      if (!link || typeof link !== "object") continue;
+      if (link.type === "magnet" || link.type === "torrent" || link.type === "ed2k") {
+        addResourceLink(link.type, link.url);
+      }
+    }
+  }
+  // Accept legacy single-value fields while normalizing them into the
+  // multi-link contract. Existing Providers remain backward compatible.
+  addResourceLink("magnet", value.magnetUri);
+  addResourceLink("torrent", value.torrentUrl);
+  addResourceLink("ed2k", value.ed2kUri);
+  const resourceLinks = [...resourceLinksByKey.values()].slice(0, 30);
 
   return {
     id: value.id,
@@ -164,9 +196,10 @@ function normalizeResource(
       ? { description }
       : {}),
     ...(source.capabilities.includes("metadata") && metadata && Object.keys(metadata).length ? { metadata } : {}),
-    ...(source.capabilities.includes("magnet") && isMagnetUri(value.magnetUri) ? { magnetUri: value.magnetUri } : {}),
-    ...(source.capabilities.includes("ed2k") && isEd2kUri(value.ed2kUri) ? { ed2kUri: value.ed2kUri } : {}),
-    ...(source.capabilities.includes("torrent") && isHttpsUrl(value.torrentUrl) ? { torrentUrl: value.torrentUrl } : {}),
+    ...(resourceLinks.some((link) => link.type === "magnet") ? { magnetUri: resourceLinks.find((link) => link.type === "magnet")!.url } : {}),
+    ...(resourceLinks.some((link) => link.type === "ed2k") ? { ed2kUri: resourceLinks.find((link) => link.type === "ed2k")!.url } : {}),
+    ...(resourceLinks.some((link) => link.type === "torrent") ? { torrentUrl: resourceLinks.find((link) => link.type === "torrent")!.url } : {}),
+    ...(resourceLinks.length ? { resourceLinks } : {}),
     ...(externalLinks?.length ? { externalLinks } : {}),
     ...(relationships?.length ? { relationships } : {}),
   };
@@ -529,6 +562,26 @@ export async function executeSearch(
       }
       const uniqueLinks = [...uniqueLinkMap.values()].slice(0, 20);
       const mergedRelationships = mergeRelationships(existing.relationships, resource.relationships);
+      const mergedResourceLinks = new Map<string, ResourceLink>();
+      for (const link of [...(existing.resourceLinks ?? []), ...(resource.resourceLinks ?? [])]) {
+        const key = `${link.type}:${link.url}`;
+        const current = mergedResourceLinks.get(key);
+        if (!current) {
+          mergedResourceLinks.set(key, link);
+          continue;
+        }
+        const sourceAttributions = new Map(
+          current.sourceAttributions.map((item) => [item.sourceId, item]),
+        );
+        for (const item of link.sourceAttributions) {
+          if (!sourceAttributions.has(item.sourceId)) sourceAttributions.set(item.sourceId, item);
+        }
+        mergedResourceLinks.set(key, {
+          ...current,
+          sourceAttributions: [...sourceAttributions.values()],
+        });
+      }
+      const resourceLinks = [...mergedResourceLinks.values()].slice(0, 30);
       results[existingIndex] = {
         ...existing,
         sourceAttributions: hasAttribution ? attributions : [...attributions, attribution],
@@ -543,6 +596,7 @@ export async function executeSearch(
         magnetUri: existing.magnetUri ?? resource.magnetUri,
         ed2kUri: existing.ed2kUri ?? resource.ed2kUri,
         torrentUrl: existing.torrentUrl ?? resource.torrentUrl,
+        ...(resourceLinks.length ? { resourceLinks } : {}),
         ...(uniqueLinks.length ? { externalLinks: uniqueLinks } : {}),
         ...(mergedRelationships?.length ? { relationships: mergedRelationships } : {}),
       };
