@@ -17,8 +17,8 @@ const searchPayload = {
       rate: "4.13",
       length_sec: 2539,
       added: "2026-11-17 21:41:44",
-      categories: [{ id: 49, name: "Japanese", slug: "japanese", url: "https://www.eporner.com/cat/japanese/" }],
-      pornstars: [{ id: 4211, name: "Sample Performer", url: "https://www.eporner.com/pornstar/sample-performer/" }],
+      categories: [{ id: 49, name: "Japanese", slug: "japanese", url: "https://www.eporner.com/cat/japanese/", image: "https://category-cdn.example/japanese.jpg" }],
+      pornstars: [{ id: 4211, name: "Sample Performer", url: "https://www.eporner.com/pornstar/sample-performer/", image: "https://profile-cdn.example/performer.jpg" }],
       embed: "https://www.eporner.com/embed/AbCdEfGhIjK/",
       default_thumb: { src: "https://static-ca-cdn.eporner.com/thumb.jpg" },
     },
@@ -264,4 +264,6 @@ test("caches only the allowlisted metadata fields, never embed or image fields",
   assert.equal(stored.some((value) => value.includes("static-ca-cdn")), false);
   assert.equal(stored.some((value) => value.includes("Sample Performer")), true);
   assert.equal(stored.some((value) => value.includes("Japanese")), true);
+  assert.equal(stored.some((value) => value.includes("profile-cdn")), false);
+  assert.equal(stored.some((value) => value.includes("category-cdn")), false);
 });
