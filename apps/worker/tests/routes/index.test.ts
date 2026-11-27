@@ -11,6 +11,10 @@ interface TestEnv {
   ALLOWED_ORIGINS?: string;
   __store: Map<string, string>;
   __writes: string[];
+  RATE_LIMIT_COORDINATOR: {
+    idFromName(name: string): string;
+    get(id: string): { fetch(request: Request): Promise<Response> };
+  };
 }
 
 function createEnv(values: Record<string, unknown> = {}, options: {
@@ -25,6 +29,22 @@ function createEnv(values: Record<string, unknown> = {}, options: {
   return {
     __store: store,
     __writes: writes,
+    RATE_LIMIT_COORDINATOR: {
+      idFromName(name) { return name; },
+      get() {
+        return {
+          async fetch(request) {
+            const path = new URL(request.url).pathname;
+            if (path === "/reserve" || path === "/validate") {
+              return Response.json({ scheduledAt: Date.now() - 1 });
+            }
+            if (path === "/acquire") return Response.json({ acquired: true });
+            if (path === "/release") return Response.json({ released: true });
+            return Response.json({});
+          },
+        };
+      },
+    },
     SOURCES_KV: {
       async get(key) {
         return store.get(key) ?? null;
