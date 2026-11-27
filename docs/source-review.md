@@ -52,7 +52,7 @@ This document records evidence-based triage, not a blanket approval to crawl a s
 - The DB scene page is the primary result link to satisfy visible attribution; the watch page is a separate external link.
 - Covers and player/embed data are not consumed.
 - The provider is registered in the Worker compile-time allowlist. It is not configured in production KV and must remain disabled until live Cloudflare verification.
-- The API advertises `Cache-Control: public, max-age=300, s-maxage=1800`; the Worker also caches valid scene envelopes for 300 seconds, so cache hits bypass the Durable Object lane. Cache misses are paced at 600 ms (100 requests/minute, below the 120/minute/IP ceiling); 429/503 cooldowns use the shared coordinator and are not retried in a tight loop.
+- The API advertises `Cache-Control: public, max-age=300, s-maxage=1800`; the Worker also caches valid scene envelopes for 300 seconds, so cache hits bypass the Durable Object lane. Cache misses are paced at 600 ms (100 requests/minute, below the 120/minute/IP ceiling); 429/503 `Retry-After` and successful quota-exhaustion `X-RateLimit-Reset` headers use the shared coordinator; requests are not retried in a tight loop.
 
 ### YourBittorrent — implemented
 
