@@ -3,19 +3,20 @@
 ## Registration
 
 - Adapter ID: `perverzija-db`
-- Version: `1.0.0`
+- Version: `1.1.0`
 - Category: `other-index`
 - Capabilities: `metadata`
 - Search modes: `number`, `keyword`
 - API endpoint: `https://api.perverzija.com/v1/scenes`
 - Authentication: none
 - API key: not required
+- Shared rate-limit lane: `perverzija` (600 ms minimum spacing)
 
 The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capability `metadata`, and both search modes. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until a live Cloudflare Worker request has been verified.
 
 ## Request behavior
 
-The adapter issues one GET request per search:
+The adapter issues one GET request on a cache miss; a valid Worker Cache API hit avoids an upstream request:
 
 ```text
 GET /v1/scenes?q=<encoded-query>&per_page=50
@@ -26,6 +27,7 @@ Accept: application/json
 - Does not retry 429 responses. The API supplies `Retry-After`; the next user search can retry after that interval.
 - Uses `redirect: "manual"` and validates the response host.
 - Enforces a 2 MiB streaming response limit.
+- Caches valid JSON scene envelopes for 300 seconds using the existing Worker Cache API; malformed cache entries are ignored and refreshed.
 - Requires JSON content type and a valid `data[]` response envelope.
 - Does not consume the API's cover image, embed, or player fields.
 
@@ -55,6 +57,8 @@ The Worker test suite includes fixture-based checks for:
 - no image/embed consumption;
 - rejection of untrusted result/watch hosts;
 - no retry on 429;
+- five-minute cache hits/misses and invalid-cache refresh;
+- shared 600 ms Durable Object rate-lane registration and fail-closed behavior when the coordinator is unavailable;
 - malformed JSON rejection.
 
 These tests use mocked Fetch. They do not prove that Cloudflare Workers can reach the live API. Do not enable the source until the deployed test Worker confirms connectivity and the operator has reviewed the API's adult-only terms for the intended audience.
