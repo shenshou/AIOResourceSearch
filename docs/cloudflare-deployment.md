@@ -62,7 +62,7 @@ The local file is ignored by Git. In that copy:
 
 The staging config must remain in `apps/worker` so its existing `main: "src/index.ts"` path resolves correctly. Do not commit this local config or the namespace ID.
 
-For a pre-merge staging deployment from the feature branch, use the local Wrangler CLI path:
+For initial Staging bootstrap before the GitHub Environment is configured, use the local Wrangler CLI path. This is an alternative to the automated workflow, not a separate permanent deployment process:
 
 ```powershell
 npm install
@@ -89,7 +89,7 @@ npm install
 npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
 ```
 
-Only after a separate staging deployment is explicitly approved should the staging Worker be published:
+When the GitHub Staging Environment is configured and STAGING_DEPLOY_ENABLED is true, the develop workflow publishes the Staging Worker automatically. For a one-time manual bootstrap or recovery, the local CLI command is:
 
 ```bash
 npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
@@ -107,7 +107,7 @@ Wrangler configuration is the source of truth for Worker variables and bindings.
 
 ## 2.1 Automatic Staging Worker deployment
 
-The workflow at .github/workflows/deploy-staging-worker.yml is triggered by pushes to develop and can also be manually dispatched against develop. It runs lint, Worker unit tests, Durable Object runtime tests, frontend build/type-check, config generation, and Wrangler dry-run before deploying only aio-resource-search-api-staging. It never targets Production resources.
+The workflow at .github/workflows/deploy-staging-worker.yml is triggered by relevant Worker/shared-code pushes to develop and can also be manually dispatched against develop once the workflow is present on the default branch. It runs lint, Worker unit tests, Durable Object runtime tests, frontend build/type-check, config generation, and Wrangler dry-run before deploying only aio-resource-search-api-staging. It never targets Production resources. Until this workflow is available from the default branch, the develop push trigger is the automatic path; use local Wrangler only if the initial hosted setup must happen earlier.
 
 Before enabling automatic deployment, create a GitHub Environment named staging and configure:
 
@@ -162,11 +162,11 @@ The source catalog is not a preconfigured live-source list. A catalog entry does
 
 ## 5. Smoke-test sequence
 
-Run the repository's read-only smoke-test script against the staging Worker:
+Run the repository's read-only smoke-test script against the Staging Worker:
 
 ```powershell
 $env:WORKER_URL = "https://aio-resource-search-api-staging.<account>.workers.dev"
-$env:PAGES_ORIGIN = "https://<your-pages-preview-domain>"
+$env:PAGES_ORIGIN = "https://<your-staging-pages-domain>"
 npm run smoke:worker
 Remove-Item Env:WORKER_URL, Env:PAGES_ORIGIN
 ```

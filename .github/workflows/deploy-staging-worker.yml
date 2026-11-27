@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   deploy-staging:
-    if: vars.STAGING_DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: staging
     env:
@@ -29,18 +29,34 @@ jobs:
       CLOUDFLARE_STAGING_KV_NAMESPACE_ID: ${{ vars.CLOUDFLARE_STAGING_KV_NAMESPACE_ID }}
       CLOUDFLARE_STAGING_ALLOWED_ORIGIN: ${{ vars.CLOUDFLARE_STAGING_ALLOWED_ORIGIN }}
     steps:
+      - name: Check whether Staging deployment is enabled
+        id: deployment_gate
+        shell: bash
+        env:
+          STAGING_DEPLOY_ENABLED: ${{ vars.STAGING_DEPLOY_ENABLED }}
+        run: |
+          if [[ "$STAGING_DEPLOY_ENABLED" == "true" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Staging deployment is disabled until Cloudflare resources and GitHub Environment settings are ready."
+          fi
+
       - name: Checkout develop
+        if: steps.deployment_gate.outputs.enabled == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'push' && github.sha || github.ref }}
 
       - name: Set up Node.js
+        if: steps.deployment_gate.outputs.enabled == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Validate deployment configuration
+        if: steps.deployment_gate.outputs.enabled == 'true'
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -51,32 +67,41 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN secret."; exit 1; }
 
       - name: Install dependencies
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm ci
 
       - name: Lint
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm run lint
 
       - name: Run Worker unit tests
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm run test:worker
 
       - name: Run Durable Object runtime tests
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm run test:worker:runtime
 
       - name: Build frontend and type-check Worker
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm run build
 
       - name: Prepare isolated staging configuration
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: node scripts/prepare-staging-config.mjs
 
       - name: Validate staging Worker bundle
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npx wrangler deploy --dry-run --config apps/worker/wrangler.staging.local.jsonc
 
       - name: Deploy staging Worker
+        if: steps.deployment_gate.outputs.enabled == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy --config apps/worker/wrangler.staging.local.jsonc
 
       - name: Record deployment summary
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: |
           {
             echo "## Staging Worker deployment"

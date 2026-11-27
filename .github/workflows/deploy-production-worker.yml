@@ -17,9 +17,8 @@ concurrency:
 jobs:
   deploy-production:
     if: >-
-      ${{ vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-        ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-         (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) }}
+      ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -27,18 +26,34 @@ jobs:
       CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID: ${{ vars.CLOUDFLARE_PRODUCTION_KV_NAMESPACE_ID }}
       CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN: ${{ vars.CLOUDFLARE_PRODUCTION_ALLOWED_ORIGIN }}
     steps:
+      - name: Check whether Production deployment is enabled
+        id: deployment_gate
+        shell: bash
+        env:
+          PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
+        run: |
+          if [[ "$PRODUCTION_DEPLOY_ENABLED" == "true" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Production deployment is disabled until production resources and secrets are ready."
+          fi
+
       - name: Checkout verified main commit
+        if: steps.deployment_gate.outputs.enabled == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Node.js
+        if: steps.deployment_gate.outputs.enabled == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Validate deployment configuration
+        if: steps.deployment_gate.outputs.enabled == 'true'
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -49,20 +64,25 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN secret."; exit 1; }
 
       - name: Install dependencies
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npm ci
 
       - name: Prepare production configuration
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: node scripts/prepare-production-config.mjs
 
       - name: Validate production Worker bundle
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: npx wrangler deploy --dry-run --config apps/worker/wrangler.production.local.jsonc
 
       - name: Deploy production Worker
+        if: steps.deployment_gate.outputs.enabled == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy --config apps/worker/wrangler.production.local.jsonc
 
       - name: Record deployment summary
+        if: steps.deployment_gate.outputs.enabled == 'true'
         run: |
           {
             echo "## Production Worker deployment"
