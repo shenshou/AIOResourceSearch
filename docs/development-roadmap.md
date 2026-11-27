@@ -112,9 +112,9 @@ Acceptance:
 Deliverables:
 - [x] Provider registry and shared result contract.
 - [x] API, RSS/Atom, and generic HTML acquisition mechanisms.
-- [x] Eleven site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, Eporner, and LibriVox Providers) and the reusable generic-html adapter.
+- [x] Twelve site-specific Provider implementations (including the metadata-only MangaDex, MusicBrainz, Eporner, LibriVox, and AudioSilo Meta Providers) and the reusable generic-html adapter.
 - [x] Candidate source catalog and evidence-based review log.
-- [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources.
+- [ ] Expand reviewed, permitted source coverage for anime, film/TV, manga, novels, games, music, and general resources; audiobook metadata coverage now includes LibriVox and AudioSilo Meta at code level.
 - [ ] For each candidate, record the canonical endpoint, acquisition method, access/usage conditions, supported fields, attribution requirements, quotas/cache guidance, and Worker compatibility.
 - [ ] Implement additional adapters only when a stable interface and permitted automated access are established.
 - [x] Define the authenticated-source boundary: source-scoped Worker Secret bindings are injected only into the matching Provider; missing secrets fail closed. Free-account authentication is allowed only where ordinary authenticated access is permitted.
@@ -185,7 +185,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Eleven implemented and registered; all remain unconfigured/disabled pending source-specific policy and hosted verification |
+| Site-specific Providers | Twelve implemented and registered; all remain unconfigured/disabled pending source-specific policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex and AniBT declare lanes but no enabled KV source invokes them; hosted concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
@@ -197,6 +197,7 @@ Current branch implementation snapshot:
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
 | Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane plus exclusive request lease, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
 | LibriVox metadata Provider | Implemented and registered; metadata-only audiobook search, 5-second shared lane, 20-result cap, canonical project-page links; CI run [#45947452308](https://github.com/shenshou/AIOResourceSearch/actions/runs/45947452308) passed commit `3e79f7892d7c1fb88ea0a6da03a8f1b2bc80405a`; source/adapter remain unconfigured and disabled; hosted verification pending |
+| AudioSilo Meta metadata Provider | Implemented and registered; CC0 factual WorkResult fields only, no community-layer/cover/description reuse, 1-second shared lane, 20-result cap, canonical work-page links; CI and hosted verification pending; source/adapter remain unconfigured and disabled |
 | Real Cloudflare integration testing | Not started; LibriVox and other Providers still require non-production hosted verification |
 | Production release | Not started |
 
