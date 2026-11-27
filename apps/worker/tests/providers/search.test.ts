@@ -269,23 +269,73 @@ test("rate-limited Providers fail closed when the shared coordinator is missing"
   assert.equal(upstreamFetchCalls, 0);
 });
 
-test("Perverzija-lane Providers fail closed when the shared coordinator is missing", async () => {
-  let upstreamFetchCalls = 0;
-  const rateLimited = provider(async (_input, context) => {
-    await context.fetch("https://api.perverzija.com/v1/scenes?q=test");
-    upstreamFetchCalls += 1;
-    return [];
-  }, { rateLimitLane: "perverzija" });
+function perverzijaAdapterConfig(): AdaptersConfig {
+  return {
+    version: 1,
+    updatedAt: null,
+    adapters: [{
+      ...adapterMetadata,
+      id: "perverzija-db",
+      categories: ["other-index"],
+      contentCategories: ["jav"],
+      capabilities: ["metadata"],
+    }],
+  };
+}
+
+function perverzijaSourceDefinition(): SourceDefinition {
+  return source({
+    id: "perverzija-db",
+    name: "Perverzija DB",
+    category: "other-index",
+    contentCategory: "jav",
+    adapterId: "perverzija-db",
+    capabilities: ["metadata"],
+    searchModes: ["number", "keyword"],
+  });
+}
+
+test("Perverzija DB Provider fails closed on a cache miss when its coordinator is unavailable", async () => {
   const result = await executeSearch(
     request,
-    sourceConfig(source()),
-    adapters,
-    resolve(rateLimited),
+    sourceConfig(perverzijaSourceDefinition()),
+    perverzijaAdapterConfig(),
+    resolve(perverzijaDbProvider),
   );
 
   assert.equal(result.sources[0]?.status, "error");
   assert.equal(result.sources[0]?.errorCode, "provider_failed");
-  assert.equal(upstreamFetchCalls, 0);
+  assert.equal(result.results.length, 0);
+});
+
+test("Perverzija DB cache hits work without reserving a coordinator slot", async () => {
+  const cacheUrl = new URL("https://api.perverzija.com/v1/scenes");
+  cacheUrl.searchParams.set("q", request.query);
+  cacheUrl.searchParams.set("per_page", "50");
+  const cache = {
+    match: async (key: Request) => key.url === cacheUrl.toString()
+      ? new Response(JSON.stringify(perverzijaFixture), {
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=300",
+          },
+        })
+      : undefined,
+    put: async () => {},
+  } as unknown as Cache;
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(perverzijaSourceDefinition()),
+    perverzijaAdapterConfig(),
+    resolve(perverzijaDbProvider),
+    cache,
+  );
+
+  assert.equal(result.sources[0]?.status, "ok");
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.sourceId, "perverzija-db");
+  assert.equal(result.results[0]?.relationships?.length, 3);
 });
 
 test("normalizes provider-owned fields and validates optional resource links", async () => {
