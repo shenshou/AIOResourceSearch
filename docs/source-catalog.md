@@ -29,9 +29,9 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- 156 条去重候选：JAV 28、torrent 30、forum 16、other-index 82；Atlas 标签 75、FetchJAV 标签 28、Lustpress 标签 8、AIOResourceSearch 自有来源 51；标签存在交叉，不能将标签数直接相加当作来源总数。The RarBg 的 5 条分类记录均计入本项目自有来源。
+- **当前目录：164 条去重候选**：JAV 28、torrent 30、forum 16、other-index 90；AIOResourceSearch 自有来源标签 59（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源。
 - 当前保留 9 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT、Open Library、Library of Congress、Steam Store。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；Open Library 与 Library of Congress 的模板只在用户点击后由浏览器打开，Worker 不会请求目标站点。
-- 当前 10 个具体 Provider：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON。The RarBg 的 5 条分类源记录共用一个 Provider；Eporner 使用官方 API，并配有移除 Feed 同步与共享限流协调。新 Provider 仍需部署 Worker、登记适配器和来源记录，并完成 Hosted Cloudflare 验证后才能启用。DMHY、MangaDex、MusicBrainz、AniBT、Eporner 等实现也仍需按各自门槛完成 KV 配置和验证；另有可配置的通用 HTML adapter。
+- **当前 12 个具体 Provider**：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON、LibriVox metadata API、AudioSilo Meta metadata API。The RarBg 的 5 条分类源记录共用一个 Provider。12 个 Provider 均已登记在代码注册表；是否可启用仍须分别完成来源审查、KV 配置和 Hosted Cloudflare 验证。另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 
@@ -376,7 +376,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - LibriVox 已从“未来候选”升级为代码已实现的 Provider 候选：librivox-api v1.0.0，metadata-only，有声读物分类，标题前缀搜索，单次最多 20 条，字段白名单和 5 秒共享 Durable Object 限速。
 - Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。
 - 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 11。
-- 完整 CI 和非生产 Cloudflare Hosted 验证仍待完成；本次代码提交不代表已部署或可用于生产。
+- AudioSilo Meta 完整 CI 已于 2026-11-27 通过：[#45949235669](https://github.com/shenshou/AIOResourceSearch/actions/runs/45949235669)，验证提交 `c0745998e51d10a8481ca113941270b1da1ed007`，包含 lint、Worker 单元测试、Durable Object workerd runtime 测试、前端构建和 Worker 类型检查。非生产 Cloudflare Hosted 验证仍未开始；本次 CI 不代表已部署或可用于生产。
 
 ## AudioSilo Meta Provider implementation update（2026-11-27）
 

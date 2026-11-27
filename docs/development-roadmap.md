@@ -197,8 +197,8 @@ Current branch implementation snapshot:
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
 | Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane plus exclusive request lease, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
 | LibriVox metadata Provider | Implemented and registered; metadata-only audiobook search, 5-second shared lane, 20-result cap, canonical project-page links; CI run [#45947452308](https://github.com/shenshou/AIOResourceSearch/actions/runs/45947452308) passed commit `3e79f7892d7c1fb88ea0a6da03a8f1b2bc80405a`; source/adapter remain unconfigured and disabled; hosted verification pending |
-| AudioSilo Meta metadata Provider | Implemented and registered; CC0 factual WorkResult fields only, no community-layer/cover/description reuse, 1-second shared lane, 20-result cap, canonical work-page links; CI and hosted verification pending; source/adapter remain unconfigured and disabled |
-| Real Cloudflare integration testing | Not started; LibriVox and other Providers still require non-production hosted verification |
+| AudioSilo Meta metadata Provider | Implemented and registered; CC0 factual WorkResult fields only, no community-layer/cover/description reuse, 1-second shared lane, 20-result cap, canonical work-page links; full CI [#45949235669](https://github.com/shenshou/AIOResourceSearch/actions/runs/45949235669) passed on `c0745998e51d10a8481ca113941270b1da1ed007`; hosted verification pending; source/adapter remain unconfigured and disabled |
+| Real Cloudflare integration testing | Not started; LibriVox, AudioSilo Meta, and other Providers still require non-production hosted verification |
 | Production release | Not started |
 
 ## Related documents

@@ -1,7 +1,7 @@
 # AudioSilo Meta Provider — implementation and verification status
 
 **Review date:** 2026-11-27  
-**Disposition:** Worker Provider implemented and registered; source and adapter remain unconfigured/disabled; CI and non-production Cloudflare hosted verification pending.
+**Disposition:** Worker Provider implemented and registered; full CI passed on 2026-11-27; source and adapter remain unconfigured/disabled; non-production Cloudflare hosted verification pending.
 
 ## Decision and licence boundary
 
@@ -70,7 +70,7 @@ Tests cover the documented request contract, CC0 field allowlist, exclusion of c
 - Source enabled: no.
 - Production KV mutation: none.
 - Deployment: none.
-- CI: pending; run the complete module CI after implementation and documentation are integrated.
+- CI: passed in [GitHub Actions #45949235669](https://github.com/shenshou/AIOResourceSearch/actions/runs/45949235669) on commit `c0745998e51d10a8481ca113941270b1da1ed007`; lint, Worker unit tests, Durable Object runtime tests, frontend build, and Worker type-check all succeeded.
 - Non-production Cloudflare hosted verification: not started; no live API connectivity or hosted quota claim is made.
 
 When eventually configured in a test environment, both adapter and source must initially remain disabled. The implementation does not authorize production enablement.
