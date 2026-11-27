@@ -2416,3 +2416,30 @@ test("deduplicates identical downloadable links while retaining all contributing
     ["first-link-source", "second-link-source"],
   );
 });
+
+
+test("normalizes provider-supplied resource link arrays and replaces untrusted attribution", async () => {
+  const magnet = "magnet:?xt=urn:btih:01234567890123456789012345678901";
+  const result = await executeSearch(
+    request,
+    sourceConfig(source({ id: "trusted-source", name: "Trusted source", capabilities: ["metadata", "magnet"] })),
+    adapters,
+    resolve(provider(async () => [resource({
+      resourceLinks: [
+        {
+          type: "magnet",
+          url: magnet,
+          sourceAttributions: [{ sourceId: "spoofed-source", sourceName: "Spoofed source" }],
+        },
+        { type: "torrent", url: "https://example.com/file.torrent" },
+      ],
+    })])),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(result.results[0]?.resourceLinks, [{
+    type: "magnet",
+    url: magnet,
+    sourceAttributions: [{ sourceId: "trusted-source", sourceName: "Trusted source" }],
+  }]);
+});
