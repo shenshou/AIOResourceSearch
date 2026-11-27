@@ -4721,3 +4721,15 @@ The R18.dev review found a real first-party reuse grant, but the delivery model 
 - Cloudflare D1 limits: https://developers.cloudflare.com/d1/platform/limits/
 - Cloudflare D1 import format: https://developers.cloudflare.com/d1/best-practices/import-export-data/
 
+## Resource-link source inventory and ED2K feasibility (2026-11-27)
+
+The current catalog has 30 torrent-category entries: 10 Provider source records and 20 external-only/unverified records. Those 10 Provider records map to six unique implementations: Sukebei RSS (magnet), Torlock Torznab (magnet), YourBittorrent JSON (magnet + .torrent), DMHY RSS (magnet), AniBT Torznab (.torrent), and The RarBg JSON (magnet across five content-category records).
+
+The shared normalized contract already supports `magnet`, `torrent` and `ed2k` resource-link types. The Worker normalizer validates and merges links with source attribution; the generic HTML adapter can extract ED2K links from a reviewed selector. However, no current Provider supplies ED2K links.
+
+ED2K research found that eMule/aMule searches use eD2K servers or the distributed Kad network, rather than a simple public REST/RSS interface. The MIT-licensed `hahajing` project is a self-hosted Go KAD search engine (last code push 2018-03-25) and is oriented around Douban/Mtime Movie/TV validation; it is not a current public API or a Cloudflare Worker adapter. `tg-search` can return ED2K and magnet links from its own indexed Telegram repository, but its public API requires an API key and the indexed data depends on a separate service/storage layer. Neither is an eligible source Provider for the current no-database/no-paid-dependency architecture.
+
+No public ED2K API/RSS or permitted stable web-search source was verified in this pass. Do not invent links from metadata or convert a detail-page URL into an ED2K URI. Keep researching the 20 external-only torrent candidates for documented resource-link endpoints and explicit automation permission.
+
+Detailed matrix: `docs/resource-link-source-status.md`.
+
