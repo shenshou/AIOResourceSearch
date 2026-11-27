@@ -293,7 +293,7 @@ async function coordinatorRequest(
   path: "reserve" | "validate" | "cooldown" | "acquire" | "release",
   lane: RateLimitLane,
   signal?: AbortSignal,
-  cooldownMs?: number, 
+  cooldownMs?: number,
   scheduledAt?: number,
   leaseId?: string,
 ): Promise<{ scheduledAt?: number; acquired?: boolean; retryAt?: number }> {
