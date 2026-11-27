@@ -121,7 +121,7 @@ Deliverables:
 - [x] Create a deferred-source backlog for sources whose current acquisition path requires addressing access controls. Current-phase implementation remains deferred; later phases may explicitly research technical approaches under Principle 11, subject to source-specific legal, contractual, authorization, security, privacy, and operational review.
 - [x] Implement the SQLite-backed Durable Object rate-limit coordinator, Worker binding contract, per-Provider lane opt-in, cancellation-aware wait, cooldown handling, and fail-closed fetch wrapper. Keep it dormant until a Provider opts in; see [provider-rate-limiting.md](./provider-rate-limiting.md).
 - [x] Add a dedicated Workers Vitest integration suite against the existing Wrangler configuration; verify SQLite concurrency, lane isolation, cooldown revalidation, upstream 429 cooldown persistence, and Durable Object eviction/recovery in the local workerd runtime while retaining the existing Node test suite unchanged.
-- [ ] Verify hosted Cloudflare binding behavior and Free-plan quota accounting in a separate non-production environment before enabling MangaDex or implementing/enabling MusicBrainz.
+- [ ] Verify hosted Cloudflare binding behavior and Free-plan quota accounting in a separate non-production environment before enabling MangaDex or MusicBrainz.
 - [x] Prepare API integration readiness analysis for Bangumi, MangaDex, and MangaUpdates in [provider-integration-readiness.md](./provider-integration-readiness.md); record current deferrals and conditions before further implementation or enablement.
 - [x] Implement and register the metadata-only MangaDex Provider; keep it unconfigured in KV and disabled pending runtime verification and policy gates.
 - [ ] Keep Bangumi keyword search deferred while its public subject-search endpoint remains marked experimental; use only stable public endpoints or external-search.
@@ -185,7 +185,7 @@ Current branch implementation snapshot:
 | Search orchestration, capability-aware normalization, request cancellation, and source-attributed deduplication | Implemented |
 | Source and adapter administration | Implemented; live Cloudflare verification pending |
 | API / RSS / HTML acquisition mechanisms | Implemented at code level |
-| Site-specific Providers | Ten implemented and registered; all remain unconfigured/disabled pending policy and hosted verification |
+| Site-specific Providers | Eleven implemented and registered; all remain unconfigured/disabled pending source-specific policy and hosted verification |
 | Generic HTML adapter | Implemented; per-source selectors and real runtime verification pending |
 | Shared rate-limit coordinator | Implemented in Worker code and Wrangler config; MangaDex and AniBT declare lanes but no enabled KV source invokes them; hosted concurrency/quota verification pending |
 | Worker route tests | Added; further boundary-focused coverage planned |
@@ -196,7 +196,8 @@ Current branch implementation snapshot:
 | Authenticated Provider credential injection | Code path implemented using source-scoped Worker Secret bindings; CI passed, hosted verification pending |
 | AniBT Torznab Provider | Implemented with shared 1.1-second lane and no-store behavior; disabled pending hosted/policy verification |
 | Eporner metadata Provider | Implemented with active-status checks, 1-second shared lane plus exclusive request lease, and 15-minute removal-feed cursor sync; disabled pending hosted sync/runtime and launch-scope review |
-| Real Cloudflare integration testing | Not started |
+| LibriVox metadata Provider | Implemented and registered; metadata-only audiobook search, 5-second shared lane, 20-result cap, canonical project-page links; CI run [#45947452308](https://github.com/shenshou/AIOResourceSearch/actions/runs/45947452308) passed commit `3e79f7892d7c1fb88ea0a6da03a8f1b2bc80405a`; source/adapter remain unconfigured and disabled; hosted verification pending |
+| Real Cloudflare integration testing | Not started; LibriVox and other Providers still require non-production hosted verification |
 | Production release | Not started |
 
 ## Related documents
