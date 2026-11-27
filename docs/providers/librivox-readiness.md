@@ -86,7 +86,7 @@ The worker test script includes the focused Provider test. Validation coverage c
 - Source enabled: no.
 - Production KV mutation: none.
 - Deployment: none.
-- Complete CI: pending module integration.
-- Non-production Cloudflare hosted verification: not started.
+- Complete CI: passed on 2026-11-27 — [run #45947452308](https://github.com/shenshou/AIOResourceSearch/actions/runs/45947452308), commit `3e79f7892d7c1fb88ea0a6da03a8f1b2bc80405a` (Lint, Worker unit tests, Durable Object runtime tests, frontend build, and Worker type-check all passed).
+- Non-production Cloudflare hosted verification: not started; CI success does not verify hosted bindings, live API connectivity, or Cloudflare quota behavior.
 
 The source catalog UI requires an administrator to register and enable the compiled adapter before registering the source. When eventually created, both records must initially remain disabled. No production enablement is authorized by this implementation.
