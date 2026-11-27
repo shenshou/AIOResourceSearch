@@ -169,6 +169,41 @@ export function validateSource(input: unknown): SourceDefinition | null {
   };
 }
 
+const PRIORITIZABLE_FIELDS = new Set([
+  "title",
+  "catalogNumber",
+  "releaseDate",
+  "imageUrl",
+  "description",
+]);
+
+export function validateFieldPriorities(
+  input: unknown,
+  sources: SourceDefinition[],
+): Record<string, string[]> | null {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
+  const entries = Object.entries(input as Record<string, unknown>);
+  if (entries.length > 100) return null;
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const result: Record<string, string[]> = {};
+
+  for (const [field, rawIds] of entries) {
+    const validField = PRIORITIZABLE_FIELDS.has(field) ||
+      /^metadata\\.[a-z][a-zA-Z0-9_-]{0,63}$/.test(field);
+    if (!validField || !Array.isArray(rawIds) || rawIds.length > 100) return null;
+    const seen = new Set<string>();
+    const ids: string[] = [];
+    for (const id of rawIds) {
+      if (typeof id !== "string" || !sourceIds.has(id) || seen.has(id)) return null;
+      seen.add(id);
+      ids.push(id);
+    }
+    result[field] = ids;
+  }
+
+  return result;
+}
+
 export function validateAdapter(input: unknown): AdapterDefinition | null {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
   const value = input as Record<string, unknown>;
