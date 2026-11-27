@@ -372,4 +372,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - AudiobookDB：保留为首页外链候选。官方条款要求任何第三方/多用户应用（包括免费的公共应用）在使用 API 前取得单独书面集成协议；个人 API 访问不授权目录复制、再分发或永久发现索引。
 - 本批新增 2 个候选，目录更新为 164 条去重候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（标签交叉）。外部搜索模板仍为 9 条；具体 Provider 实现仍为 10 个。
 - 未新增 Provider、API 调用、凭据、KV 配置、来源启用或部署。目录元数据变更纳入下一次完整 CI。
-\n## LibriVox Provider implementation update（2026-11-27）\n\n- LibriVox 已从“未来候选”升级为代码已实现的 Provider 候选：librivox-api v1.0.0，metadata-only，有声读物分类，标题前缀搜索，单次最多 20 条，字段白名单和 5 秒共享 Durable Object 限速。\n- Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。\n- 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 11。\n- 完整 CI 和非生产 Cloudflare Hosted 验证仍待完成；本次代码提交不代表已部署或可用于生产。
+\n## LibriVox Provider implementation update（2026-11-27）\n
+- LibriVox 已从“未来候选”升级为代码已实现的 Provider 候选：librivox-api v1.0.0，metadata-only，有声读物分类，标题前缀搜索，单次最多 20 条，字段白名单和 5 秒共享 Durable Object 限速。
+- Worker 不获取音频、RSS、封面或 Archive.org 文件；每条结果回链 LibriVox 项目页。源码和 adapter catalog 已登记，但生产 KV 中尚无 adapter/source 记录，均未启用。
+- 当前目录仍为 164 个唯一候选（JAV 28、torrent 30、forum 16、other-index 90）；AIOResourceSearch 自有来源标签 59（交叉标签）；用户主动外部搜索模板 9 条；具体 Provider 实现数更新为 11。
+- 完整 CI 和非生产 Cloudflare Hosted 验证仍待完成；本次代码提交不代表已部署或可用于生产。
