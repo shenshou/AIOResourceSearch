@@ -80,13 +80,13 @@ test("uses the official title-prefix JSON contract and maps the real first-party
   });
 });
 
-test("drops malformed records and rejects untrusted project URLs", async () => {
+test("drops records with invalid IDs or missing titles and rejects untrusted project hosts", async () => {
   const mixed = {
     books: [
       ...fixture.books,
       { id: "bad", title: "Invalid ID", url_librivox: "https://librivox.org/item/" },
       { id: "53", title: "Untrusted URL", url_librivox: "https://evil.example/item/" },
-      { id: "54", title: "Missing title", url_librivox: "https://librivox.org/item/" },
+      { id: "54", url_librivox: "https://librivox.org/item/" },
     ],
   };
   const results = await libriVoxProvider.search(
