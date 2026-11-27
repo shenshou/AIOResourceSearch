@@ -356,6 +356,34 @@ test("deduplicates equivalent canonical result URLs across sources", async () =>
   assert.deepEqual(result.sources.map((item) => item.resultCount), [1, 1]);
 });
 
+test("keeps the first source's label for duplicate external URLs", async () => {
+  const sharedProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "SSIS-001",
+      url: `https://${context.source.id}.example/item/ssis-001`,
+      externalLinks: [{
+        label: context.source.id === "first" ? "Original label" : "Later label",
+        url: "https://shared.example/details",
+      }],
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first", name: "First source" }),
+      source({ id: "second", name: "Second source" }),
+    ),
+    adapters,
+    resolve(sharedProvider),
+  );
+
+  assert.deepEqual(result.results[0]?.externalLinks, [{
+    label: "Original label",
+    url: "https://shared.example/details",
+  }]);
+});
+
 test("keeps the first source's conflicting metadata and fills only missing fields", async () => {
   const sharedProvider = provider(async (_input, context) => [
     resource({

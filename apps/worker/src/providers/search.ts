@@ -487,7 +487,11 @@ export async function executeSearch(
       const attributions = existing.sourceAttributions ?? [];
       const hasAttribution = attributions.some((item) => item.sourceId === attribution.sourceId);
       const links = [...(existing.externalLinks ?? []), ...(resource.externalLinks ?? [])];
-      const uniqueLinks = [...new Map(links.map((link) => [link.url, link])).values()].slice(0, 20);
+      const uniqueLinkMap = new Map<string, NonNullable<NormalizedResource["externalLinks"]>[number]>();
+      for (const link of links) {
+        if (!uniqueLinkMap.has(link.url)) uniqueLinkMap.set(link.url, link);
+      }
+      const uniqueLinks = [...uniqueLinkMap.values()].slice(0, 20);
       const mergedRelationships = mergeRelationships(existing.relationships, resource.relationships);
       results[existingIndex] = {
         ...existing,
