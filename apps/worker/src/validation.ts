@@ -13,7 +13,7 @@ const contentCategories = [...CONTENT_CATEGORIES];
 const fetchMechanisms = [...FETCH_MECHANISMS];
 const sourceTypes = ["provider", "external-search"] as const;
 const searchModes = ["number", "keyword"] satisfies readonly (typeof SEARCH_MODES)[number][];
-const capabilities = ["metadata", "image", "magnet", "ed2k", "torrent", "forum-post"] satisfies readonly (typeof SOURCE_CAPABILITIES)[number][];
+const capabilities = ["metadata", "relationships", "image", "magnet", "ed2k", "torrent", "forum-post"] satisfies readonly (typeof SOURCE_CAPABILITIES)[number][];
 
 export function validateSource(input: unknown): SourceDefinition | null {
   if (typeof input !== "object" || input === null) return null;
