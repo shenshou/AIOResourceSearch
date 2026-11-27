@@ -43,3 +43,12 @@ Focused unit tests now cover first-value-wins field and external-link conflicts,
 - Perverzija DB maps its documented studio, performer, and tag names into structured relationships while retaining the existing description text and attribution links. Its API calls use a shared 600 ms Durable Object lane (100 requests/minute, below the documented 120/minute/IP ceiling) and successful scene envelopes are cached for 300 seconds; cache hits bypass the coordinator. Its response does not establish canonical performer/studio URLs, so no entity URLs are fabricated.
 - Eporner maps documented `pornstars` to performer relationships, `categories` to genre relationships, and comma-separated `keywords` to tag relationships. Its search request asks for `fields=pornstars,categories` in the same API call. Performer/category URLs are accepted only when they match the canonical HTTPS Eporner host and the documented `/pornstar/` or `/cat/` path. The existing active-status check, removal-feed gate, cache allowlist, shared request lane, and no-embed/no-image behavior remain intact.
 - This is a shared result-contract foundation. Other Providers are not assumed to provide these fields until their response contracts are explicitly reviewed and their adapters are updated and tested.
+
+
+## Multi-source downloadable resource links (2026-11-27)
+
+- The shared result contract now supports a collection of downloadable resource links with explicit types: magnet, torrent, and ed2k.
+- Each normalized link carries source attribution. When multiple Providers return the same work, distinct links are retained; identical type/URL pairs are deduplicated while their contributing source attributions are combined.
+- Existing `magnetUri`, `torrentUrl`, and `ed2kUri` single-value fields remain populated as compatibility fields for older clients and integrations.
+- Link values are accepted only when the matching source capability is declared and the value passes its protocol-specific validation. The Provider cannot override source attribution.
+- This is a backward-compatible Worker/shared-contract foundation. User-interface presentation and broader extraction coverage are separate follow-up work; no candidate source is automatically enabled by this change.
