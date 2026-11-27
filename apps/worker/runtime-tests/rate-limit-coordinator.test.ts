@@ -163,8 +163,8 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
   });
 
   it("persists a LibriVox Retry-After cooldown across its dedicated SQLite lane", async () => {
-    const stub = createStub("librivox");
     const id = coordinator.idFromName("librivox");
+    const stub = coordinator.get(id);
     const namespace = {
       idFromName: (name: string) => coordinator.idFromName(name),
       get: (objectId: unknown) => coordinator.get(objectId),
