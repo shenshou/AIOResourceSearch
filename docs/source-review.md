@@ -4334,3 +4334,28 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Current catalog: 172 unique candidates (JAV 29, torrent 30, forum 16, other-index 97); AIOResourceSearch provenance tags: 66 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
 - No Provider code, API credentials, paid service, API request, KV configuration, source enablement, deployment, or production data mutation was added.
 - First-party/repository references: https://github.com/av18live/japanese-adult-video-metadata ; https://javinfo.dev/ ; https://docs.javinfo.dev/docs ; https://javinfo.dev/faq ; https://javinfo.dev/blog/jav-metadata-api
+
+ 
+## JAV metadata ecosystem follow-up: Kanojo, R18.dev and implementation references (2026-11-27)
+
+### Kanojo — archived JAV/gravure database; current API and data rights unverified
+- The verified kanojo-db GitHub organization describes Kanojo as a community-built Japanese adult-video and gravure database with an API and media-server integrations. Its main application repository is explicitly archived and its last update was 2023-09-27; the associated scraper repository's last update was 2022-12-13. The current service/API contract and a grant for third-party metadata aggregation were not verified.
+- The open-source code licences apply to the respective software repositories, not automatically to the hosted Kanojo catalogue data or upstream material gathered by its scrapers.
+- **Decision:** add Kanojo to the durable JAV candidate catalog as homepage-only / research-only. Do not call an undocumented API, reuse its scrapers, or ingest/cache catalogue data until the service is active and the operator confirms downstream data-use rights.
+
+### R18.dev — maintainer explicitly says the existing JSON API is not public
+- The maintainer-authored JAV Museum article dated 2024-02-01 describes the existing R18.dev JSON API as alpha and "not really for public use". It also explains that the site's data was imported from other sources and discusses a future manually curated successor. Javinizer-Go references an R18.dev JSON scraper, but a downstream project's integration does not override the API maintainer's stated access boundary.
+- **Decision:** add R18.dev as a JAV research candidate with homepage-only navigation. No API requests, database-dump ingestion, third-party scraper reuse, or catalogue replication without current operator authorization and explicit data-reuse terms.
+
+### Architecture references reviewed (not data-source candidates)
+- **Javinizer-Go** (https://github.com/javinizer/javinizer-go): useful reference for JAV code normalization, multi-source metadata priority, adapter separation, structured result normalization, and tests. Its local media organization, image downloads, and source scrapers are outside AIOResourceSearch's search-aggregator scope; its scraper integrations are not authorization for this project to access those upstream sites.
+- **LibreFanza** (https://github.com/libredmm/librefanza): useful reference for normalized product IDs, source-specific records linked to a canonical movie entity, per-source search orchestration, job deduplication/cooldowns, and HTTP-mocked tests. It is a Rails/PostgreSQL/Redis application, not a drop-in Cloudflare dependency. Its README documents DMM/FANZA API credentials and MGStage/SOD/FC2 scraping/proxy configuration; those access methods are not copied. The repository is AGPL-3.0, so only architectural ideas are considered unless a separate licence review approves code reuse.
+- Kanojo also demonstrates a community metadata-database pattern, but its archived application and scraper repositories make it a weak current integration target.
+- R18.dev is a useful reference for JAV metadata normalization and identity relationships, but its undocumented/alpha API is explicitly not a public integration contract.
+
+### Batch outcome
+- Added two durable JAV candidates: Kanojo and R18.dev. Both remain homepage-only and disabled; neither adds a Provider or automated acquisition path.
+- Reviewed Javinizer-Go and LibreFanza as architecture references only; no code was copied and no upstream scraper behavior was adopted.
+- Current catalog: 174 unique candidates (JAV 31, torrent 30, forum 16, other-index 97); AIOResourceSearch provenance tags: 68 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
+- No credentials, API calls, paid services, KV configuration, source enablement, Cloudflare deployment, or production data changes.
+- References: https://github.com/kanojo-db/ ; https://github.com/kanojo-db/kanojo ; https://github.com/kanojo-db/scrapers ; https://blog.javmuseum.com/blog/what-next-for-r18dev/ ; https://github.com/javinizer/javinizer-go ; https://github.com/libredmm/librefanza
