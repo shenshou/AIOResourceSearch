@@ -4243,5 +4243,15 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 
 ### Batch outcome
 - Added two project-owned candidates: AudioSilo Meta (potential CC0-core audiobook metadata Provider, subject to field-level separation) and AudiobookDB (homepage-only pending written agreement).
-- Catalog now contains 164 unique candidates (JAV 28, torrent 30, forum 16, other-index 90); AIOResourceSearch provenance tags: 59 (overlapping). User-opened external-search templates remain 9; concrete Provider implementations remain 10.
+- Catalog now contains 164 unique candidates (JAV 28, torrent 30, forum 16, other-index 90); AIOResourceSearch provenance tags: 59 (overlapping). User-opened external-search templates remain 9; concrete Provider implementations: 11 after LibriVox implementation.
 - No Provider code, credentials, API calls, KV configuration, source enablement, deployment, or production data changes.
+
+## LibriVox Provider implementation — 2026-11-27
+
+- Captured a real first-party JSON response from the official API documentation's linked example (id=52, title 'Letters of Two Brides'). The observed envelope is books array; each record includes string ID/title, canonical url_librivox, and an authors array with first_name / last_name. The fixture is checked into apps/worker/tests/fixtures/librivox-audiobooks.json.
+- Implemented and registered Worker Provider librivox-api v1.0.0, mechanism api, category other-index, content category audiobook, capability metadata, keyword-only. It performs title-prefix search (title=^query), limits interactive results to 20, and requests only ID/title/description/language/copyright year/section count/canonical project URL/runtime/authors. It does not request genres, RSS, sections, ZIP URLs, cover art, or audio assets because the real response for the approved fields and current metadata-only scope do not require them.
+- The parser validates the books envelope, bounded IDs/text/metadata, and canonical HTTPS LibriVox project URLs; it strips markup from descriptions, maps author names, rejects malformed records, caps response size at 1 MiB, rejects unexpected content types/redirects/HTTP errors, and honors cancellation. No cache or background full-catalog sync is used.
+- Dedicated Durable Object lane librivox enforces 5,000 ms minimum spacing across Worker instances; Node and local workerd concurrency assertions are present. The coordinator remains fail-closed and uses its shared Retry-After cooldown behavior.
+- Source catalog entry is now marked as an implemented Provider candidate and includes a user-initiated LibriVox homepage link. Source and adapter are still not present in production KV, remain disabled/unconfigured, and have not been Cloudflare-hosted verified. No deployment or production mutation occurred.
+- Provider count is now 11; catalog remains 164 unique candidates (JAV 28, torrent 30, forum 16, other-index 90), 59 overlapping project provenance tags, and 9 user-opened external-search templates.
+- Full CI is intentionally deferred until the complete module's code, tests, and documentation are integrated. Do not treat this implementation as production-ready before CI and non-production Cloudflare hosted verification.
