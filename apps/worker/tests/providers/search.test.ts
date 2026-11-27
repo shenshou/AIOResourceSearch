@@ -281,7 +281,7 @@ function perverzijaAdapterConfig(): AdaptersConfig {
       version: "1.1.0",
       categories: ["other-index"],
       contentCategories: ["jav"],
-      capabilities: ["metadata"],
+      capabilities: ["metadata", "relationships"],
     }],
   };
 }
@@ -293,7 +293,7 @@ function perverzijaSourceDefinition(): SourceDefinition {
     category: "other-index",
     contentCategory: "jav",
     adapterId: "perverzija-db",
-    capabilities: ["metadata"],
+    capabilities: ["metadata", "relationships"],
     searchModes: ["number", "keyword"],
   });
 }
