@@ -65,7 +65,7 @@ function source(overrides: Partial<SourceDefinition> = {}): SourceDefinition {
     adapterId: "test-adapter",
     enabled: true,
     searchModes: ["number", "keyword"],
-    capabilities: ["metadata"],
+    capabilities: ["metadata", "relationships"],
     timeoutMs: 1000,
     ...overrides,
   };
@@ -399,7 +399,7 @@ test("configured source order wins even when providers complete out of order", a
     return [resource({
       id: context.source.id,
       catalogNumber: "SSIS-001",
-      url: `https://${context.source.id}.example/item/ssis-001`,
+      url: "https://catalog.example/item/ssis-001",
       description: context.source.id === "first" ? "Configured first" : "Completed first",
     })];
   });
@@ -624,8 +624,8 @@ test("deduplicates repeated relationships within a single source result", async 
   );
 
   assert.deepEqual(result.results[0]?.relationships, [
-    { type: "performer", name: "Performer A", url: "https://example.com/performer/a" },
-    { type: "tag", name: "Drama" },
+    { type: "performer", name: "Performer A", url: "https://example.com/performer/a", sourceAttributions: [{ sourceId: "test-source", sourceName: "Test source" }] },
+    { type: "tag", name: "Drama", sourceAttributions: [{ sourceId: "test-source", sourceName: "Test source" }] },
   ]);
 });
 
@@ -656,8 +656,8 @@ test("keeps same-name relationships separate when both sources provide different
 
   assert.equal(result.results.length, 1);
   assert.deepEqual(result.results[0]?.relationships, [
-    { type: "performer", name: "Performer A", url: "https://first.example/performer/a" },
-    { type: "performer", name: "Performer A", url: "https://second.example/performer/a" },
+    { type: "performer", name: "Performer A", url: "https://first.example/performer/a", sourceAttributions: [{ sourceId: "first", sourceName: "First source" }] },
+    { type: "performer", name: "Performer A", url: "https://second.example/performer/a", sourceAttributions: [{ sourceId: "second", sourceName: "Second source" }] },
   ]);
 });
 
@@ -683,7 +683,7 @@ test("relationship identity normalizes Unicode compatibility and repeated whites
   );
 
   assert.deepEqual(result.results[0]?.relationships, [
-    { type: "performer", name: "Ａｎｎａ Smith", url: "https://second.example/performer/anna" },
+    { type: "performer", name: "Ａｎｎａ Smith", url: "https://second.example/performer/anna", sourceAttributions: [{ sourceId: "first", sourceName: "First source" }, { sourceId: "second", sourceName: "Second source" }] },
   ]);
 });
 
@@ -754,9 +754,10 @@ test("normalizes and merges structured work relationships without fuzzy matching
 
   assert.equal(result.results.length, 1);
   assert.deepEqual(result.results[0]?.relationships, [
-    { type: "performer", name: "Performer A", url: "https://second.example/performer/a" },
-    { type: "studio", name: "Studio One" },
-    { type: "performer", name: "Performer B", url: "https://second.example/performer/b" },
+    { type: "performer", name: "Performer A", url: "https://second.example/performer/a", sourceAttributions: [{ sourceId: "first", sourceName: "First source" }, { sourceId: "second", sourceName: "Second source" }] },
+    { type: "studio", name: "Studio One", sourceAttributions: [{ sourceId: "first", sourceName: "First source" }] },
+    { type: "performer", name: "Performer B", url: "https://second.example/performer/b", sourceAttributions: [{ sourceId: "second", sourceName: "Second source" }] },
+    { type: "studio", name: "Studio Two", sourceAttributions: [{ sourceId: "second", sourceName: "Second source" }] },
   ]);
 });
 
