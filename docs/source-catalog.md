@@ -39,7 +39,8 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
-| AV Search | AIOResourceSearch | 免费 JAV 语义搜索站点；仅首页入口，查询路由与自动化权限未确认 |\n| AV01 | Atlas | 有上游搜索模板，需复核 |
+| AV Search | AIOResourceSearch | 免费 JAV 语义搜索站点；仅首页入口，查询路由与自动化权限未确认 |
+| AV01 | Atlas | 有上游搜索模板，需复核 |
 | BestJavPorn | Atlas | 有上游搜索模板，需复核 |
 | DMM / FANZA | Atlas | 仅首页入口或 URL 待补 |
 | Jable.org | FetchJAV | 仅首页入口或 URL 待补 |
