@@ -4608,3 +4608,48 @@ This batch rechecked JAVHDPorn.net, JAVLeak, JavLibrary, JavMost and JAVOut. The
 - JavMost: https://javmost.com/ ; https://www.javmost.ws/ ; https://www.javmost.ws/legal/ ; https://www.javmost.ws/dmca
 - JAVOut: https://javout.co/
 
+## JAV source verification batch 28 — fourth five items from the reconciled backlog (2026-11-27)
+
+This batch rechecked JAVSeen, JAVTsunami, SupJAV, AV Search and the Data-MV Hugging Face dataset. One site now has a first-party linked Terms page that explicitly prohibits automated retrieval; the remaining four still lack a verified usable authorization/interface path.
+
+### JAVSeen — move to current no-automation decision
+- The first-party JAVSeen homepage directly links its Terms and Privacy pages. The linked Terms state that the agreement is with Sun Media Limited as operator of Javhd.today, and prohibit using any automated system/software/device to use the Service or obtain content or information from it (Terms clauses 26–27). They also prohibit defeating security features and commercial exploitation/copying without prior written permission (clauses 30 and 32, with related content restrictions in 55–57).
+- The Terms page is directly linked from the JAVSeen homepage, so the prohibition is sufficiently relevant to require a conservative no-automation decision. The document's description of the covered service as Javhd.today leaves a naming/scope ambiguity for javseen.tv; that ambiguity is not treated as permission.
+- The homepage itself advertises a backup domain for countries where the site is blocked. This is not a basis for automatic domain switching or regional routing.
+- **Decision:** move `javseen` from the pending evidence backlog to the current no-automation group. Keep only user-initiated external navigation; no Worker requests, scraping, query forwarding, or backup-domain switching. Reopen only if the operator clarifies the domain scope and grants permission that covers this project.
+- First-party references: https://javseen.tv/ ; https://javseen.tv/static/terms/ ; https://javseen.tv/static/privacy/
+
+### JAVTsunami
+- The exact catalog homepage `javtsunami.com` timed out in the research browser. The earlier third-party observation of a homepage/privacy page is not first-party automation permission or a supported API/RSS contract.
+- No verifiable first-party terms, stable public query contract or metadata-reuse permission was established in this batch.
+- **Decision:** retain as pending/homepage-only. No alternate-route probing, Worker fetch or HTML extraction.
+
+### SupJAV
+- The exact catalog homepage `supjav.com` returned HTTP 403 in the research browser. No first-party terms/API/RSS or third-party metadata-reuse grant was verified.
+- A 403 is not proof of a global block and does not authorize cookies, proxies, Cloudflare challenge handling or alternate-domain substitution.
+- **Decision:** retain as pending; no automated access or mirror substitution.
+
+### AV Search
+- The exact catalog landing page `https://av-search.video/en` returned HTTP 403 in the research browser. The existing discovery note describes a public semantic-search landing page, but no first-party API contract, stable query URL, applicable Terms/robots policy or explicit permission for Worker query forwarding/metadata reuse was verified.
+- **Decision:** retain as a homepage-only external-navigation candidate. No Worker request, scraping, query forwarding or guessed search template.
+
+### Data-MV (Hugging Face)
+- The current first-party Hugging Face dataset page labels the repository license as Apache-2.0 and describes a Japanese AV dataset. The card states 101 movie entries, metadata for 70, fields including code/title/actress/genre/release date, and a bundled `{CODE}.mp4` video file structure. The dataset viewer shows 122 rows and reports a total file size of 344 GB.
+- The visible Apache-2.0 label is an important new fact and corrects the earlier statement that no licence label was shown. However, the dataset card does not establish the upstream authorization/provenance for the third-party-derived metadata and media, nor does the page clearly separate the scope of the licence across metadata, video files and other assets. The catalogue is also small/incomplete and includes bulk video files outside this project's metadata-only scope.
+- **Decision:** keep as a research-only candidate. Do not download the video corpus or ingest/cache/republish metadata until the uploader clarifies the licence's exact scope and documents upstream provenance/authorization and removal handling. Do not infer that the repository-level Apache-2.0 label independently clears all embedded third-party material.
+- First-party reference: https://huggingface.co/datasets/invokeaibase/data-mv
+
+### Batch outcome
+- 5 candidates rechecked; 0 Provider promotions and 0 search templates added.
+- `javseen` moves from pending to the current no-automation group based on its directly linked first-party Terms.
+- Four candidates remain in the evidence backlog: JAVTsunami, SupJAV, AV Search and Data-MV.
+- Updated JAV totals: **13 current no-automation decisions + 22 items requiring further evidence = 35 catalog entries**.
+- No access controls were bypassed; no Provider code, KV configuration, source enablement, deployment or production data was changed.
+
+### Supporting references
+- JAVSeen first-party homepage and Terms: https://javseen.tv/ ; https://javseen.tv/static/terms/
+- JAVTsunami: https://javtsunami.com/
+- SupJAV: https://supjav.com/
+- AV Search: https://av-search.video/en
+- Data-MV dataset card: https://huggingface.co/datasets/invokeaibase/data-mv
+

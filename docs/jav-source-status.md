@@ -7,11 +7,11 @@
 
 | 状态 | 数量 | 解释 |
 |---|---:|---|
-| 已完成当前阶段核验，现阶段明确不做自动接入 | 12 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
-| 已有初步核验，但仍需补关键证据 | 23 | 不是完全没看过，而是域名、条款、接口、授权链或运行情况尚未闭环 |
+| 已完成当前阶段核验，现阶段明确不做自动接入 | 13 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
+| 已有初步核验，但仍需补关键证据 | 22 | 不是完全没看过，而是域名、条款、接口、授权链或运行情况尚未闭环 |
 | 合计 | 35 | 与当前 JAV 目录条目数一致 |
 
-**因此，当前真正需要继续补证/验证的是 23 个，不是 35 个。**  
+**因此，当前真正需要继续补证/验证的是 22 个，不是 35 个。**  
 这 23 个也不代表全部最终都能开发成 Provider。只有补证后同时满足公开接口、授权/使用条件、免费依赖和访问控制边界的来源，才进入开发队列。
 
 ## A. 当前阶段已形成明确结论（12）
@@ -28,6 +28,7 @@
 | `javgg` | JavGG | 第一方条款明确禁止数据挖掘、收集和提取；仅保留目录参考，不自动检索 |
 | `javynow` | JavyNow | 第一方条款禁止未经授权的自动化抓取/提取；不恢复搜索模板，不自动访问 |
 | `missav` | MissAV | 第一方条款明确限制美国访客访问；当前不作为通用来源展示或由 Worker 请求，不能绕过地域限制 |
+| `javseen` | JAVSeen | JAVSeen 首页直接链接的第一方 Terms 禁止使用自动化系统获取服务内容或信息，并禁止未经书面许可的商业复制/利用；条款正文将服务描述为 Javhd.today，域名适用范围仍有表述不一致。采取保守处理：未获运营方澄清前不做自动检索/采集，仅保留用户主动外部访问；不得自动切换其备份域名 |
 | `rjav` | r/JAV | Reddit 数据访问要求 API/OAuth、审批及内容使用合规；未获所需授权前仅保留用户主动外部搜索 |
 | `knighjok-jav-dataset` | Japanese Adult Videos Dataset | 数据集声明 NC-SA 且来源授权链不清；不下载、不摄取、不缓存、不再发布 |
 
@@ -50,7 +51,7 @@
 | `javlibrary` | JavLibrary | 核实当前条款、普通公开搜索可用性及第三方元数据使用许可 |
 | `javmost` | JavMost | 确认当前运营域名、第一方条款和公开接口；不根据历史跳转猜测镜像 |
 | `javout` | JAVOut | 核实规范首页、当前条款和稳定公开检索接口 |
-| `javseen` | JAVSeen | 澄清关联条款的适用域名，并确认公开接口和自动化许可；不自动切换备份域名 |
+
 | `javtsunami` | JAVTsunami | 核实第一方自动化许可、公开 API/RSS/搜索契约及稳定性 |
 | `supjav` | SupJAV | 核实第一方条款、公开接口和元数据聚合许可；不绕过 403 或地区限制 |
 | `av-search` | AV Search | 需要运营方公开的 API/稳定查询 URL、适用条款和 Worker 查询转发/元数据复用许可 |
@@ -102,4 +103,12 @@
 - JavMost: `.ws` homepage is reachable and has catalogue/search navigation; its Legal page is only a 2257 compliance statement, not a Terms/API licence. No canonical-domain migration or automation permission inferred.
 - No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
 - Current count remains: 12 with a current no-auto-integration decision; 23 requiring further evidence.
+### Batch 28 — 2026-11-27
+- Rechecked: `javseen`, `javtsunami`, `supjav`, `av-search`, `data-mv-hf`.
+- Result: 0 Provider promotions and 0 search templates added.
+- `javseen` moved from pending to the current no-automation group: its homepage directly links first-party Terms prohibiting automated systems from using the Service or obtaining content/information. The Terms describe the service as Javhd.today, leaving a domain-scope ambiguity; this is not treated as permission. User-initiated external navigation remains distinct from automated retrieval.
+- JAVTsunami timed out; SupJAV and AV Search returned 403. None of these responses was bypassed.
+- Data-MV's current Hugging Face card displays Apache-2.0, but also describes bundled MP4 files and an incomplete metadata catalogue. The uploader has not established upstream authorization/provenance or the licence scope across the metadata and media assets; no download or ingestion.
+- Updated count: 13 current no-automation decisions; 22 requiring further evidence; 35 total JAV catalog entries.
+- No access controls were bypassed; no Provider, search template, KV configuration, source enablement, deployment or production data was changed.
 
