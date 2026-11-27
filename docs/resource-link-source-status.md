@@ -5,13 +5,13 @@ Scope: distinguish metadata-only providers from sources that actually return mag
 
 ## Current implementation inventory
 
-The source catalog currently contains **43 torrent-category entries**:
+The source catalog currently contains **48 torrent-category entries**:
 
 | Catalog state | Count | Meaning |
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
-| External-only / unverified records | 33 | User-initiated navigation only; no Worker acquisition |
-| Total | 43 | Retain all entries, including unverified candidates |
+| External-only / unverified records | 38 | User-initiated navigation only; no Worker acquisition |
+| Total | 48 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
@@ -57,7 +57,7 @@ No first-party public ED2K search API, RSS feed, or permitted HTML index with a 
 
 1. Keep the existing six magnet/torrent adapters and their source records intact.
 2. Do not create a fake ED2K Provider from the URI validator alone.
-3. Continue reviewing the 33 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
+3. Continue reviewing the 38 external-only torrent candidates for a first-party public API/RSS/search contract and automation permission. Prioritize JAV/adult resource indexes, while retaining anime/general sources as separate content categories.
 4. For ED2K, only consider a source when it offers a documented public HTTP API/RSS or an explicitly authorized stable search interface. A self-hosted Kad engine would require a separate architecture decision and is not part of the current Worker topology.
 5. Preserve per-link source attribution and validate the complete URI before returning it. Never invent a magnet/ED2K link from metadata or a detail-page URL.
 
@@ -329,3 +329,31 @@ References:
 - sosulki third-party indexer definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sosulki.yml
 - torrent-pirat third-party indexer definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/torrent-pirat.yml
 - Jackett v0.25.24 release note recording the sosulki definition-domain update: https://github.com/Jackett/Jackett/releases/tag/v0.25.24
+
+
+## External torrent-source review batch 8 — 2026-11-27
+
+Five adult trackers listed in current Prowlarr/Jackett catalogues were reviewed specifically for access class. These are not public anonymous sources: the current indexer classifications identify three as semi-private and two as private. Jackett definitions show account login or account-issued API-token requirements; this is technical discovery evidence only, not permission for AIOResourceSearch to access or republish their data.
+
+| Candidate | Access evidence | Decision |
+|---|---|---|
+| PornoLab | Prowlarr/Jackett classify it as a Russian semi-private adult tracker; Jackett's definition contains an account login form. | Retain as name-only candidate. No account creation, login automation, cookies, private-feed access or scraping. |
+| ProPorno | Classified as a Russian semi-private adult tracker; the Jackett definition includes username/password login. | Retain as name-only candidate. No credentials, account session or Worker integration. |
+| PussyTorrents | Classified as a semi-private adult tracker; the Jackett definition includes username/password settings and a login route. | Retain as name-only candidate. No account access or private data ingestion. |
+| ClearJAV | Classified as a private JAV tracker. The Jackett API definition says its Bearer API key is generated from the user's account settings; this is an account-bound API, not a public anonymous API. | Retain as name-only JAV candidate. No account creation, token collection/storage, authenticated API calls or result republication. |
+| Fappaizuri | Classified as a private Hentai/JAV tracker; the Jackett definition includes account login and 2FA-related configuration, plus a FlareSolverr configuration hint. | Retain as name-only JAV candidate. No credentials, cookies, 2FA, challenge solving or scraper reuse. |
+
+### Batch result
+- 5 private/semi-private candidates retained; 0 Provider promotions; 0 clickable destinations or search templates added.
+- Torrent inventory becomes **48 entries = 10 Provider records + 38 external-only/unverified records**. Unique adapters remain 6.
+- These records are directory completeness entries only. They are not a request to integrate private tracker accounts or to bypass access controls.
+- No account/API token was created or used; no source was enabled; no production KV write, deployment or CI run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett supported trackers and access categories: https://github.com/Jackett/Jackett
+- PornoLab definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pornolab.yml
+- ProPorno definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/proporno.yml
+- PussyTorrents definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pussytorrents.yml
+- ClearJAV API definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/clearjav-api.yml
+- Fappaizuri definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/fappaizuri.yml

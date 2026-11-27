@@ -4845,3 +4845,25 @@ References:
 - sosulki definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/sosulki.yml
 - torrent-pirat definition: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/torrent-pirat.yml
 - Jackett v0.25.24 release notes: https://github.com/Jackett/Jackett/releases/tag/v0.25.24
+
+
+## Prowlarr/Jackett discovery batch 8 (2026-11-27)
+
+Five additional adult trackers were retained after checking their access class and the corresponding Jackett definitions:
+
+- **PornoLab:** semi-private Russian adult tracker; the definition includes account login.
+- **ProPorno:** semi-private Russian adult tracker; the definition includes username/password login.
+- **PussyTorrents:** semi-private adult tracker; the definition includes account credentials and a login route.
+- **ClearJAV:** private JAV tracker. Its Jackett API definition states that the Bearer API key is generated from the user's account settings; this is an authenticated private API, not a public anonymous API.
+- **Fappaizuri:** private Hentai/JAV tracker; the definition includes login and 2FA-related configuration, as well as a FlareSolverr configuration hint.
+
+**Decision:** retain all five as name-only directory candidates for inventory completeness. Do not create accounts, collect credentials/tokens/cookies, access private feeds, automate login, solve 2FA/challenges, or reuse community scraper code. No Provider, clickable destination, or search template was added. Torrent inventory increases from 43 to 48 records (10 Provider records, 38 external-only/unverified); the six existing adapters are unchanged. No source enablement, KV write, deployment or CI run.
+
+References:
+- Prowlarr supported indexers: https://github.com/Servarr/Wiki/blob/master/prowlarr/supported-indexers.md
+- Jackett: https://github.com/Jackett/Jackett
+- PornoLab: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pornolab.yml
+- ProPorno: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/proporno.yml
+- PussyTorrents: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/pussytorrents.yml
+- ClearJAV: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/clearjav-api.yml
+- Fappaizuri: https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/fappaizuri.yml
