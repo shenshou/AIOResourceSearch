@@ -83,7 +83,7 @@ function provider(
     id: "test-adapter",
     version: "1.0.0",
     categories: ["jav"],
-    capabilities: ["metadata", "image", "magnet", "ed2k", "torrent"],
+    capabilities: ["metadata", "relationships", "image", "magnet", "ed2k", "torrent"],
     searchModes: ["number", "keyword"],
     search,
     ...overrides,
@@ -585,7 +585,7 @@ test("discards blank optional metadata so later sources can fill those fields", 
       metadata: context.source.id === "first"
         ? { director: "   ", author: " First author " }
         : { director: "Director B", author: "Second author" },
-      url: `https://${context.source.id}.example/item/ssis-001`,
+      url: "https://catalog.example/item/ssis-001",
     }),
   ]);
   const result = await executeSearch(
@@ -611,7 +611,7 @@ test("discards blank optional metadata so later sources can fill those fields", 
 test("deduplicates repeated relationships within a single source result", async () => {
   const result = await executeSearch(
     request,
-    sourceConfig(source({ capabilities: ["metadata"] })),
+    sourceConfig(source({ capabilities: ["metadata", "relationships"] })),
     adapters,
     resolve(provider(async () => [resource({
       relationships: [
