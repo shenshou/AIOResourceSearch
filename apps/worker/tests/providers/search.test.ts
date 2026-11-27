@@ -2727,3 +2727,11 @@ test("persists field priorities and removes deleted Provider IDs from their list
   assert.deepEqual(saved.fieldPriorities, { description: ["first-source"] });
   assert.deepEqual(reloaded.fieldPriorities, { description: ["first-source"] });
 });
+
+
+test("YourBittorrent source catalog declares its Torrent download capability", () => {
+  const entry = SOURCE_CATALOG.find((sourceEntry) => sourceEntry.id === "yourbittorrent");
+  assert.ok(entry);
+  assert.ok(entry.capabilities?.includes("magnet"));
+  assert.ok(entry.capabilities?.includes("torrent"));
+});
