@@ -29,6 +29,7 @@ interface MutableItem {
   magnetUri?: string;
   torrentUrl?: string;
   ed2kUri?: string;
+  resourceLinks: Array<{ type: "magnet" | "torrent" | "ed2k"; url: string }>;
   metadata: Record<string, string>;
 }
 
@@ -41,14 +42,14 @@ const MAX_PARSED_RESULTS = 50;
 export async function parseHtmlResults(
   response: Response,
   selectors: HtmlSelectorConfig,
-): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; torrentUrl?: string; ed2kUri?: string; metadata?: Record<string, string> }>> {
+): Promise<Array<{ title: string; url: string; imageUrl?: string; description?: string; magnetUri?: string; torrentUrl?: string; ed2kUri?: string; resourceLinks?: Array<{ type: "magnet" | "torrent" | "ed2k"; url: string }>; metadata?: Record<string, string> }>> {
   const stack: MutableItem[] = [];
   const results: MutableItem[] = [];
   const rewriter = new HTMLRewriter()
     .on(selectors.result, {
       element() {
         if (stack.length < 4 && results.length + stack.length < MAX_PARSED_RESULTS) {
-          stack.push({ title: "", url: "", description: "", metadata: {} });
+          stack.push({ title: "", url: "", description: "", resourceLinks: [], metadata: {} });
         }
       },
       end() {
@@ -112,7 +113,12 @@ export async function parseHtmlResults(
       element(element) {
         const item = stack[stack.length - 1];
         const href = element.getAttribute("href");
-        if (item && href?.startsWith("magnet:?") && !item.magnetUri) item.magnetUri = href;
+        if (item && href?.startsWith("magnet:?")) {
+          if (!item.magnetUri) item.magnetUri = href;
+          if (!item.resourceLinks.some((link) => link.type === "magnet" && link.url === href) && item.resourceLinks.length < 30) {
+            item.resourceLinks.push({ type: "magnet", url: href });
+          }
+        }
       },
     });
   }
@@ -122,7 +128,12 @@ export async function parseHtmlResults(
       element(element) {
         const item = stack[stack.length - 1];
         const href = element.getAttribute("href");
-        if (item && href && !item.torrentUrl) item.torrentUrl = href;
+        if (item && href) {
+          if (!item.torrentUrl) item.torrentUrl = href;
+          if (!item.resourceLinks.some((link) => link.type === "torrent" && link.url === href) && item.resourceLinks.length < 30) {
+            item.resourceLinks.push({ type: "torrent", url: href });
+          }
+        }
       },
     });
   }
@@ -132,7 +143,12 @@ export async function parseHtmlResults(
       element(element) {
         const item = stack[stack.length - 1];
         const href = element.getAttribute("href");
-        if (item && href?.startsWith("ed2k://") && !item.ed2kUri) item.ed2kUri = href;
+        if (item && href?.startsWith("ed2k://")) {
+          if (!item.ed2kUri) item.ed2kUri = href;
+          if (!item.resourceLinks.some((link) => link.type === "ed2k" && link.url === href) && item.resourceLinks.length < 30) {
+            item.resourceLinks.push({ type: "ed2k", url: href });
+          }
+        }
       },
     });
   }
@@ -147,6 +163,7 @@ export async function parseHtmlResults(
     ...(item.magnetUri ? { magnetUri: item.magnetUri } : {}),
     ...(item.torrentUrl ? { torrentUrl: item.torrentUrl } : {}),
     ...(item.ed2kUri ? { ed2kUri: item.ed2kUri } : {}),
+    ...(item.resourceLinks.length ? { resourceLinks: item.resourceLinks } : {}),
     ...(Object.keys(item.metadata).length ? { metadata: Object.fromEntries(Object.entries(item.metadata).map(([key, value]) => [key, value.replace(/\s+/g, " ").trim().slice(0, 500)]).filter(([, value]) => Boolean(value))) } : {}),
   }));
 }
