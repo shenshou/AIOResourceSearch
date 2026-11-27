@@ -28,6 +28,7 @@ const categoryLabels: Record<SourceCategory, string> = {
 const mechanismLabels: Record<FetchMechanism, string> = { api: "API（JSON / XML 等）", rss: "RSS / Atom", html: "HTML 网页解析" };
 const capabilityLabels: Record<SourceCapability, string> = {
   metadata: "元数据",
+  relationships: "关联实体",
   image: "图片",
   magnet: "磁力链接",
   ed2k: "ED2K",
