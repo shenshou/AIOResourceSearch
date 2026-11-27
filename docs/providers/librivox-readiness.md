@@ -7,10 +7,9 @@
 
 LibriVox is a strong candidate for a metadata-only audiobook search Provider. Its first-party API is released, supports JSON, title/author/genre filters, field selection, and bounded pagination. LibriVox explicitly welcomes third-party applications sharing and re-sharing its public-domain recordings. This is materially stronger evidence than a generic public endpoint.
 
-The source is **not yet implementation-ready** for this repository because two integration details remain unresolved:
+The source is **not yet implementation-ready** for Provider registration because one integration detail remains unresolved:
 
-1. The product's current `ContentCategory` enum has no `audiobook` value. Mapping audiobooks into `general` would lose a meaningful user-facing filter. Decide whether to add a first-class `audiobook` category before registering the Provider.
-2. The current live JSON response envelope and representative nested `authors` / `genres` structures have not yet been captured as a reviewed fixture. Do not infer these shapes from the endpoint documentation alone.
+1. The product now has a first-class `audiobook` content category, with a dedicated user-facing label and Worker validation. The live JSON response envelope and representative nested `authors` / `genres` structures have not yet been captured as a reviewed fixture. Do not infer these shapes from the endpoint documentation alone.
 
 No Provider code, KV record, enablement, or deployment is included in this readiness review.
 
@@ -48,7 +47,7 @@ Proposed initial scope:
 - Provider ID: `librivox-api`.
 - Mechanism: `api`.
 - Source category: `other-index`.
-- Proposed content category: `audiobook` (requires adding it to shared types, labels, frontend filters, validation, and relevant tests before Provider registration).
++ Content category: `audiobook` (now added to shared types/labels; the existing frontend filter is data-driven from the shared category list, and Worker validation accepts the category).
 - Capability: `metadata` only.
 - Search mode: `keyword` only.
 - Endpoint: fixed first-party HTTPS host `librivox.org`; no user-controlled host or redirect following.
@@ -62,7 +61,7 @@ Proposed initial scope:
 
 ## Readiness gates before implementation
 
-1. Decide whether `audiobook` becomes a first-class content category; do not silently map it to `general`.
+1. ~~Add `audiobook` as a first-class content category.~~ Completed in the shared type/label contract; frontend filtering is driven by this shared list, and Worker validation is covered by a focused test.
 2. Capture and review a real first-party JSON response and add it as a fixture.
 3. Implement the 5-second shared lane in the existing Durable Object coordinator and its local workerd suite.
 4. Implement the metadata-only Provider and focused tests; register it only in the same change.
@@ -72,7 +71,7 @@ Proposed initial scope:
 
 ## Current state
 
-- Candidate catalog entry exists: `librivox`.
+- Candidate catalog entry exists: `librivox` (`contentCategory: audiobook`; disabled/unconfigured).
 - Provider implementation: no.
 - Adapter registry entry: no.
 - KV configuration: none verified.
