@@ -276,6 +276,7 @@ function perverzijaAdapterConfig(): AdaptersConfig {
     adapters: [{
       ...adapterMetadata,
       id: "perverzija-db",
+      version: "1.1.0",
       categories: ["other-index"],
       contentCategories: ["jav"],
       capabilities: ["metadata"],
