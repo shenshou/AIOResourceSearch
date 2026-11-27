@@ -2832,3 +2832,32 @@ test("keeps ambiguous name-only entities separate when multiple URL identities e
 
   assert.equal(result.results[0]?.relationships?.filter((item) => item.type === "performer").length, 3);
 });
+
+
+test("does not merge a name-only entity into a URL-backed identity without evidence", async () => {
+  const first = source({ id: "entity-source-a", name: "Entity source A" });
+  const second = source({ id: "entity-source-b", name: "Entity source B" });
+  const entityProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      relationships: [{
+        type: "performer",
+        name: "Potentially Ambiguous Performer",
+        ...(context.source.id === "entity-source-a"
+          ? { url: "https://people.example/profile/1" }
+          : {}),
+      }],
+    }),
+  ]);
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(first, second),
+    adapters,
+    resolve(entityProvider),
+  );
+
+  assert.equal(result.results[0]?.relationships?.filter((item) => item.type === "performer").length, 2);
+});
