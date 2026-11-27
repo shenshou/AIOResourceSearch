@@ -17,6 +17,7 @@ export const CONTENT_CATEGORIES = [
   "novel",
   "game",
   "music",
+  "audiobook",
   "general",
 ] as const;
 export type ContentCategory = (typeof CONTENT_CATEGORIES)[number];
@@ -29,6 +30,7 @@ export const CONTENT_CATEGORY_LABELS: Record<ContentCategory, string> = {
   novel: "小说",
   game: "游戏",
   music: "音乐",
+  audiobook: "有声读物",
   general: "通用资源",
 };
 
