@@ -313,8 +313,10 @@ function mergeRelationships(
       const sameNameIndexes = nameIndexes.get(nameKey) ?? [];
       if (sameNameIndexes.length === 1) {
         const candidateIndex = sameNameIndexes[0];
-        const candidate = merged[candidateIndex];
-        if (!relationship.url || !candidate?.url) matchIndex = candidateIndex;
+        if (candidateIndex !== undefined) {
+          const candidate = merged[candidateIndex];
+          if (!relationship.url || !candidate?.url) matchIndex = candidateIndex;
+        }
       }
     }
 
