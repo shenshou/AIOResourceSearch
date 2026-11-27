@@ -4430,3 +4430,12 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Direct API endpoint inspection did not produce a usable JSON response from the current research environment. The failure is treated as an environment/tool limitation, not proof of upstream unavailability.
 - **Decision:** keep Cadrame as a high-potential, homepage-only JAV metadata candidate. Do not add a Provider until an ordinary read-only test (without bypassing any age gate or access restriction) verifies real JAV coverage, response schema and stability, and the product's applicable age-assurance requirements are addressed.
 - References: https://cadrame.org/ ; https://cadrame.org/data ; https://cadrame.org/adult-content .
+
+
+## JASS (Japan Adult Search Site) — complementary user-initiated JAV discovery destination (2026-11-27)
+
+- The first-party FAQ describes JASS as a Japanese adult-video co-star database: users can search by an actress and/or actor name and view matching titles. It says its catalogue is collected from publicly available Japanese adult-video information sites and refreshed regularly.
+- The first-party About page says it adds its own entity matching and co-star aggregation, does not host or stream videos, and directs users to official platforms such as FANZA or MGS. It also provides correction/contact paths for inaccurate records.
+- No public API, RSS contract, stable query URL, current automation terms, or explicit permission for third-party metadata reuse was verified. The research fetcher returned HTTP 403 for the FAQ route; that is not proof of a site-wide block and does not authorize alternate-route probing or challenge bypass.
+- **Decision:** add JASS as a JAV catalog candidate with homepage-only user-initiated external navigation. Do not add a Worker Provider, scrape metadata, or guess a query URL. Reassess only if JASS publishes a supported public interface and applicable terms.
+- References: https://jass-db.com/en/faq ; https://jass-db.com/zh-tw/about .
