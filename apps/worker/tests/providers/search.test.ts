@@ -2735,3 +2735,68 @@ test("YourBittorrent source catalog declares its Torrent download capability", (
   assert.ok(entry.capabilities?.includes("magnet"));
   assert.ok(entry.capabilities?.includes("torrent"));
 });
+
+
+test("merges related entities by canonical URL and preserves aliases and source attribution", async () => {
+  const first = source({ id: "entity-source-a", name: "Entity source A" });
+  const second = source({ id: "entity-source-b", name: "Entity source B" });
+  const entityProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      relationships: [{
+        type: "performer",
+        name: context.source.id === "entity-source-a" ? "Alice" : "Alice Smith",
+        url: context.source.id === "entity-source-a"
+          ? "https://people.example/performer/42?utm_source=source-a"
+          : "https://people.example/performer/42?utm_source=source-b",
+        sourceAttributions: [{ sourceId: "spoofed", sourceName: "Spoofed source" }],
+      }],
+    }),
+  ]);
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(first, second),
+    adapters,
+    resolve(entityProvider),
+  );
+  const performer = result.results[0]?.relationships?.find((item) => item.type === "performer");
+
+  assert.equal(result.results[0]?.relationships?.length, 1);
+  assert.equal(performer?.name, "Alice");
+  assert.deepEqual(performer?.aliases, ["Alice", "Alice Smith"]);
+  assert.deepEqual(
+    performer?.sourceAttributions?.map((item) => item.sourceId).sort(),
+    ["entity-source-a", "entity-source-b"],
+  );
+});
+
+test("does not merge same-name related entities when their canonical URLs differ", async () => {
+  const first = source({ id: "entity-source-a", name: "Entity source A" });
+  const second = source({ id: "entity-source-b", name: "Entity source B" });
+  const entityProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      relationships: [{
+        type: "studio",
+        name: "Example Studio",
+        url: context.source.id === "entity-source-a"
+          ? "https://studio-a.example/profile"
+          : "https://studio-b.example/profile",
+      }],
+    }),
+  ]);
+
+  const result = await executeSearch(
+    request,
+    sourceConfig(first, second),
+    adapters,
+    resolve(entityProvider),
+  );
+
+  assert.equal(result.results[0]?.relationships?.filter((item) => item.type === "studio").length, 2);
+});
