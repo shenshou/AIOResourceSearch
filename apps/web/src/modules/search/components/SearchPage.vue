@@ -194,7 +194,8 @@ const errorLabels: Record<string, string> = {
                     <button type="button" @click="copyResourceLink(link.url, resourceLinkLabels[link.type])">复制 {{ resourceLinkLabels[link.type] }}</button>
                     <a :href="link.url">打开 {{ resourceLinkLabels[link.type] }}</a>
                   </template>
-                  <a v-else :href="link.url" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
+                  <button v-else type="button" @click="copyResourceLink(link.url, 'Torrent')">复制 Torrent 链接</button>
+                  <a v-if="link.type === 'torrent'" :href="link.url" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
                   <small v-if="link.sourceAttributions?.length" class="resource-link-source">
                     来源：{{ link.sourceAttributions.map((source) => source.sourceName).join("、") }}
                   </small>
@@ -205,6 +206,7 @@ const errorLabels: Record<string, string> = {
                 <a v-if="item.magnetUri" :href="item.magnetUri">打开 Magnet</a>
                 <button v-if="item.ed2kUri" type="button" @click="copyResourceLink(item.ed2kUri, 'ED2K')">复制 ED2K</button>
                 <a v-if="item.ed2kUri" :href="item.ed2kUri">打开 ED2K</a>
+                <button v-if="item.torrentUrl" type="button" @click="copyResourceLink(item.torrentUrl, 'Torrent')">复制 Torrent 链接</button>
                 <a v-if="item.torrentUrl" :href="item.torrentUrl" target="_blank" rel="noopener noreferrer">下载 Torrent</a>
               </template>
               <a v-for="(link, index) in item.externalLinks || []" :key="index" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
