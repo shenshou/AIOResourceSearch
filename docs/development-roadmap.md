@@ -32,7 +32,7 @@ Deliverables:
 - [x] Vue 3 + TypeScript + Vite frontend and Cloudflare Worker API.
 - [x] Shared source, adapter, category, and API contracts.
 - [x] Cloudflare KV configuration model with separate source and adapter keys.
-- [x] Eight content categories and independent source-kind classification.
+- [x] Nine content categories and independent source-kind classification, including the first-class audiobook category.
 - [x] Explicit separation of Worker-backed Providers and browser-opened external-search entries.
 - [x] Product non-goals and access-policy boundaries documented.
 
