@@ -50,6 +50,18 @@ const statusLabels: Record<string, string> = {
   unavailable: "暂不可用",
 };
 
+const fieldLabels: Record<string, string> = {
+  title: "标题",
+  catalogNumber: "番号",
+  releaseDate: "发行日期",
+  imageUrl: "封面",
+  description: "简介",
+};
+
+function fieldLabel(field: string): string {
+  return field.startsWith("metadata.") ? `元数据 · ${field.slice(9)}` : fieldLabels[field] ?? field;
+}
+
 const resourceLinkLabels: Record<string, string> = {
   magnet: "Magnet",
   torrent: "Torrent",
@@ -187,6 +199,14 @@ const errorLabels: Record<string, string> = {
                 {{ relationshipLabels[relationship.type] }}：<a v-if="relationship.url" :href="relationship.url" target="_blank" rel="noopener noreferrer">{{ relationship.name }}</a><template v-else>{{ relationship.name }}</template>
               </span>
             </div>
+            <details v-if="item.fieldAttributions && Object.keys(item.fieldAttributions).length" class="field-provenance">
+              <summary>字段来源</summary>
+              <div>
+                <span v-for="(attribution, field) in item.fieldAttributions" :key="field">
+                  {{ fieldLabel(field) }}：{{ attribution.sourceName }}
+                </span>
+              </div>
+            </details>
             <div v-if="item.resourceLinks?.length || item.magnetUri || item.ed2kUri || item.torrentUrl || item.externalLinks?.length" class="result-links">
               <template v-if="item.resourceLinks?.length">
                 <template v-for="link in item.resourceLinks" :key="link.type + ':' + link.url">
