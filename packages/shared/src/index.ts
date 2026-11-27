@@ -42,6 +42,7 @@ export type SearchMode = (typeof SEARCH_MODES)[number];
 
 export const SOURCE_CAPABILITIES = [
   "metadata",
+  "relationships",
   "image",
   "magnet",
   "ed2k",
