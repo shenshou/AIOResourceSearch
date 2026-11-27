@@ -45,7 +45,7 @@ The primary result URL is the Perverzija DB scene page, which provides the visib
 
 ## Rate limits and freshness
 
-The API documents 120 requests per minute per IP, a sliding 60-second window, and a 429 response with `Retry-After`. The Provider uses the shared `perverzija` Durable Object lane at 600 ms spacing (100 requests/minute) and caches successful JSON responses for 300 seconds through the existing Worker Cache API. Cache hits do not reserve a rate-limit slot. It does not run a retry loop; 429/503 cooldowns are handled by the shared coordinator.
+The API documents 120 requests per minute per IP, a sliding 60-second window, and a 429 response with `Retry-After`. The Provider uses the shared `perverzija` Durable Object lane at 600 ms spacing (100 requests/minute) and caches successful JSON responses for 300 seconds through the existing Worker Cache API. Cache hits do not reserve a rate-limit slot. It does not run a retry loop; 429/503 `Retry-After` and successful responses with `X-RateLimit-Remaining: 0` plus `X-RateLimit-Reset` are handled by the shared coordinator.
 
 The upstream CDN and the Worker Cache API can both reduce repeated requests. Distinct search terms still count as distinct requests; the shared application lane leaves headroom below the documented IP quota. Keep the source disabled if hosted observations show repeated 429 responses.
 
