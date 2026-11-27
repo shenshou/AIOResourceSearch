@@ -4200,7 +4200,7 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 
 ## 播客与有声读物来源审查（2026-11-27，第六批）
 
-### LibriVox — eligible candidate for a future audiobook metadata Provider
+### LibriVox — first-party API and rights review
 - First-party notice dated 2026-09-16 explicitly says all LibriVox recordings are in the public domain and welcomes third-party app developers, archivists, streaming channels, and curators to share and re-share them. It also expressly describes the official API as the supported mechanism for third-party applications to keep their catalogue current.
 - The released API supports title, author, and genre searches; JSON output; selecting returned fields; pagination using limit/offset; incremental updates using the `since` timestamp; and catalogue/detail URLs including RSS and Archive.org links.
 - Current API guidance (go-live target 2026-09-26) sets a maximum of 500 records per request and asks clients to separate large-dataset requests by several seconds. It warns that excessive bot/scraper traffic burdens volunteer-operated infrastructure and may lead to 429 responses.
@@ -4209,7 +4209,7 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 
 ### LibriVox — implementation readiness assessment
 - First-party API contract is sufficiently documented for a metadata-only Provider concept: released JSON endpoint, title/author/genre search, prefix matching with `^`, field selection, pagination capped at 500, and incremental `since` support. LibriVox explicitly asks third-party clients to separate requests by several seconds and warns that future short-window limits may return 429.
-- The implementation assessment identified two repository-level gates: the shared content taxonomy currently has no `audiobook` category, and a representative first-party JSON response (including nested author/genre structures) has not yet been captured as a fixture. The Provider should not silently classify audiobooks as `general` or assume undocumented JSON shapes.
+- The implementation work added the first-class `audiobook` category and captured the official linked JSON example (book ID 52) as a structurally faithful fixture. The observed `books` envelope and nested `authors` first_name/last_name fields are covered by tests. The optional `genres` subgroup is not requested by the initial Provider.
 - **Decision:** retain as a strong Provider candidate; implementation is not started. The proposed design is metadata-only, title-prefix keyword search, 20 results, canonical LibriVox link-back, no audio/cover-art fetching, and a dedicated shared Durable Object lane with 5,000 ms minimum spacing. The lane must be added to the coordinator allowlist, interval map, validator, Node tests, and local workerd suite; an in-Provider delay alone would not coordinate concurrent Worker instances.
 - Detailed readiness gates and proposed contract: [LibriVox Provider readiness](./providers/librivox-readiness.md).
 - References: https://librivox.org/api/info ; https://librivox.org/2026/09/16/librivox-api-update/ ; https://librivox.org/pages/public-domain/
