@@ -11,7 +11,7 @@ The source catalog currently contains **31 torrent-category entries**:
 |---|---:|---|
 | Provider source records | 10 | A Worker adapter is implemented and declared in the source catalog |
 | External-only / unverified records | 21 | User-initiated navigation only; no Worker acquisition |
-| Total | 30 | Retain all entries, including unverified candidates |
+| Total | 31 | Retain all entries, including unverified candidates |
 
 The 10 Provider records map to **6 unique adapter implementations**. The five The RarBg rows are five content-category configurations that share one adapter.
 
