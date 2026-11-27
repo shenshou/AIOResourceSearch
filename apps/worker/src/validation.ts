@@ -47,7 +47,7 @@ export function validateSource(input: unknown): SourceDefinition | null {
     for (const key of ["result", "title", "link"]) {
       if (typeof selectors[key] !== "string" || !selectors[key].trim() || selectors[key].length > 200) return null;
     }
-    for (const key of ["image", "description", "magnet"]) {
+    for (const key of ["image", "description", "magnet", "torrent", "ed2k"]) {
       if (selectors[key] !== undefined && (typeof selectors[key] !== "string" || !selectors[key].trim() || selectors[key].length > 200)) return null;
     }
     if (selectors.fields !== undefined) {
@@ -112,8 +112,12 @@ export function validateSource(input: unknown): SourceDefinition | null {
     const declaredCapabilities = value.capabilities as string[];
     const hasImageSelector = typeof selectors.image === "string" && Boolean(selectors.image.trim());
     const hasMagnetSelector = typeof selectors.magnet === "string" && Boolean(selectors.magnet.trim());
+    const hasTorrentSelector = typeof selectors.torrent === "string" && Boolean(selectors.torrent.trim());
+    const hasEd2kSelector = typeof selectors.ed2k === "string" && Boolean(selectors.ed2k.trim());
     if (declaredCapabilities.includes("image") !== hasImageSelector ||
-        declaredCapabilities.includes("magnet") !== hasMagnetSelector) return null;
+        declaredCapabilities.includes("magnet") !== hasMagnetSelector ||
+        declaredCapabilities.includes("torrent") !== hasTorrentSelector ||
+        declaredCapabilities.includes("ed2k") !== hasEd2kSelector) return null;
   }
   if (type === "external-search" &&
       (value.capabilities.length > 0 ||
