@@ -184,7 +184,7 @@ export function validateFieldPriorities(
   if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
   const entries = Object.entries(input as Record<string, unknown>);
   if (entries.length > 100) return null;
-  const sourceIds = new Set(sources.map((source) => source.id));
+  const sourceIds = new Set(sources.filter((source) => (source.type ?? "provider") === "provider").map((source) => source.id));
   const result: Record<string, string[]> = {};
 
   for (const [field, rawIds] of entries) {
