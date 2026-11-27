@@ -4255,3 +4255,13 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Source catalog entry is now marked as an implemented Provider candidate and includes a user-initiated LibriVox homepage link. Source and adapter are still not present in production KV, remain disabled/unconfigured, and have not been Cloudflare-hosted verified. No deployment or production mutation occurred.
 - Provider count is now 11; catalog remains 164 unique candidates (JAV 28, torrent 30, forum 16, other-index 90), 59 overlapping project provenance tags, and 9 user-opened external-search templates.
 - Full CI is intentionally deferred until the complete module's code, tests, and documentation are integrated. Do not treat this implementation as production-ready before CI and non-production Cloudflare hosted verification.
+
+## AudioSilo Meta Provider implementation — 2026-11-27
+
+- Promoted AudioSilo Meta from a CC0-core audiobook candidate to an implemented metadata-only Provider, `audiosilo-meta-api v1.0.0`.
+- Uses the documented `GET /api/v1/works/search` endpoint with a 20-result cap. The parser allowlists only factual CC0 search fields: work title/slug, author and narrator names, language, series name/position, and release date.
+- Explicitly ignores `cover_url`, descriptions, genres, characters, recaps, community descriptions, chapters, and all other fields outside the CC0 allowlist. It does not call work-detail or bulk endpoints and does not download or mirror the catalogue.
+- Links each result to the canonical AudioSilo Meta work page. Uses a dedicated one-second shared Durable Object lane; upstream 429/503 cooldowns are persisted through the shared Retry-After mechanism.
+- Provider implementation and tests are registered in Worker code. Source and adapter remain unconfigured/disabled; no live API request, KV mutation, deployment, or Hosted Cloudflare verification was performed.
+- Provider count increases from 11 to 12. Candidate inventory remains 164 unique entries (JAV 28, torrent 30, forum 16, other-index 90); 59 project provenance tags overlap; user-opened external-search templates remain 9.
+- Detailed contract and licence allowlist: [AudioSilo Meta Provider readiness](./providers/audiosilo-meta-readiness.md).
