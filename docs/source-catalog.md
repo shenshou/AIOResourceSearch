@@ -189,7 +189,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | Discogs | AIOResourceSearch | 部分字段 CC0，但字段级许可/署名/外链限制待书面澄清 |
 | MangaDex | AIOResourceSearch | Provider 已实现但禁用；仅公开标题元数据，受免费无广告条件约束 |
 | MusicBrainz | AIOResourceSearch | Provider 已实现但禁用；仅非商业 release-group 元数据 |
-| Perverzija DB | AIOResourceSearch | Provider 已实现但禁用；公开 JSON 场景元数据，待 Hosted 验证 |
+| Perverzija DB | AIOResourceSearch | Provider v1.1.0 已实现但禁用；结构化演员/制作商/标签、600 ms 共享限速、300 秒缓存；待 Hosted 验证 |
 | Z-Library | Atlas | 官方域名线索已核验；仅外部首页入口，无公开元数据 API |
 | Anna's Archive | Atlas | 仅外部首页入口；不使用会员 API 或批量数据库 |
 | 知轩藏书（用户整理存档） | Atlas | 明确标注非原站官方；仅外部入口，不抓取 |
