@@ -2573,3 +2573,41 @@ test("rejects malformed ed2k resource links with trailing data", async () => {
   assert.equal(result.results[0]?.ed2kUri, undefined);
   assert.equal(result.results[0]?.resourceLinks, undefined);
 });
+
+
+test("generic HTML adapter retains multiple selected links of the same type", async () => {
+  const first = "magnet:?xt=urn:btih:01234567890123456789012345678901";
+  const second = "magnet:?xt=urn:btih:abcdefabcdefabcdefabcdefabcdefab";
+  const results = await genericHtmlProvider.search(
+    { query: "ABP-123", mode: "number" },
+    {
+      source: source({
+        adapterId: "generic-html",
+        baseUrl: "https://example.com",
+        providerSearchUrlTemplate: "https://example.com/search?q={query}",
+        htmlSelectors: { result: "article", title: "h2", link: "a.title", magnet: "a.magnet" },
+        capabilities: ["metadata", "magnet"],
+      }),
+      signal: new AbortController().signal,
+      fetch: async () => new Response("<html></html>", {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }),
+      parseHtml: async () => [{
+        title: "ABP-123",
+        url: "/item/123",
+        resourceLinks: [
+          { type: "magnet", url: first },
+          { type: "magnet", url: second },
+          { type: "magnet", url: first },
+        ],
+      }],
+    },
+  );
+
+  assert.deepEqual(results[0]?.resourceLinks, [
+    { type: "magnet", url: first },
+    { type: "magnet", url: second },
+  ]);
+  assert.equal(results[0]?.magnetUri, first);
+});
