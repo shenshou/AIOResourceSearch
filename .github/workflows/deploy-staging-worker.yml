@@ -53,7 +53,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
       - name: Validate deployment configuration
         if: steps.deployment_gate.outputs.enabled == 'true'
@@ -68,7 +67,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.deployment_gate.outputs.enabled == 'true'
-        run: npm ci
+        run: npm install
 
       - name: Lint
         if: steps.deployment_gate.outputs.enabled == 'true'
