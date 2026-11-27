@@ -8,6 +8,7 @@ This document defines the current Worker-side aggregation contract for JAV metad
 - For resources categorized as JAV, a conservative catalogue-number key is a secondary identity hint: NFKC normalization, uppercase, removal of non-ASCII alphanumeric separators, 4–40 characters, and at least one letter plus one digit.
 - Catalogue-number matching is not applied to non-JAV categories.
 - Titles, performer names, fuzzy similarity, and substring matches are not identity keys.
+- Canonical URL identity also removes URL fragments, normalizes host casing/trailing slashes, strips only common analytics parameters (utm_* and fbclid/gclid/dclid/msclkid/mc_cid/mc_eid), and sorts remaining query parameters. It preserves source-specific parameters such as id, code, q, and page. The displayed result URL is never rewritten; these rules affect only identity matching.
 - A catalogue-number match may combine distinct source URLs into one result; all contributing source attributions and unique external links are retained. If a canonical-URL match conflicts with a catalogue key already assigned to another result, the canonical-URL match wins for that record but the existing catalogue-key mapping is not reassigned.
 
 ## Field conflict policy
@@ -27,6 +28,8 @@ This document defines the current Worker-side aggregation contract for JAV metad
 - This phase does not implement automated retrieval that bypasses login, paywalls, CAPTCHA, anti-bot challenges, geographic restrictions, rate limits, or other access controls.
 
 ## Verification
+
+Additional URL-identity regression tests cover tracking-parameter removal/query-order normalization and preservation of meaningful query parameters. These tests are authored but not executed locally.
 
 Focused unit tests now cover first-value-wins field and external-link conflicts, deterministic configured-source order despite out-of-order provider completion, blank-value filtering, catalogue-key collision isolation, JAV catalogue-number identity, category isolation, within-source relationship deduplication, relationship whitespace normalization, relationship-cap URL enrichment, Perverzija calendar-date validation, 600 ms lane spacing, `Retry-After` and `X-RateLimit-Reset` cooldown handling, cache hit/miss, invalid-cache refresh, cache allowlisting without unused image/media fields, coordinator fail-closed behavior, production-network mapping, global result cap and per-source count behavior, post-cap duplicate enrichment and attribution preservation, and Eporner performer/category/tag mapping plus URL validation. These tests are authored but not executed locally. Full CI is deferred until the complete JAV metadata aggregation module has passed integration and acceptance review, in accordance with the project delivery policy.
 
