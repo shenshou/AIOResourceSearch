@@ -4313,3 +4313,24 @@ This batch adds six current novel/serialized-fiction platforms to the durable ca
 - Current catalog: 170 unique candidates (JAV 28, torrent 30, forum 16, other-index 96); AIOResourceSearch provenance tags: 64 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
 - No Provider code, account credentials, API calls, KV configuration, source enablement, deployment, or production data changes.
 - First-party references: https://docs.stashapp.cc/metadata-sources/stash-box-instances/ ; https://guidelines.stashdb.org/ ; https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/ ; https://docs.fansdb.cc/ ; https://docs.fansdb.cc/networks/ ; https://api.theporndb.net/docs
+
+
+## JAV metadata discovery: JavPlay metadata index and JAVINFO (2026-11-27)
+
+### JavPlay Metadata Index — public CC BY 4.0 repository; upstream provenance still needs confirmation
+- Repository: https://github.com/av18live/japanese-adult-video-metadata
+- The public repository describes a structured Japanese adult-video metadata index. Its README lists `videos.json`, `actors.json`, `manufacturers.json` and `tags.json`, with daily updates, canonical source links, and a declared CC BY 4.0 licence for repository metadata.
+- The same README says all records are sourced from JavPlay.tv and describes the data as for research and educational purposes. The repository's declaration does not, by itself, establish that its maintainer has authority to sublicense every upstream-derived field or any images/artwork from JavPlay. No original JavPlay data-reuse grant was independently verified in this review.
+- **Decision:** add as a JAV candidate, but homepage-only / research-only. Do not fetch the raw JSON feeds, persist or redistribute catalogue records, or use artwork until the upstream provenance and right to sublicense the fields used by AIOResourceSearch are confirmed. If later approved, limit the first implementation to factual text metadata and attribution; exclude artwork/media.
+
+### JAVINFO — retained as a research candidate, excluded from integration because it is paid
+- Official documentation describes a normalized JAV metadata API with `/movie`, `/query` and performer search endpoints. Every request requires an API key. The service advertises 50 free trial lookups, but normal usage is billed per successful result/call; its public pricing page gives usage-based prices. It is therefore not a permanently free API or dependency.
+- Its documented provider list includes DMM/FANZA, JAVDatabase, Sextb, JAVLibrary, MissAV and JAVDB; responses may include magnets and HLS stream fields as well as metadata. The service's own public article describes upstream geo-blocking and anti-bot challenges, and says some integrations use scrapers and bypass infrastructure.
+- This project must not pay for a dependency/API. We also will not reproduce or adopt any mechanism that bypasses upstream geographic restrictions, bot challenges, or other access controls. No third-party metadata redistribution permission was verified.
+- **Decision:** retain JAVINFO in the catalog for research/reference traceability, but do not integrate, create credentials, call the API, pay for usage, or replicate its bypass methods. Its normalization and provider-fan-out architecture may be studied independently from its access methods.
+
+### Batch outcome
+- Added two distinct JAV-related records: JavPlay Metadata Index (public metadata repository with unresolved upstream data rights) and JAVINFO (commercial API, excluded from integration by the no-paid-services requirement).
+- Current catalog: 172 unique candidates (JAV 29, torrent 30, forum 16, other-index 97); AIOResourceSearch provenance tags: 66 (overlapping). External-search templates remain 9; concrete Provider implementations remain 12.
+- No Provider code, API credentials, paid service, API request, KV configuration, source enablement, deployment, or production data mutation was added.
+- First-party/repository references: https://github.com/av18live/japanese-adult-video-metadata ; https://javinfo.dev/ ; https://docs.javinfo.dev/docs ; https://javinfo.dev/faq ; https://javinfo.dev/blog/jav-metadata-api

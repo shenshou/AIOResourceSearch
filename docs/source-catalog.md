@@ -29,13 +29,13 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- **当前目录：170 条去重候选**：JAV 28、torrent 30、forum 16、other-index 96；AIOResourceSearch 自有来源标签 64（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选；StashDB、ThePornDB、JAVStash、FansDB 和 PMV Stash 是本轮新增的成人元数据候选，均暂保留首页入口。
+- **当前目录：172 条去重候选**：JAV 29、torrent 30、forum 16、other-index 97；AIOResourceSearch 自有来源标签 66（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选；StashDB、ThePornDB、JAVStash、FansDB 和 PMV Stash 是本轮新增的成人元数据候选，均暂保留首页入口；JavPlay Metadata Index 因上游数据授权待确认而仅作研究候选；JAVINFO 因按量收费而仅作架构研究候选。
 - 当前保留 9 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT、Open Library、Library of Congress、Steam Store。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；Open Library 与 Library of Congress 的模板只在用户点击后由浏览器打开，Worker 不会请求目标站点。
 - **当前 12 个具体 Provider**：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON、LibriVox metadata API、AudioSilo Meta metadata API。The RarBg 的 5 条分类源记录共用一个 Provider。12 个 Provider 均已登记在代码注册表；是否可启用仍须分别完成来源审查、KV 配置和 Hosted Cloudflare 验证。另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
 
 
-## JAV 资源站（28）
+## JAV 资源站（29）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
@@ -58,6 +58,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | JavGG | Atlas | 有上游搜索模板，需复核 |
 | JAVHDPorn.net | Atlas | 有上游搜索模板，需复核 |
 | JAVLeak | Atlas | 有上游搜索模板，需复核 |
+| JavPlay Metadata Index | AIOResourceSearch | 公开 CC BY 4.0 元数据仓库；上游 JavPlay 授权待确认，暂不摄取 |
 | JavLibrary | Atlas | 有上游搜索模板，需复核 |
 | JavMost | Atlas | 有上游搜索模板，需复核 |
 | JAVOut | Atlas | 有上游搜索模板，需复核 |
@@ -125,13 +126,14 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（96）
+## 其他资源索引（97）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
 | AdultEmbed | AIOResourceSearch | 有公开成人视频目录 API；接口开放不代表聚合/再展示许可，暂仅首页入口 |
 | FansDB | AIOResourceSearch | 独立成人创作者元数据；申请/邀请/API Key 门槛，暂仅首页入口 |
 | JAVStash | AIOResourceSearch | 日本 AV 日文元数据；私有 Discord 邀请和 GraphQL，暂仅首页入口 |
+| JAVINFO | AIOResourceSearch | API 按量收费；保留研究，不接入付费服务 |
 | PMV Stash | AIOResourceSearch | PMV/粉丝混剪元数据；邀请/API Key 门槛，暂仅首页入口 |
 | StashDB | AIOResourceSearch | 多取向成人场景/演员/片商元数据；注册需邀请和 API Key，暂仅首页入口 |
 | ThePornDB | AIOResourceSearch | 成人场景/JAV/影片元数据；需账户 API Token，聚合再利用许可待确认 |
@@ -403,3 +405,10 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 - PMV Stash：官方 Stash 文档确认其聚焦 PMV、Cock Hero、Hypno Vids 和混剪等社区元数据，需邀请码、账户和 API Key；未核实第三方聚合许可，暂仅首页入口。
 - Stash-Box 是 MIT 许可的开源服务端软件；该软件许可证不自动覆盖各托管实例的数据集。五个候选分别保留，不能把它们合并成一个许可或访问模型。
 - 本批新增 5 个候选，目录更新为 170 条去重候选（JAV 28、torrent 30、forum 16、other-index 96）；AIOResourceSearch 自有来源标签 64（标签交叉）。外部搜索模板仍为 9 条，具体 Provider 实现仍为 12 个。未新增 Provider、凭据、API 调用、KV 配置、来源启用或部署。
+
+
+## 补充成人元数据来源（2026-11-27，第二批）
+
+- JavPlay Metadata Index：公开 GitHub 仓库发布 videos、actors、manufacturers、tags JSON，并声明仓库元数据采用 CC BY 4.0、每日更新；README 同时说明数据来自 JavPlay.tv 且用途为研究/教育。仓库许可证不能独立证明上游 JavPlay 对底层目录字段的授权，因此保留为 JAV 候选但不摄取、不缓存、不再分发；等待上游来源和再许可权利确认。图片/媒体不纳入评估。
+- JAVINFO：统一 JAV 元数据 API，必须 API Key，50 次免费试用后按调用/结果收费；服务端会聚合多个 Provider，并可能返回磁力/HLS 字段。因本项目不接受付费服务，且未确认多用户聚合再分发许可，不接入、不付费、不调用；其标准化与 Provider fan-out 架构可作为独立研究参考。不得复制其对地域限制或反机器人挑战的规避方式。
+- 本批新增 2 条，目录更新为 172 条去重候选（JAV 29、torrent 30、forum 16、other-index 97）；AIOResourceSearch 自有来源标签 66（交叉）。外部搜索模板仍为 9 条，具体 Provider 实现仍为 12 个。没有新增 Provider、凭据、API 调用、KV 配置、来源启用或部署。
