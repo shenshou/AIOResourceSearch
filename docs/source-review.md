@@ -4690,3 +4690,34 @@ This final batch rechecked JavPlay Metadata Index, Kanojo and R18.dev. It closes
 - Kanojo API routes and software licence: https://raw.githubusercontent.com/kanojo-db/kanojo/main/routes/api.php ; https://raw.githubusercontent.com/kanojo-db/kanojo/main/LICENSE
 - R18.dev homepage and first-party database dumps: https://r18.dev/ ; https://r18.dev/dumps
 
+## R18.dev — licensed bulk data, but incompatible with the current no-database architecture (2026-11-27)
+
+The R18.dev review found a real first-party reuse grant, but the delivery model does not fit the current AIOResourceSearch architecture.
+
+### Confirmed upstream facts
+- The first-party [Database dumps](https://r18.dev/dumps) page publishes a weekly PostgreSQL SQL/GZip database dump, exposes a programmatic `/dumps/latest` URL, and explicitly states that all structured data is available under CC0. The latest listed dump at review time was dated 2026-11-24 and approximately 265.5 MiB compressed.
+- The first-party homepage labels the JSON interface as alpha. In the maintainer's [What next for R18.dev?](https://blog.javmuseum.com/blog/what-next-for-r18dev/) post, the maintainer says the JSON API is not really for public use and explains that the database is imported from other sources, with known errors and omissions. Therefore, the undocumented/alpha JSON API is not treated as a supported public Provider contract.
+- Public implementation research confirms the dump is a PostgreSQL `pg_dump`, not a ready-to-call HTTP search API. A maintained third-party importer converts selected dump tables into a local SQLite sidecar. Its documented schema includes roughly 1.9 million video rows in a complete 2026-10-20 dump verification, plus actress, maker, label, series, director, category and relation tables. The video metadata includes title, release date, runtime, maker/label/series IDs and source image/gallery URL fields. This is architectural evidence only; no code or scraper was copied.
+- Cloudflare's current D1 Free limits are 500 MB per database and 5 GB total account storage, with daily read/write quotas. D1 can import SQLite-compatible SQL, but the upstream dump is PostgreSQL format and would need a transformation/import/indexing pipeline before it could be queried by a Worker.
+
+### Project-architecture fit
+- The current `docs/architecture.md` explicitly lists **D1 database** under "Explicit non-goals". The documented runtime topology stores source and adapter configuration in Workers KV; it does not include a general metadata database.
+- Integrating the R18.dev dump would therefore require introducing a persistent metadata database, a PostgreSQL-dump-to-SQLite/D1 transformation pipeline, an initial bulk import, periodic update handling, index management, and storage/quota monitoring. That is a material architecture change, not an ordinary Provider adapter.
+- A full-dump integration also creates a new recurring data-maintenance responsibility. It should not be smuggled into the current metadata-search architecture merely because the upstream structured data is CC0.
+
+### Decision
+- Move `r18dev` from the technical-feasibility queue into the current **no-automatic-integration** group for AIOResourceSearch.
+- This is an architecture-fit decision, **not** a finding that the CC0 grant is invalid or that the upstream blocks access. Retain the source and its CC0 evidence in the catalog.
+- Do not call the alpha JSON API, download/import the bulk dump, create a D1 database, or add a synchronization pipeline.
+- Reopen only if the operator explicitly changes the no-D1 architecture constraint, approves a separate metadata-index subsystem, or R18.dev publishes a stable public query API with applicable terms.
+
+### References
+- R18.dev first-party homepage: https://r18.dev/
+- R18.dev first-party database dumps and CC0 statement: https://r18.dev/dumps
+- R18.dev maintainer's API status and data-quality explanation: https://blog.javmuseum.com/blog/what-next-for-r18dev/
+- R18.dev SQL schema/import architecture reference (third-party, not copied): https://github.com/javinizer/javinizer-go/tree/main/internal/r18devdump
+- Complete-dump verification reference (third-party fixture; 2026-10-20 dump): https://github.com/javinizer/javinizer-go/blob/main/internal/r18devdump/testdata/service_variants_2026-10-20.md
+- Current project architecture non-goal: `docs/architecture.md`
+- Cloudflare D1 limits: https://developers.cloudflare.com/d1/platform/limits/
+- Cloudflare D1 import format: https://developers.cloudflare.com/d1/best-practices/import-export-data/
+

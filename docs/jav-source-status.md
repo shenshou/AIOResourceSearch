@@ -7,12 +7,11 @@
 
 | 状态 | 数量 | 解释 |
 |---|---:|---|
-| 已完成当前阶段核验，现阶段明确不做自动接入 | 14 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
+| 已完成当前阶段核验，现阶段明确不做自动接入 | 15 | 已有足够证据作出当前决策；若未来条件变化再重新评估 |
 | 已有初步核验，但仍需补关键证据 | 20 | 不是完全没看过，而是域名、条款、接口、授权链或运行情况尚未闭环 |
-| 已具备第一方公开许可、待技术可行性评估 | 1 | 已确认公开 CC0 数据 dump，但尚未决定是否适合当前架构 |
 | 合计 | 35 | 与当前 JAV 目录条目数一致 |
 
-**因此，当前需继续补证的是 20 个；另有 1 个来源已具备公开数据许可，但仍需技术可行性评估。**  
+**因此，当前仍需补证/验证的是 20 个；另有 15 个已有当前阶段不自动接入的明确结论。**  
 这些待补证/技术评估来源也不代表最终都能开发成 Provider。只有补证后同时满足公开接口、授权/使用条件、免费依赖和访问控制边界的来源，才进入开发队列。
 
 ## A. 当前阶段已形成明确结论（12）
@@ -31,6 +30,7 @@
 | `missav` | MissAV | 第一方条款明确限制美国访客访问；当前不作为通用来源展示或由 Worker 请求，不能绕过地域限制 |
 | `javseen` | JAVSeen | JAVSeen 首页直接链接的第一方 Terms 禁止使用自动化系统获取服务内容或信息，并禁止未经书面许可的商业复制/利用；条款正文将服务描述为 Javhd.today，域名适用范围仍有表述不一致。采取保守处理：未获运营方澄清前不做自动检索/采集，仅保留用户主动外部访问；不得自动切换其备份域名 |
 | `kanojo` | Kanojo | 官方 GitHub 主仓库已归档（最后代码提交 2023-09-27）；其 API 路由整体置于 `auth:sanctum` 中，需要认证，不是匿名公开检索 API。未验证现行公共服务或独立数据许可；当前不做自动接入，保留来源目录，待官方恢复公开接口后再评估 |
+| `r18dev` | R18.dev | 第一方每周公开数据库 dump 声明结构化数据为 CC0，但其 JSON API 仍为 alpha 且维护者明确表示并非面向公众使用。使用 dump 需要导入并维护本地查询数据库；当前项目架构明确将 D1 数据库列为非目标，故不作为现有 Worker Provider 接入。保留目录记录；仅在未来明确调整无数据库架构约束或出现正式公开查询 API 后重评 |
 | `rjav` | r/JAV | Reddit 数据访问要求 API/OAuth、审批及内容使用合规；未获所需授权前仅保留用户主动外部搜索 |
 | `knighjok-jav-dataset` | Japanese Adult Videos Dataset | 数据集声明 NC-SA 且来源授权链不清；不下载、不摄取、不缓存、不再发布 |
 
@@ -119,4 +119,12 @@
 - R18.dev: first-party dumps page publishes weekly SQL/GZip snapshots, programmatic latest-dump URL and an explicit CC0 grant for structured data. Moved to licensed technical-feasibility queue; no dump downloaded or imported.
 - Initial 23-item evidence backlog is fully reviewed. Updated 35-item disposition: 14 current no-automation decisions; 20 pending evidence items; 1 licensed technical-feasibility candidate.
 - No access controls were bypassed; no Provider, KV configuration, source enablement, deployment or production data was changed.
+### R18.dev architecture-fit reassessment — 2026-11-27
+- Confirmed first-party CC0 licence for the weekly structured-data dump and a public `/dumps/latest` URL.
+- Confirmed the JSON API remains alpha/not intended for public use according to the maintainer.
+- The dump is a large PostgreSQL database snapshot, not a supported query API; integrating it would require persistent database storage, import/transformation, indexes and recurring synchronization.
+- The current AIOResourceSearch architecture explicitly lists D1 as a non-goal. D1 Free currently has a 500 MB per-database cap and 5 GB total account storage, plus daily read/write quotas.
+- Final current-phase decision: move `r18dev` to no-automatic-integration due to architecture mismatch. This does not invalidate its CC0 licence. Keep the catalog record and reopen only if the no-D1 constraint is explicitly changed or a stable public query API is published.
+- Updated final JAV disposition: 15 current no-automation decisions + 20 pending evidence items = 35 total catalog entries.
+- No dump downloaded/imported, no D1 database created, no API called, no Provider or sync pipeline implemented.
 
