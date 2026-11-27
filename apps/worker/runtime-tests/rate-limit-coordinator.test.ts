@@ -16,7 +16,7 @@ const coordinator = (env as unknown as {
   RATE_LIMIT_COORDINATOR: CoordinatorNamespace;
 }).RATE_LIMIT_COORDINATOR;
 
-function createStub(lane: "mangadex" | "musicbrainz" | "eporner"): CoordinatorStub {
+function createStub(lane: "mangadex" | "musicbrainz" | "eporner" | "librivox"): CoordinatorStub {
   const id = coordinator.idFromName(lane + "-" + crypto.randomUUID());
   return coordinator.get(id);
 }
@@ -37,7 +37,7 @@ async function post(
 
 async function reserve(
   stub: CoordinatorStub,
-  lane: "mangadex" | "musicbrainz",
+  lane: "mangadex" | "musicbrainz" | "librivox",
 ): Promise<number> {
   const result = await post(stub, "reserve", { lane });
   expect(typeof result.scheduledAt).toBe("number");
@@ -102,6 +102,18 @@ describe("RateLimitCoordinator in the local Workers runtime", () => {
 
     for (let index = 1; index < ordered.length; index += 1) {
       expect(ordered[index] - ordered[index - 1]).toBeGreaterThanOrEqual(1_000);
+    }
+  });
+
+  it("enforces five-second LibriVox spacing in SQLite", async () => {
+    const stub = createStub("librivox");
+    const slots = await Promise.all(
+      Array.from({ length: 4 }, () => reserve(stub, "librivox")),
+    );
+    const ordered = slots.sort((left, right) => left - right);
+
+    for (let index = 1; index < ordered.length; index += 1) {
+      expect(ordered[index] - ordered[index - 1]).toBeGreaterThanOrEqual(5_000);
     }
   });
 
