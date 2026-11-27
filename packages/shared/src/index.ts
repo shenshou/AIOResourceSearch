@@ -115,6 +115,13 @@ export interface SourcesConfig {
   version: number;
   updatedAt: string | null;
   sources: SourceDefinition[];
+  /** Optional per-field source order; omitted/empty fields inherit the configured global source order. */
+  fieldPriorities?: Record<string, string[]>;
+}
+
+export interface FieldAttribution {
+  sourceId: string;
+  sourceName: string;
 }
 
 /**
