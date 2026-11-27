@@ -29,7 +29,7 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 
 下方各分类表格主要记录候选来源的初始导入清单和上游项目归属；其中“有上游搜索模板”等字样是初始导入状态，不代表当前仍保留该模板，也不代表来源已获准自动访问。当前实际 URL、搜索模板和逐站审查结论以 `apps/web/src/modules/sources/sourceCatalog.ts` 与 [来源审查日志](./source-review.md) 为准。
 
-- **当前目录：175 条去重候选**：JAV 32、torrent 30、forum 16、other-index 97；AIOResourceSearch 自有来源标签 69（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选；StashDB、ThePornDB、JAVStash、FansDB 和 PMV Stash 是本轮新增的成人元数据候选，均暂保留首页入口；JavPlay Metadata Index 因上游数据授权待确认而仅作研究候选；JAVINFO 因按量收费而仅作架构研究候选；Kanojo 因主应用仓库已归档、API 现状和数据再利用许可未确认而仅保留首页入口；R18.dev 的维护者明确表示其 JSON API 并非面向公众使用，故不调用该 API；AV Search 是免费 JAV 语义搜索站点候选，但暂时仅保留首页入口，未验证稳定查询路由和自动化权限。
+- **当前目录：176 条去重候选**：JAV 32、torrent 30、forum 16、other-index 98；AIOResourceSearch 自有来源标签 69（与上游项目标签存在交叉，不能直接相加）。The RarBg 的 5 条分类记录均计入本项目自有来源；AdultEmbed 是 2026-11-27 新增的成人视频目录 API 待审候选；StashDB、ThePornDB、JAVStash、FansDB 和 PMV Stash 是本轮新增的成人元数据候选，均暂保留首页入口；JavPlay Metadata Index 因上游数据授权待确认而仅作研究候选；JAVINFO 因按量收费而仅作架构研究候选；Kanojo 因主应用仓库已归档、API 现状和数据再利用许可未确认而仅保留首页入口；R18.dev 的维护者明确表示其 JSON API 并非面向公众使用，故不调用该 API；AV Search 是免费 JAV 语义搜索站点候选，但暂时仅保留首页入口，未验证稳定查询路由和自动化权限；Cadrame 声明 CC0 1.0 且公开只读 API 允许缓存，但项目仍处原型阶段，尚未确认实际 JAV 数据覆盖，暂仅首页入口。
 - 当前保留 9 条用户主动打开的外部搜索模板：JAV.guru、r/JAV、YourBittorrent、DMHY、Mikan Project、AniBT、Open Library、Library of Congress、Steam Store。其中 YourBittorrent、DMHY、AniBT 已与各自 Worker Provider 合并到同一数据源目录记录；Open Library 与 Library of Congress 的模板只在用户点击后由浏览器打开，Worker 不会请求目标站点。
 - **当前 12 个具体 Provider**：Sukebei RSS、DMHY RSS、Eporner API、Perverzija DB、Torlock Torznab、YourBittorrent JSON、MangaDex metadata API、MusicBrainz metadata API、AniBT Torznab、The RarBg JSON、LibriVox metadata API、AudioSilo Meta metadata API。The RarBg 的 5 条分类源记录共用一个 Provider。12 个 Provider 均已登记在代码注册表；是否可启用仍须分别完成来源审查、KV 配置和 Hosted Cloudflare 验证。另有可配置的通用 HTML adapter。
 - 所有候选来源默认禁用；代码实现、目录登记、KV 配置、启用状态和 Cloudflare 线上验证是不同状态。
@@ -128,11 +128,12 @@ The additional 63 Atlas SQL rows outside the original 57 Atlas-tagged catalog ca
 | 夯鸭论坛 | Atlas | 仅首页入口或 URL 待补 |
 | 色花堂98堂 | Atlas | 仅首页入口或 URL 待补 |
 
-## 其他资源索引（97）
+## 其他资源索引（98）
 
 | 来源 | 上游项目 | 初始入口状态 |
 |---|---|---|
 | AdultEmbed | AIOResourceSearch | 有公开成人视频目录 API；接口开放不代表聚合/再展示许可，暂仅首页入口 |
+| Cadrame | AIOResourceSearch | 成人内容在内的开放视频元数据；数据 CC0 1.0、只读 API 免账户且允许缓存；原型阶段，JAV 覆盖待验证，暂仅首页入口 |
 | FansDB | AIOResourceSearch | 独立成人创作者元数据；申请/邀请/API Key 门槛，暂仅首页入口 |
 | JAVStash | AIOResourceSearch | 日本 AV 日文元数据；私有 Discord 邀请和 GraphQL，暂仅首页入口 |
 | JAVINFO | AIOResourceSearch | API 按量收费；保留研究，不接入付费服务 |
