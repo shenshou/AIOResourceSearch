@@ -11,6 +11,8 @@ The repository currently has:
 - One KV namespace binding for source and adapter configuration.
 - A SQLite-backed Durable Object export for coordinated upstream rate limits.
 
+The current GitHub Actions workflow is a verification-only CI workflow. There is no Worker deployment workflow in the repository yet. Pages Git integration can deploy the frontend independently, but it does not deploy this Worker. For the first staging pass, use the isolated Wrangler configuration and CLI procedure below. A protected automatic Worker deployment workflow should be added only after staging verification and an explicit release decision.
+
 ## 1. Cloudflare Pages preview project
 
 Use the repository root as the Pages root directory because the frontend imports the shared workspace package.
