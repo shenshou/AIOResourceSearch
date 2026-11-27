@@ -169,6 +169,7 @@ async function deleteAdapter(adapter: AdapterDefinition) {
         </div>
         <div class="toolbar-actions">
           <button class="secondary-button" type="button" :disabled="manager.loading.value" @click="manager.reload()">刷新</button>
+          <button class="secondary-button" type="button" :disabled="manager.loading.value || manager.saving.value" @click="manager.registerImplementedAdapters()">登记内置适配器</button>
           <button class="primary-button" type="button" @click="beginCreate">＋ 新增适配器</button>
           <button class="text-button" type="button" @click="manager.logout()">退出管理</button>
         </div>

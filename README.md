@@ -39,7 +39,7 @@ The platform distinguishes Worker-backed **Provider** sources from **External Se
 - `packages/shared`: shared TypeScript contracts.
 - Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
 
-See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Age-assurance scope and implementation gates are recorded in [docs/age-assurance-readiness.md](docs/age-assurance-readiness.md). Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), source-inventory governance is defined in [docs/source-catalog-policy.md](docs/source-catalog-policy.md), the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md), and JAV work identity plus field-level merge behavior are specified in [docs/providers/jav-metadata-aggregation.md](docs/providers/jav-metadata-aggregation.md).
+See [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md) for Cloudflare Pages/Workers setup and the non-production deployment checklist. See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Age-assurance scope and implementation gates are recorded in [docs/age-assurance-readiness.md](docs/age-assurance-readiness.md). Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), source-inventory governance is defined in [docs/source-catalog-policy.md](docs/source-catalog-policy.md), the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md), and JAV work identity plus field-level merge behavior are specified in [docs/providers/jav-metadata-aggregation.md](docs/providers/jav-metadata-aggregation.md).
 
 ## Local development
 
@@ -58,7 +58,7 @@ In a second terminal:
 npm run dev:worker
 ```
 
-The frontend defaults to `http://localhost:8787` for the Worker API. Override it with `VITE_API_BASE_URL` (see [apps/web/.env.example](apps/web/.env.example)).
+During local development, the frontend defaults to `http://localhost:8787` for the Worker API. Production builds do not fall back to localhost: set `VITE_API_BASE_URL` to the HTTPS origin of the deployed Worker in the Cloudflare Pages environment (see [apps/web/.env.example](apps/web/.env.example) and [the deployment guide](docs/cloudflare-deployment.md)).
 
 The Worker requires a KV namespace binding before remote deployment. Create one:
 
@@ -91,7 +91,7 @@ Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the relevant Worker env
 - [x] Runtime Provider interface and compile-time adapter registry
 - [x] Content-category model and category-filtered search
 - [x] API, RSS, and configurable HTML acquisition mechanisms
-- [x] Ten site-specific API/RSS Providers plus reusable HTML adapter; code registration, KV configuration, enablement, and Hosted Cloudflare verification are tracked separately
+- [x] Twelve site-specific API/RSS Providers plus reusable HTML adapter; code registration, KV configuration, enablement, and hosted Cloudflare verification are tracked separately
 - [ ] Per-source HTML selector review and live Cloudflare connectivity verification
 - [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
 - [x] Frontend aggregated-search page, result presentation, and resource-link actions

@@ -1,6 +1,6 @@
 import type { ContentCategory, FieldAttribution, ResourceLink, ResourceRelationship, SearchMode } from "@aio-resource-search/shared";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
+import { getApiBaseUrl } from "./apiBase";
 
 export interface SearchResource {
   id: string;
@@ -59,9 +59,10 @@ export interface SearchResponse {
 }
 
 export async function searchResources(query: string, mode: SearchMode, contentCategory: ContentCategory | "all" = "all"): Promise<SearchResponse> {
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/search`, {
+    response = await fetch(`${apiBaseUrl}/api/search`, {
       method: "POST",
       headers: {
         Accept: "application/json",

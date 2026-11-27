@@ -137,6 +137,14 @@ export function useAdapterManager() {
     );
   }
 
+  async function registerImplementedAdapters() {
+    if (!etag.value) return false;
+    return persist(
+      () => adapterApi.registerImplementedAdapters(token.value, etag.value),
+      "内置适配器登记完成；新登记的适配器全部保持禁用状态。",
+    );
+  }
+
   async function remove(adapterId: string) {
     if (!etag.value) return false;
     return persist(
@@ -147,6 +155,6 @@ export function useAdapterManager() {
 
   return {
     token, authenticated, adapters, revision, loading, saving, error, notice,
-    enabledCount, implementedCount, login, logout, reload, save, remove, clearMessages,
+    enabledCount, implementedCount, login, logout, reload, save, remove, registerImplementedAdapters, clearMessages,
   };
 }

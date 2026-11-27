@@ -1,6 +1,6 @@
 import type { SearchMode, SourceDefinition, SourcesConfig } from "@aio-resource-search/shared";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
+import { getApiBaseUrl } from "./apiBase";
 
 export interface VersionedSources {
   config: SourcesConfig;
@@ -32,9 +32,10 @@ async function request<T>(
   if (options.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options.etag) headers.set("If-Match", options.etag);
 
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${apiBaseUrl}${path}`, {
       method: options.method ?? "GET",
       headers,
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),

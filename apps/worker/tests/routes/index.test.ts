@@ -664,3 +664,44 @@ test("Provider test reports upstream failure and cancellation without persisting
     globalThis.fetch = originalFetch;
   }
 });
+
+test("POST /api/admin/adapters/register-implemented registers compiled adapters disabled and is idempotent", async () => {
+  const env = createEnv({}, { adminToken: "test-secret" });
+  const first = await worker.fetch(
+    new Request("https://worker.example/api/admin/adapters/register-implemented", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer test-secret",
+        "If-Match": '"0"',
+      },
+    }),
+    env,
+  );
+
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get("ETag"), '"1"');
+  const firstBody = await readJson(first);
+  assert.equal(firstBody.addedCount, 13);
+  const firstAdapters = firstBody.adapters as Array<Record<string, unknown>>;
+  assert.equal(firstAdapters.length, 13);
+  assert.ok(firstAdapters.some((adapter) => adapter.id === "perverzija-db"));
+  assert.ok(firstAdapters.some((adapter) => adapter.id === "generic-html"));
+  assert.ok(firstAdapters.every((adapter) => adapter.implemented === true && adapter.enabled === false));
+  assert.deepEqual(env.__writes, ["adapters:config:v1"]);
+
+  const second = await worker.fetch(
+    new Request("https://worker.example/api/admin/adapters/register-implemented", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer test-secret",
+        "If-Match": '"1"',
+      },
+    }),
+    env,
+  );
+
+  assert.equal(second.status, 200);
+  assert.equal(second.headers.get("ETag"), '"1"');
+  assert.equal((await readJson(second)).addedCount, 0);
+  assert.deepEqual(env.__writes, ["adapters:config:v1"]);
+});

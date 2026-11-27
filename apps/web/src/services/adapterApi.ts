@@ -1,6 +1,6 @@
 import type { AdapterDefinition, AdaptersConfig } from "@aio-resource-search/shared";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8787").replace(/\/$/, "");
+import { getApiBaseUrl } from "./apiBase";
 
 export class AdapterApiError extends Error {
   constructor(message: string, readonly status: number, readonly code?: string) {
@@ -18,9 +18,10 @@ async function request<T>(
   if (options.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options.etag) headers.set("If-Match", options.etag);
 
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${apiBaseUrl}${path}`, {
       method: options.method ?? "GET",
       headers,
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
@@ -47,6 +48,11 @@ export const adapterApi = {
     const result = await request<AdaptersConfig>("/api/admin/adapters", { token });
     if (!result.etag) throw new AdapterApiError("服务器没有返回配置版本号，无法安全保存。", 502);
     return { config: result.data, etag: result.etag };
+  },
+  async registerImplementedAdapters(token: string, etag: string) {
+    return request<AdaptersConfig & { addedCount: number }>("/api/admin/adapters/register-implemented", {
+      token, method: "POST", etag,
+    });
   },
   async createAdapter(token: string, etag: string, adapter: AdapterDefinition) {
     return request<AdaptersConfig>("/api/admin/adapters", {

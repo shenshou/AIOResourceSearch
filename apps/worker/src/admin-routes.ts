@@ -9,6 +9,7 @@ import {
 } from "./config-store";
 import { validateAdapter, validateFieldPriorities, validateSource } from "./validation";
 import { executeSourceTest } from "./providers/search";
+import { listImplementedAdapterDefinitions } from "./providers/registry";
 
 async function authorize(request: Request, env: Env): Promise<boolean> {
   if (!env.ADMIN_API_TOKEN) return false;
@@ -47,6 +48,24 @@ export async function handleAdminAdapters(
 
   if (path === "" && request.method === "GET") {
     return withEtag(json(current), current.version);
+  }
+
+  if (path === "/register-implemented" && request.method === "POST") {
+    const version = expectedVersion(request);
+    if (version === null) return json({ error: { code: "precondition_required", message: "Send the current ETag in If-Match." } }, 428);
+    if (version !== current.version) return json({ error: { code: "version_conflict", message: "The adapter configuration has changed. Reload before editing.", currentVersion: current.version } }, 409);
+
+    const registeredIds = new Set(current.adapters.map((adapter) => adapter.id));
+    const additions = listImplementedAdapterDefinitions().filter((adapter) => !registeredIds.has(adapter.id));
+    if (current.adapters.length + additions.length > 100) {
+      return json({ error: { code: "adapter_limit", message: "Registering built-in adapters would exceed the adapter limit." } }, 422);
+    }
+    if (additions.length === 0) {
+      return withEtag(json({ ...current, addedCount: 0 }), current.version);
+    }
+
+    const next = await saveAdaptersConfig(env, current, [...current.adapters, ...additions]);
+    return withEtag(json({ ...next, addedCount: additions.length }), next.version);
   }
 
   if (path === "" && request.method === "POST") {
