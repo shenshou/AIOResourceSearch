@@ -2353,3 +2353,66 @@ test("runtime source catalog Provider references exactly match the compile-time 
     "every concrete Provider must be referenced by the source catalog, and every catalog Provider must be registered",
   );
 });
+
+
+test("aggregates multiple downloadable links for one work and preserves per-link source attribution", async () => {
+  const firstMagnet = "magnet:?xt=urn:btih:01234567890123456789012345678901";
+  const secondMagnet = "magnet:?xt=urn:btih:abcdefabcdefabcdefabcdefabcdefab";
+  const multiLinkProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      magnetUri: context.source.id === "first-link-source" ? firstMagnet : secondMagnet,
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first-link-source", name: "First link source", capabilities: ["metadata", "magnet"] }),
+      source({ id: "second-link-source", name: "Second link source", capabilities: ["metadata", "magnet"] }),
+    ),
+    adapters,
+    resolve(multiLinkProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.deepEqual(
+    result.results[0]?.resourceLinks?.map((link) => link.url).sort(),
+    [firstMagnet, secondMagnet].sort(),
+  );
+  assert.deepEqual(
+    result.results[0]?.resourceLinks?.map((link) => link.sourceAttributions[0]?.sourceId).sort(),
+    ["first-link-source", "second-link-source"],
+  );
+  // Keep the original single-value property populated for older clients.
+  assert.equal(result.results[0]?.magnetUri, firstMagnet);
+});
+
+test("deduplicates identical downloadable links while retaining all contributing sources", async () => {
+  const magnet = "magnet:?xt=urn:btih:01234567890123456789012345678901";
+  const sharedMagnetProvider = provider(async (_input, context) => [
+    resource({
+      id: context.source.id,
+      catalogNumber: "ABP-123",
+      url: `https://${context.source.id}.example/item/abp-123`,
+      magnetUri: magnet,
+    }),
+  ]);
+  const result = await executeSearch(
+    request,
+    sourceConfig(
+      source({ id: "first-link-source", name: "First link source", capabilities: ["metadata", "magnet"] }),
+      source({ id: "second-link-source", name: "Second link source", capabilities: ["metadata", "magnet"] }),
+    ),
+    adapters,
+    resolve(sharedMagnetProvider),
+  );
+
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0]?.resourceLinks?.length, 1);
+  assert.deepEqual(
+    result.results[0]?.resourceLinks?.[0]?.sourceAttributions.map((item) => item.sourceId).sort(),
+    ["first-link-source", "second-link-source"],
+  );
+});
