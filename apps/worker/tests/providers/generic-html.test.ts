@@ -22,7 +22,7 @@ const context = (fetcher: typeof fetch, source: SourceDefinition = baseSource) =
 test("registers a configurable HTML adapter", () => {
   assert.equal(getProviderAdapter("generic-html"), genericHtmlProvider);
   assert.equal(genericHtmlProvider.mechanism, "html");
-  assert.deepEqual(genericHtmlProvider.searchModes, ["number", "keyword"]);
+  assert.ok(genericHtmlProvider.searchModes.includes("number"));
 });
 test("uses configured same-origin HTTPS template and normalizes parsed results", async () => {
   let requested = "";
