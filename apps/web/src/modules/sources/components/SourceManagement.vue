@@ -648,7 +648,7 @@ async function deleteSource(source: SourceDefinition) {
                 <select v-model="testModes[source.id]" :disabled="testingSourceId !== null" :aria-label="source.name + ' 测试搜索方式'">
                   <option v-for="mode in source.searchModes" :key="mode" :value="mode">{{ modeLabels[mode] }}</option>
                 </select>
-                <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !testQueries[source.id]?.trim() || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'search')">测试搜索</button>
+                <button class="secondary-button small" type="button" :disabled="testingSourceId !== null || !testQueries[source.id]?.trim() || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'search')">测试搜索</button>
               </div>
               <p class="form-hint">连接测试会使用默认探测词执行一次 Provider 搜索，不是独立的 TCP Ping；上游正常响应但结果为 0 条也算连接成功。数据源处于禁用状态也可以测试；测试不会启用或修改数据源配置，但对应适配器必须已启用。</p>
               <div v-if="testFeedback[source.id]" class="source-test-feedback" :class="testFeedback[source.id]?.status" role="status">
