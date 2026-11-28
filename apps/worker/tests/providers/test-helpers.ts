@@ -4,6 +4,7 @@ import type { ProviderContext } from "../../src/providers/types.ts";
 /**
  * Builds an isolated ProviderContext for adapter tests.
  * Per-test overrides remain available for adapter-specific dependencies such as Cache and parseHtml.
+ * The explicit source and fetcher arguments remain authoritative over any matching override fields.
  */
 export function createProviderContext(
   source: SourceDefinition,
