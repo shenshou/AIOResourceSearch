@@ -16,6 +16,7 @@ import {
 } from "@aio-resource-search/shared";
 import { SOURCE_CATALOG, type SourceCatalogEntry } from "../sourceCatalog";
 import { getSourceCatalogDisplayNote } from "../sourceCatalogPresentation";
+import { UiButton } from "../../../components/ui";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
 import { useSourceManager } from "../composables/useSourceManager";
 import { adapterApi } from "../../../services/adapterApi";
@@ -404,7 +405,7 @@ async function deleteSource(source: SourceDefinition) {
               <small>{{ categoryLabels[entry.category] }} / {{ contentCategoryLabels[entry.contentCategory ?? "jav"] }} · {{ entry.projects.join(" / ") }}</small>
               <small>{{ getSourceCatalogDisplayNote(entry) }}</small>
             </div>
-            <button class="secondary-button small" type="button" @click="beginCatalogCreate(entry)">配置并登记</button>
+            <UiButton class="secondary-button small" variant="secondary" type="button" @click="beginCatalogCreate(entry)">配置并登记</UiButton>
           </article>
         </div>
         <p v-if="!unregisteredCatalogEntries.length" class="panel-note">所有预置候选来源均已登记。</p>
