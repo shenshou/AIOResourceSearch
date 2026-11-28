@@ -5,7 +5,7 @@
 ## 1. 通用约定
 
 - Base URL：对应环境的 Worker HTTPS origin。
-- 请求与响应使用 JSON，除健康检查外所有 API 由 Worker CORS 策略保护。
+- API 请求与响应使用 JSON。所有带 `Origin` 的请求（包括健康检查）都会经过 Worker CORS allowlist 校验；未携带 `Origin` 的服务端请求不执行浏览器跨域校验。
 - 管理接口使用 `Authorization: Bearer <ADMIN_API_TOKEN>`。
 - 管理配置读取响应带 ETag；写入时必须通过 `If-Match` 发送当前版本。
 - 管理 JSON 请求体受 Worker 通用 64 KiB 流式读取上限约束。
@@ -110,13 +110,18 @@ ETag 用于避免常见的陈旧编辑覆盖，不是 KV 分布式锁。避免�
 
 | HTTP | 错误码示例 | 含义 |
 |---|---|---|
-| 400 | `invalid_json` | JSON 无效或请求体超限 |
-| 401 | `unauthorized` | 管理员令牌无效 |
-| 404 | `not_found`、`source_not_found` | 路由或资源不存在 |
-| 409 | `version_conflict`、`source_disabled`、`adapter_unavailable` | 状态冲突或资源当前不可用 |
-| 422 | `invalid_query`、`invalid_source`、`unsupported_search_mode` | 输入或配置不符合契约 |
-| 428 | `precondition_required` | 写操作缺少 If-Match |
+| 400 | `invalid_json`、`invalid_search_request` | JSON 无效、请求体超限或搜索请求结构无效 |
+| 401 | `unauthorized` | 管理员令牌缺失或无效 |
+| 403 | `origin_not_allowed` | 请求来源不在 Worker CORS allowlist 中 |
+| 404 | `not_found`、`source_not_found`、`adapter_not_found` | 路由或资源不存在 |
+| 405 | `method_not_allowed` | 路由不支持该 HTTP 方法 |
+| 409 | `version_conflict`、`source_disabled`、`adapter_unavailable`、`adapter_in_use` | 配置版本冲突、来源未启用或适配器状态冲突 |
+| 422 | `invalid_query`、`invalid_search_mode`、`invalid_content_category`、`invalid_source`、`unsupported_search_mode`、`external_search_not_testable` | 输入、来源配置或操作不符合契约 |
+| 428 | `precondition_required` | 管理配置写操作缺少有效的 `If-Match` |
+| 500 | `internal_error` | Worker 未预期的内部错误 |
 | 503 | `admin_not_configured` | Worker 未配置管理员 Secret |
+
+以上为常见错误示例，不是穷尽列表；适配器和数据源管理还会返回 `adapter_exists`、`adapter_limit`、`adapter_incompatible`、`invalid_adapter`、`invalid_source_batch`、`source_exists`、`source_limit`、`invalid_field_priorities` 等具体校验错误。
 
 ## 6. 安全边界
 
