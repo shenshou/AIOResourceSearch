@@ -160,7 +160,7 @@ async function importAllCatalogSources() {
     searchModes: [...entry.searchModes],
     capabilities: [],
     timeoutMs: 10000,
-    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note} 尚未核验搜索 URL、访问规则和 Workers 可用性。`,
+    notes: `候选来源：${entry.projects.join("、")}。 ${getSourceCatalogDisplayNote(entry)} 尚未核验搜索 URL、访问规则和 Worker 可用性。`,
   }));
   if (!candidates.length) return;
   if (!window.confirm(`将一次性登记全部 ${candidates.length} 个外部搜索候选。它们都会保持禁用，不会参与搜索。Provider 类型来源需先启用对应适配器，再逐条登记。确认继续吗？`)) return;
@@ -188,7 +188,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     enabled: false,
     searchModes: [...entry.searchModes],
     capabilities: [...(entry.capabilities ?? [])],
-    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note}`,
+    notes: `候选来源：${entry.projects.join("、")}。 ${getSourceCatalogDisplayNote(entry)}`,
   });
   previousFormType = form.type ?? "provider";
   editingId.value = null;
@@ -207,8 +207,13 @@ function beginCreate() {
 
 function beginEdit(source: SourceDefinition) {
   htmlFieldsJson.value = JSON.stringify(source.htmlSelectors?.fields ?? {}, null, 2);
+  const catalogEntry = SOURCE_CATALOG.find((entry) => entry.id === source.id);
+  const localizedCatalogNotes = catalogEntry && source.notes?.includes(catalogEntry.note)
+    ? `候选来源：${catalogEntry.projects.join("、")}。 ${getSourceCatalogDisplayNote(catalogEntry)}`
+    : source.notes;
   Object.assign(form, {
     ...source,
+    notes: localizedCatalogNotes,
     contentCategory: source.contentCategory ?? "jav",
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
