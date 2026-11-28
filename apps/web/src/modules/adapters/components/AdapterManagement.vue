@@ -52,6 +52,20 @@ const emptyForm = (): AdapterDefinition => ({
 });
 const form = reactive<AdapterDefinition>(emptyForm());
 const builtInAdapterNote = "内置 Worker 适配器实现。登记适配器不会创建或启用任何数据源；每个数据源仍需单独完成来源审查、配置和测试。";
+
+function adapterDescription(adapter: AdapterDefinition): string {
+  const description = adapter.description?.trim() ?? "";
+  return /^built-in worker provider implementation\.?$/i.test(description)
+    ? "内置 Worker Provider 实现；具体能力以当前适配器代码和能力声明为准。"
+    : description;
+}
+
+function adapterNotes(adapter: AdapterDefinition): string {
+  const notes = adapter.notes?.trim() ?? "";
+  return /^built-in worker implementation\./i.test(notes) || !notes
+    ? adapter.implemented ? builtInAdapterNote : notes
+    : notes;
+}
 const isEditing = computed(() => editingId.value !== null);
 const theRarBgPreset: AdapterDefinition = {
   id: "the-rarbg-json",
@@ -197,11 +211,11 @@ async function deleteAdapter(adapter: AdapterDefinition) {
               </span>
             </div>
             <p class="source-meta">{{ adapter.id }} · v{{ adapter.version }} · {{ mechanismLabels[adapter.mechanism ?? "api"] }} · {{ (adapter.contentCategories ?? ["jav"]).map((item) => CONTENT_CATEGORY_LABELS[item]).join("、") }}</p>
-            <p v-if="adapter.description" class="source-url">{{ adapter.description }}</p>
+            <p v-if="adapter.description" class="source-url">{{ adapterDescription(adapter) }}</p>
             <div class="source-tags">
               <span v-for="capability in adapter.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
             </div>
-            <p v-if="adapter.notes" class="source-meta">备注：{{ adapter.implemented ? builtInAdapterNote : adapter.notes }}</p>
+            <p v-if="adapter.notes || adapter.implemented" class="source-meta">备注：{{ adapterNotes(adapter) }}</p>
           </div>
           <div class="source-actions">
             <button class="secondary-button small" type="button" :disabled="manager.saving.value || !adapter.implemented" @click="manager.save({ ...adapter, enabled: !adapter.enabled }, false)">
