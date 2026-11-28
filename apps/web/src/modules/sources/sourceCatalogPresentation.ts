@@ -6,6 +6,7 @@ import type { SourceCatalogEntry } from "./sourceCatalog";
  * this function presents their operational conclusion in concise Chinese.
  */
 export function getSourceCatalogDisplayNote(entry: SourceCatalogEntry): string {
+  if (/\p{Script=Han}/u.test(entry.note)) return entry.note;
   const note = entry.note.toLowerCase();
   const parts: string[] = [];
 
