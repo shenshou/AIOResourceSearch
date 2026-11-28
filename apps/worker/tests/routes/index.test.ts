@@ -528,38 +528,48 @@ test("external-search test requests are rejected without fetching the destinatio
   }
 });
 
-test("disabled sources and disabled or unimplemented adapters are rejected before upstream fetch", async () => {
+test("disabled sources can be tested without enabling or persisting them, while disabled or unimplemented adapters remain unavailable", async () => {
   const originalFetch = globalThis.fetch;
   let fetched = false;
   globalThis.fetch = async () => {
     fetched = true;
-    throw new Error("No upstream request expected.");
+    return new Response(JSON.stringify({ data: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   };
   try {
     const disabledSource = { ...adminTestSource, enabled: false };
     const disabledEnv = createEnv(adminTestValues(disabledSource), { adminToken: "test-secret" });
-    const disabledResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), disabledEnv);
-    assert.equal(disabledResponse.status, 409);
-    assert.equal(((await readJson(disabledResponse)).error as Record<string, unknown>).code, "source_disabled");
+    const sourceConfigBefore = disabledEnv.__store.get("sources:config:v1");
+    const adapterConfigBefore = disabledEnv.__store.get("adapters:config:v1");
 
-    const disabledAdapterEnv = createEnv(adminTestValues(adminTestSource, { ...adminTestAdapter, enabled: false }), { adminToken: "test-secret" });
+    const connection = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), disabledEnv);
+    assert.equal(connection.status, 200);
+    assert.equal((await readJson(connection)).status, "success");
+    assert.equal(fetched, true);
+    assert.equal(disabledEnv.__writes.length, 0);
+    assert.equal(disabledEnv.__store.get("sources:config:v1"), sourceConfigBefore);
+    assert.equal(disabledEnv.__store.get("adapters:config:v1"), adapterConfigBefore);
+
+    fetched = false;
+    const disabledAdapterEnv = createEnv(adminTestValues(disabledSource, { ...adminTestAdapter, enabled: false }), { adminToken: "test-secret" });
     const disabledAdapterResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), disabledAdapterEnv);
     assert.equal(disabledAdapterResponse.status, 409);
     assert.equal(((await readJson(disabledAdapterResponse)).error as Record<string, unknown>).code, "adapter_unavailable");
 
     const unimplementedAdapterEnv = createEnv(adminTestValues(
-      { ...adminTestSource, adapterId: "future-adapter" },
+      { ...disabledSource, adapterId: "future-adapter" },
       { ...adminTestAdapter, id: "future-adapter" },
     ), { adminToken: "test-secret" });
     const unimplementedResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), unimplementedAdapterEnv);
     assert.equal(unimplementedResponse.status, 409);
     assert.equal(((await readJson(unimplementedResponse)).error as Record<string, unknown>).code, "adapter_unavailable");
 
-    const incompatibleEnv = createEnv(adminTestValues({ ...adminTestSource, category: "jav" }), { adminToken: "test-secret" });
+    const incompatibleEnv = createEnv(adminTestValues({ ...disabledSource, category: "jav" }), { adminToken: "test-secret" });
     const incompatibleResponse = await worker.fetch(adminTestRequest("perverzija-source/test-connection"), incompatibleEnv);
     assert.equal(incompatibleResponse.status, 409);
     assert.equal(((await readJson(incompatibleResponse)).error as Record<string, unknown>).code, "adapter_incompatible");
-    assert.equal(fetched, false);
   } finally {
     globalThis.fetch = originalFetch;
   }
