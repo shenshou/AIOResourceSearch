@@ -39,10 +39,43 @@ const editingId = ref<string | null>(null);
 const catalogQuery = ref("");
 const htmlFieldsJson = ref("{}");
 const fieldPrioritiesJson = ref("{}");
+const fieldPriorityDraft = ref<Record<string, string[]>>({});
+const metadataPriorityField = ref("");
+const showPriorityJsonEditor = ref(false);
 const contentCategoryLabels = CONTENT_CATEGORY_LABELS;
 
+const priorityFieldDefinitions = [
+  { key: "title", label: "标题", description: "作品的显示标题。" },
+  { key: "catalogNumber", label: "番号", description: "作品番号或目录编号。" },
+  { key: "releaseDate", label: "发行日期", description: "作品的正式发行日期。" },
+  { key: "imageUrl", label: "封面", description: "作品封面图片地址。" },
+  { key: "description", label: "简介", description: "作品简介或描述。" },
+] as const;
+
+const registeredProviderSources = computed(() =>
+  manager.sources.value.filter((source) => (source.type ?? "provider") === "provider"),
+);
+const priorityFieldEntries = computed(() => [
+  ...priorityFieldDefinitions,
+  ...Object.keys(fieldPriorityDraft.value)
+    .filter((key) => key.startsWith("metadata."))
+    .sort()
+    .map((key) => ({
+      key,
+      label: key,
+      description: "Metadata 扩展字段；来源顺序仅作用于该字段。",
+    })),
+]);
+
+function syncPriorityJson() {
+  fieldPrioritiesJson.value = JSON.stringify(fieldPriorityDraft.value, null, 2);
+}
+
 watch(manager.fieldPriorities, (value) => {
-  fieldPrioritiesJson.value = JSON.stringify(value, null, 2);
+  fieldPriorityDraft.value = Object.fromEntries(
+    Object.entries(value).map(([field, ids]) => [field, [...ids]]),
+  );
+  syncPriorityJson();
 }, { deep: true, immediate: true });
 
 const categoryLabels: Record<SourceCategory, string> = {
@@ -125,7 +158,63 @@ onMounted(async () => {
   }
 });
 
-async function saveFieldPriorities() {
+function prioritySources(field: string) {
+  const orderedIds = fieldPriorityDraft.value[field] ?? [];
+  const sourceById = new Map(registeredProviderSources.value.map((source) => [source.id, source]));
+  const selected = orderedIds.map((id) => sourceById.get(id)).filter((source): source is SourceDefinition => Boolean(source));
+  const selectedIds = new Set(selected.map((source) => source.id));
+  return [...selected, ...registeredProviderSources.value.filter((source) => !selectedIds.has(source.id))];
+}
+
+function setPrioritySource(field: string, sourceId: string, checked: boolean) {
+  const current = fieldPriorityDraft.value[field] ?? [];
+  const nextIds = checked
+    ? [...current, sourceId]
+    : current.filter((id) => id !== sourceId);
+  fieldPriorityDraft.value = { ...fieldPriorityDraft.value, [field]: nextIds };
+  syncPriorityJson();
+}
+
+function movePrioritySource(field: string, sourceId: string, direction: -1 | 1) {
+  const ids = [...(fieldPriorityDraft.value[field] ?? [])];
+  const index = ids.indexOf(sourceId);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= ids.length) return;
+  [ids[index], ids[target]] = [ids[target], ids[index]];
+  fieldPriorityDraft.value = { ...fieldPriorityDraft.value, [field]: ids };
+  syncPriorityJson();
+}
+
+function resetPriorityField(field: string) {
+  const next = { ...fieldPriorityDraft.value };
+  delete next[field];
+  fieldPriorityDraft.value = next;
+  syncPriorityJson();
+}
+
+function addMetadataPriorityField() {
+  const key = metadataPriorityField.value.trim();
+  if (!/^[a-z][a-zA-Z0-9_-]{0,63}$/.test(key)) {
+    manager.error.value = "Metadata 字段名必须以小写字母开头，只能包含字母、数字、下划线或连字符，长度不超过 64。";
+    return;
+  }
+  const field = `metadata.${key}`;
+  if (priorityFieldDefinitions.some((item) => item.key === field) || field in fieldPriorityDraft.value) {
+    manager.error.value = "该字段已经存在。";
+    return;
+  }
+  fieldPriorityDraft.value = { ...fieldPriorityDraft.value, [field]: [] };
+  metadataPriorityField.value = "";
+  syncPriorityJson();
+  manager.clearMessages();
+}
+
+function resetAllPriorityFields() {
+  fieldPriorityDraft.value = {};
+  syncPriorityJson();
+}
+
+function applyAdvancedPriorityJson() {
   let parsed: unknown;
   try {
     parsed = JSON.parse(fieldPrioritiesJson.value || "{}");
@@ -138,13 +227,33 @@ async function saveFieldPriorities() {
     return;
   }
   const entries = Object.entries(parsed as Record<string, unknown>);
-  if (entries.length > 100 || entries.some(([, ids]) =>
-    !Array.isArray(ids) || ids.length > 100 || ids.some((id) => typeof id !== "string")
+  const validSourceIds = new Set(registeredProviderSources.value.map((source) => source.id));
+  const validField = (field: string) =>
+    priorityFieldDefinitions.some((item) => item.key === field) ||
+    /^metadata\.[a-z][a-zA-Z0-9_-]{0,63}$/.test(field);
+  if (entries.length > 100 || entries.some(([field, ids]) =>
+    !validField(field) ||
+    !Array.isArray(ids) ||
+    ids.length > 100 ||
+    ids.some((id) => typeof id !== "string" || !validSourceIds.has(id)) ||
+    new Set(ids).size !== ids.length
   )) {
-    manager.error.value = "最多配置 100 个字段；每个字段最多列出 100 个来源 ID。";
+    manager.error.value = "字段名、来源 ID 或数组内容无效；每个来源必须是当前已登记的 Provider，且不能重复。";
     return;
   }
-  await manager.saveFieldPriorities(parsed as Record<string, string[]>);
+  fieldPriorityDraft.value = Object.fromEntries(
+    entries.map(([field, ids]) => [field, [...ids as string[]]]),
+  );
+  syncPriorityJson();
+  showPriorityJsonEditor.value = false;
+  manager.clearMessages();
+}
+
+async function saveFieldPriorities() {
+  const payload = Object.fromEntries(
+    Object.entries(fieldPriorityDraft.value).filter(([, ids]) => ids.length > 0),
+  );
+  await manager.saveFieldPriorities(payload);
 }
 
 async function importAllCatalogSources() {
@@ -418,17 +527,68 @@ async function deleteSource(source: SourceDefinition) {
       </details>
 
       <section class="field-priority-panel">
-        <div>
-          <h2>字段来源优先级</h2>
-          <p>可分别指定标题、番号、发行日期、封面、简介及 metadata 子字段的来源顺序。未配置或空数组时沿用数据源列表顺序；列出的来源优先于未列出的来源。支持字段：title、catalogNumber、releaseDate、imageUrl、description、metadata.字段名。</p>
-          <p class="form-hint">来源 ID：{{ manager.sources.value.filter((source) => (source.type ?? "provider") === "provider").map((source) => source.id).join("、") || "暂无已登记来源" }}</p>
+        <div class="field-priority-heading">
+          <div>
+            <h2>字段来源优先级</h2>
+            <p>分别设置每个字段采用 Provider 数据的先后顺序。勾选来源后，可用上下按钮调整顺序；未勾选的来源仍会参与聚合，但排在已指定来源之后。</p>
+            <p class="form-hint">当前已登记 Provider：{{ registeredProviderSources.length }} 个。这里只列出 Worker 运行时已登记的 Provider，不包含尚未登记的候选目录。</p>
+          </div>
+          <button class="secondary-button small" type="button" :disabled="manager.saving.value" @click="resetAllPriorityFields">全部恢复默认</button>
         </div>
-        <label class="wide">字段优先级 JSON
-          <textarea v-model="fieldPrioritiesJson" rows="7" maxlength="12000" spellcheck="false" placeholder='{"catalogNumber":["jav-metadata-a","jav-metadata-b"],"metadata.studio":["studio-db","jav-metadata-a"]}'></textarea>
-        </label>
+
+        <p v-if="!registeredProviderSources.length" class="panel-note">目前没有已登记的 Provider 来源。请先在数据源管理中登记 Provider；候选目录和已实现的 Adapter 不会自动成为可选来源。</p>
+        <div v-else class="priority-field-list">
+          <article v-for="field in priorityFieldEntries" :key="field.key" class="priority-field-card">
+            <div class="priority-field-title">
+              <div>
+                <strong>{{ field.label }}</strong>
+                <p class="form-hint">{{ field.description }}</p>
+              </div>
+              <button class="text-button" type="button" :disabled="manager.saving.value" @click="resetPriorityField(field.key)">恢复默认</button>
+            </div>
+            <p class="form-hint">已指定的来源按优先级排列；其他来源按数据源列表顺序作为后备。</p>
+            <ol class="priority-source-list">
+              <li v-for="source in prioritySources(field.key)" :key="source.id">
+                <label class="priority-source-choice">
+                  <input
+                    type="checkbox"
+                    :checked="(fieldPriorityDraft[field.key] ?? []).includes(source.id)"
+                    @change="setPrioritySource(field.key, source.id, ($event.target as HTMLInputElement).checked)"
+                  />
+                  <span>{{ source.name }}</span>
+                  <code>{{ source.id }}</code>
+                </label>
+                <div v-if="(fieldPriorityDraft[field.key] ?? []).includes(source.id)" class="priority-source-order">
+                  <span class="priority-rank">优先级 {{ (fieldPriorityDraft[field.key] ?? []).indexOf(source.id) + 1 }}</span>
+                  <button class="secondary-button small" type="button" :disabled="(fieldPriorityDraft[field.key] ?? []).indexOf(source.id) === 0" :aria-label="`将 ${source.name} 上移`" @click="movePrioritySource(field.key, source.id, -1)">上移</button>
+                  <button class="secondary-button small" type="button" :disabled="(fieldPriorityDraft[field.key] ?? []).indexOf(source.id) === (fieldPriorityDraft[field.key] ?? []).length - 1" :aria-label="`将 ${source.name} 下移`" @click="movePrioritySource(field.key, source.id, 1)">下移</button>
+                </div>
+              </li>
+            </ol>
+            <p v-if="!(fieldPriorityDraft[field.key] ?? []).length" class="form-hint">当前使用默认顺序：按数据源列表顺序选择。</p>
+          </article>
+        </div>
+
+        <div class="metadata-priority-tools">
+          <label for="metadata-priority-field">添加 Metadata 子字段</label>
+          <div class="metadata-priority-add">
+            <input id="metadata-priority-field" v-model="metadataPriorityField" type="text" maxlength="64" placeholder="例如 studio、duration、series" @keydown.enter.prevent="addMetadataPriorityField" />
+            <button class="secondary-button small" type="button" :disabled="!metadataPriorityField.trim()" @click="addMetadataPriorityField">添加字段</button>
+          </div>
+          <p class="form-hint">只填写字段名，不需要输入 metadata. 前缀。字段名应与 Provider 实际返回的 metadata 键一致。</p>
+        </div>
+
+        <details class="priority-json-editor" :open="showPriorityJsonEditor" @toggle="showPriorityJsonEditor = ($event.target as HTMLDetailsElement).open">
+          <summary>高级模式：查看 / 编辑 JSON</summary>
+          <label class="wide">字段优先级 JSON
+            <textarea v-model="fieldPrioritiesJson" rows="7" maxlength="12000" spellcheck="false"></textarea>
+          </label>
+          <button class="secondary-button small" type="button" @click="applyAdvancedPriorityJson">应用 JSON 到可视化配置</button>
+        </details>
+
         <div class="field-priority-actions">
           <button class="primary-button small" type="button" :disabled="manager.saving.value" @click="saveFieldPriorities">保存字段优先级</button>
-          <span class="form-hint">这是运行时配置，保存后立即生效，不需要重新部署 Worker。</span>
+          <span class="form-hint">运行时配置，保存后立即生效，无需重新部署 Worker。</span>
         </div>
       </section>
 
@@ -598,6 +758,23 @@ async function deleteSource(source: SourceDefinition) {
   .field-priority-panel { display: grid; gap: 0.8rem; margin: 1rem 0 1.25rem; padding: 1rem; border: 1px solid var(--border-color, #d1d5db); border-radius: 0.75rem; background: var(--panel-bg, rgba(148,163,184,.04)); }
   .field-priority-panel h2 { margin: 0 0 .35rem; font-size: 1rem; }
   .field-priority-panel p { margin: .25rem 0; }
-  .field-priority-panel textarea { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
-  .field-priority-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+  .field-priority-heading, .priority-field-title, .field-priority-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+  .priority-field-list { display: grid; gap: .75rem; }
+  .priority-field-card { display: grid; gap: .55rem; padding: .85rem; border: 1px solid var(--border-color, #d1d5db); border-radius: .6rem; }
+  .priority-field-title strong { overflow-wrap: anywhere; }
+  .priority-source-list { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+  .priority-source-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: .45rem .55rem; border: 1px solid var(--border-color, #d1d5db); border-radius: .45rem; }
+  .priority-source-choice { display: flex; flex: 1 1 15rem; align-items: center; gap: .5rem; min-width: 0; }
+  .priority-source-choice span { font-weight: 600; }
+  .priority-source-choice code { color: var(--muted-color, #64748b); overflow-wrap: anywhere; }
+  .priority-source-order { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+  .priority-rank { font-size: .8rem; color: var(--muted-color, #64748b); }
+  .metadata-priority-tools { display: grid; gap: .4rem; }
+  .metadata-priority-add { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .metadata-priority-add input { flex: 1 1 14rem; min-width: 0; }
+  .priority-json-editor { display: grid; gap: .6rem; }
+  .priority-json-editor summary { cursor: pointer; font-weight: 600; }
+  .priority-json-editor textarea { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+  .text-button { border: 0; background: transparent; color: var(--link-color, #6d28d9); cursor: pointer; text-decoration: underline; }
+  .field-priority-actions { justify-content: flex-start; }
 </style>
