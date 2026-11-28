@@ -156,3 +156,24 @@ h1, .search-panel-heading h2, .results-heading h2, .search-panel h2, .source-typ
   .search-mode, .query-field, .search-submit { grid-column: auto; }
   .query-field { padding-top: 0; }
 }
+
+.ui-modal-backdrop { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; overflow: auto; padding: 16px; background: rgba(30,34,55,.38); backdrop-filter: blur(3px); }
+.ui-modal { max-height: min(90vh, 900px); overflow: auto; border: 1px solid var(--border); border-radius: 16px; background: #fff; box-shadow: 0 24px 80px rgba(31,38,75,.18); }
+.ui-modal-header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border-bottom: 1px solid var(--border); background: #fff; }
+.ui-modal-header h2 { margin: 0; color: var(--text-main); font-size: 17px; }
+.ui-modal-close { width: 30px; height: 30px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 21px; }
+.ui-modal-close:hover { color: var(--accent); background: #f4f3ff; }
+.ui-modal-body { padding: 20px; }
+.ui-modal-footer { display: flex; justify-content: flex-end; gap: 9px; padding: 14px 20px; border-top: 1px solid var(--border); background: #fbfbfe; }
+.ui-badge { display: inline-flex; align-items: center; min-height: 22px; padding: 2px 8px; border: 1px solid transparent; border-radius: 999px; font-size: 10px; font-weight: 650; line-height: 1.4; white-space: nowrap; }
+.ui-badge--neutral { color: #667085; background: #f1f2f6; border-color: #e6e8ef; }
+.ui-badge--success { color: #23845b; background: #eaf8f0; border-color: #c9ebd8; }
+.ui-badge--warning { color: #9a681a; background: #fff6e7; border-color: #f3dfb9; }
+.ui-badge--danger { color: #bd4c59; background: #fff0f1; border-color: #f0cdd1; }
+.ui-badge--info { color: #4268b7; background: #edf3ff; border-color: #d7e3ff; }
+.ui-alert { display: grid; gap: 5px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 9px; font-size: 12px; line-height: 1.6; }
+.ui-alert strong { font-size: 12px; }
+.ui-alert--info { color: #4268b7; border-color: #d7e3ff; background: #f2f6ff; }
+.ui-alert--success { color: #23845b; border-color: #c9ebd8; background: #effaf3; }
+.ui-alert--warning { color: #9a681a; border-color: #f3dfb9; background: #fff9ed; }
+.ui-alert--danger { color: #bd4c59; border-color: #f0cdd1; background: #fff4f5; }
