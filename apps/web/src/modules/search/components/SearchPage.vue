@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { CONTENT_CATEGORIES, CONTENT_CATEGORY_LABELS } from "@aio-resource-search/shared";
 import { useSearch } from "../composables/useSearch";
+import { UiButton, UiInput, UiSelect } from "../../../components/ui";
 
 const {
   query,
