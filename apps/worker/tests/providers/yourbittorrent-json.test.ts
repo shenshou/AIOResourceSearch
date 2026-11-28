@@ -37,6 +37,8 @@ test("drops invalid magnet and untrusted result links", async () => {
   assert.deepEqual(await yourBittorrentProvider.search({ query: "test", mode: "keyword" }, context(fetcher)), []);
 });
 test("rejects unexpected content types and invalid response envelopes", async () => {
-  await assert.rejects(yourBittorrentProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("blocked", { headers: { "Content-Type": "text/html" } })), /unexpected content type/);
-  await assert.rejects(yourBittorrentProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}", { headers: { "Content-Type": "application/json" } })), /invalid JSON response/);
+  const wrongType = yourBittorrentProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("blocked", { headers: { "Content-Type": "text/html" } })));
+  await assert.rejects(wrongType, /unexpected content type/);
+  const invalidEnvelope = yourBittorrentProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}", { headers: { "Content-Type": "application/json" } })));
+  await assert.rejects(invalidEnvelope, /invalid JSON response/);
 });
