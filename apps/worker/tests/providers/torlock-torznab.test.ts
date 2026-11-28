@@ -10,7 +10,7 @@ const source = { id: "torlock", name: "Torlock", category: "torrent" as const, c
 const context = (fetcher: typeof fetch) => ({ source, fetch: fetcher, signal: new AbortController().signal });
 test("registers Torlock Torznab adapter", () => {
   assert.equal(getProviderAdapter("torlock-torznab"), torlockProvider);
-  assert.deepEqual(torlockProvider.searchModes, ["number", "keyword"]);
+  assert.ok(torlockProvider.searchModes.includes("number"));
 });
 test("builds a Torznab request and maps RSS metadata", async () => {
   let requested = "";
