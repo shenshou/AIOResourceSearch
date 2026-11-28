@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { perverzijaDbProvider } from "../../src/providers/perverzija-db.ts";
 import { getProviderAdapter } from "../../src/providers/registry.ts";
 
-function context(fetch: typeof globalThis.fetch) {
+function context(fetch: typeof globalThis.fetch, cache?: Cache) {
   return {
     source: {
       id: "perverzija-db",
@@ -17,6 +17,7 @@ function context(fetch: typeof globalThis.fetch) {
     },
     fetch,
     signal: new AbortController().signal,
+    ...(cache ? { cache } : {}),
   };
 }
 
