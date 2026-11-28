@@ -56,6 +56,21 @@ export function getSourceCatalogDisplayNote(entry: SourceCatalogEntry): string {
   if (/cc0|creative commons|cc by|apache-2\.0|agpl-3\.0/.test(note)) {
     parts.push("记录中涉及开源或内容许可声明；软件许可证不自动等同于上游数据库内容的再利用授权，仍需按字段核验来源和许可范围。");
   }
+  if (/explicitly says not to use scripts|do not use scripts|automated crawlers/.test(note)) {
+    parts.push("站点公告或条款明确限制脚本、爬虫或自动化访问；遵守该限制，不进行 Worker 抓取。");
+  }
+  if (/mirror.?link list|mirror list|mirror discovery/.test(note)) {
+    parts.push("若上游明确允许自动读取镜像列表，该许可仅限镜像发现，不扩展为内容搜索或元数据采集。");
+  }
+  if (/terms prohibit|terms explicitly prohibit|prohibits scraping|prohibit bots|prohibits bots|no-crawling|no scraping/.test(note)) {
+    parts.push("审查记录显示，上游条款对爬虫、自动提取或数据收集设有限制；当前不实施自动采集。");
+  }
+  if (/21\+|18\+|age.?gate|age verification/.test(note)) {
+    parts.push("来源存在年龄确认或年龄验证环节；当前不自动操作年龄门槛或绕过访问流程。");
+  }
+  if (/regional blocking|region restriction|geoblock|geo.?blocking|blocked.*region/.test(note)) {
+    parts.push("记录涉及地区访问限制；不通过代理、备用域名或其他手段规避地区限制。");
+  }
   if (/magnet|torrent|ed2k/.test(note)) {
     parts.push("目录记录中涉及下载资源链接能力；是否接入仍以实际接口、内容来源和单独审查结果为准。");
   }
