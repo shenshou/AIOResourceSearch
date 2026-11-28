@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { genericHtmlProvider } from "../../src/providers/generic-html.ts";
 import { getProviderAdapter } from "../../src/providers/registry.ts";
+import type { SourceDefinition } from "@aio-resource-search/shared";
 
 const baseSource = {
   id: "generic-example", name: "Generic Example", category: "torrent" as const, contentCategory: "jav" as const,
@@ -14,7 +15,7 @@ const extracted = [
   { title: " Valid result ", url: "/detail/1", magnetUri: "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567" },
   { title: "Hostile result", url: "https://evil.example/detail/2" },
 ];
-const context = (fetcher: typeof fetch, source = baseSource) => ({
+const context = (fetcher: typeof fetch, source: SourceDefinition = baseSource) => ({
   source, fetch: fetcher, signal: new AbortController().signal,
   parseHtml: async () => extracted,
 });
