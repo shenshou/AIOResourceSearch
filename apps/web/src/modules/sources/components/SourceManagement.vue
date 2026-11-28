@@ -81,7 +81,7 @@ const emptyForm = (): SourceDefinition => ({
   externalSearchBaseUrl: "",
   providerSearchUrlTemplate: "",
   htmlSelectors: { result: "", title: "", link: "", fields: {} },
-  enabled: true,
+  enabled: false,
   baseUrl: "",
   searchModes: ["keyword"],
   capabilities: ["metadata"],
