@@ -180,3 +180,9 @@ h1, .search-panel-heading h2, .results-heading h2, .search-panel h2, .source-typ
 .ui-alert--success { color: #23845b; border-color: #c9ebd8; background: #effaf3; }
 .ui-alert--warning { color: #9a681a; border-color: #f3dfb9; background: #fff9ed; }
 .ui-alert--danger { color: #bd4c59; border-color: #f0cdd1; background: #fff4f5; }
+
+.results-heading > strong { color: var(--text-main); }
+.result-body h3 a { color: inherit; }
+.result-meta a { color: var(--accent); }
+.result-meta a:hover { text-decoration: underline; }
+.search-mode > span { color: var(--muted); }
