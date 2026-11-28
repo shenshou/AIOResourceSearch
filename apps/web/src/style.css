@@ -132,8 +132,6 @@ h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 5vw, 42px); letter-spacin
 .search-page { width: min(980px, calc(100% - 40px)); margin: 0 auto; flex: 1; padding: 76px 0 72px; }
 .search-panel-heading, .results-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .search-panel-heading h2, .results-heading h2 { margin: 0; color: #f1f5f9; font-size: 16px; }
-.image-toggle { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; cursor: pointer; }
-.image-toggle input { accent-color: var(--accent); }
 .search-form { margin-top: 18px; }
 .search-controls { display: grid; grid-template-columns: 165px 115px minmax(0,1fr) auto; gap: 10px; }
 .search-mode, .query-field { display: grid; gap: 6px; }

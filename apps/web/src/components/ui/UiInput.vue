@@ -1,5 +1,5 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   modelValue?: string | number;
   label?: string;
   hint?: string;
@@ -8,7 +8,16 @@ withDefaults(defineProps<{
   id?: string;
 }>(), { modelValue: "", type: "text" });
 
-const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+const emit = defineEmits<{ "update:modelValue": [value: string | number] }>();
+
+function updateValue(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (props.type === "number" && input.value !== "") {
+    emit("update:modelValue", input.valueAsNumber);
+    return;
+  }
+  emit("update:modelValue", input.value);
+}
 </script>
 
 <template>
@@ -21,7 +30,7 @@ const emit = defineEmits<{ "update:modelValue": [value: string] }>();
       :type="type"
       :value="modelValue"
       :aria-invalid="Boolean(error) || undefined"
-      @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @input="updateValue"
     >
     <span v-if="error" class="ui-field-error">{{ error }}</span>
     <span v-else-if="hint" class="ui-field-hint">{{ hint }}</span>

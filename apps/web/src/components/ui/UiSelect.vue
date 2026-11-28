@@ -4,7 +4,7 @@ export interface UiSelectOption<TValue extends string | number = string> {
   label: string;
   disabled?: boolean;
 }
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   modelValue?: T;
   label?: string;
   hint?: string;
@@ -14,6 +14,12 @@ withDefaults(defineProps<{
 }>(), { options: () => [] });
 
 const emit = defineEmits<{ "update:modelValue": [value: T] }>();
+
+function updateValue(event: Event) {
+  const rawValue = (event.target as HTMLSelectElement).value;
+  const option = props.options.find((item) => String(item.value) === rawValue);
+  emit("update:modelValue", (option?.value ?? rawValue) as T);
+}
 </script>
 
 <template>
@@ -25,7 +31,7 @@ const emit = defineEmits<{ "update:modelValue": [value: T] }>();
       class="ui-select"
       :value="modelValue"
       :aria-invalid="Boolean(error) || undefined"
-      @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value as T)"
+      @change="updateValue"
     >
       <option v-for="option in options" :key="String(option.value)" :value="option.value" :disabled="option.disabled">
         {{ option.label }}

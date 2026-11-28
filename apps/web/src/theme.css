@@ -83,7 +83,7 @@ h1, .search-panel-heading h2, .results-heading h2, .search-panel h2, .source-typ
 .icon-button:hover { color: var(--accent); background: #f5f4ff; }
 .choice-field { border-color: #e1e4ed; }
 .choice-field legend, .source-form label { color: #555d73; }
-.choice-field input, .checkbox-line input, .image-toggle input { accent-color: var(--accent); }
+.choice-field input, .checkbox-line input { accent-color: var(--accent); }
 .result-card { border-color: var(--border); background: #fff; box-shadow: 0 3px 14px rgba(31,38,75,.035); }
 .result-meta { color: var(--muted); }
 .result-source, .result-body h3 a:hover { color: var(--accent); }

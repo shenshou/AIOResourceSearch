@@ -16,25 +16,6 @@ const {
 } = useSearch();
 
 const copyMessage = ref("");
-const showImages = ref(readImagePreference());
-
-function readImagePreference(): boolean {
-  try {
-    return localStorage.getItem("aio-resource-search:show-images") !== "false";
-  } catch {
-    return true;
-  }
-}
-
-function updateImagePreference(value: boolean) {
-  showImages.value = value;
-  try {
-    localStorage.setItem("aio-resource-search:show-images", String(value));
-  } catch {
-    // Storage can be unavailable in private or restricted browsing contexts.
-  }
-}
-
 async function copyResourceLink(value: string, label: string) {
   try {
     await navigator.clipboard.writeText(value);
@@ -100,12 +81,7 @@ const errorLabels: Record<string, string> = {
 
     <section class="search-panel" aria-labelledby="search-title">
       <div class="search-panel-heading">
-        <h2 id="search-title">聚合搜索</h2>
-        <label class="image-toggle">
-          <input type="checkbox" :checked="showImages" @change="updateImagePreference(($event.target as HTMLInputElement).checked)">
-          <span>显示图片</span>
-        </label>
-      </div>
+        <h2 id="search-title">聚合搜索</h2>      </div>
 
       <form class="search-form" @submit.prevent="submitSearch">
         <div class="search-controls">
@@ -171,7 +147,7 @@ const errorLabels: Record<string, string> = {
 
       <div v-else class="result-list">
         <article v-for="item in response.results" :key="item.sourceId + ':' + item.id" class="result-card">
-          <img v-if="showImages && item.imageUrl" class="result-image" :src="item.imageUrl" :alt="item.title" loading="lazy" referrerpolicy="no-referrer">
+          <img v-if="item.imageUrl" class="result-image" :src="item.imageUrl" :alt="item.title" loading="lazy" referrerpolicy="no-referrer">
           <div class="result-body">
             <div class="result-meta">
               <span class="result-source">{{ item.sourceName }}</span>
