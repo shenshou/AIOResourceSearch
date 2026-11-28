@@ -24,6 +24,7 @@ import { SourceApiError, sourceApi, type SourceTestResponse } from "../../../ser
 
 const manager = useSourceManager();
 const availableAdapters = ref<AdapterDefinition[]>([]);
+const adapterAvailabilityState = ref<"loading" | "loaded" | "error">("loading");
 const testQueries = reactive<Record<string, string>>({});
 const testModes = reactive<Record<string, SearchMode>>({});
 const testFeedback = reactive<Record<string, {
@@ -153,8 +154,10 @@ onMounted(async () => {
   try {
     const result = await adapterApi.getPublicAdapters();
     availableAdapters.value = result.adapters;
+    adapterAvailabilityState.value = "loaded";
   } catch {
     availableAdapters.value = [];
+    adapterAvailabilityState.value = "error";
   }
 });
 
@@ -278,7 +281,7 @@ async function importAllCatalogSources() {
 
 function beginCatalogCreate(entry: SourceCatalogEntry) {
   if (entry.type === "provider" && !availableAdapters.value.some((adapter) => adapter.id === entry.adapterId)) {
-    manager.error.value = `请先在“适配器管理”中登记并启用已部署的 ${entry.adapterId} 适配器，再登记该 Provider 数据源。`;
+    manager.error.value = `请先前往“适配器管理”，登记并启用所需的数据源适配器：${entry.adapterId}。`;
     return;
   }
   htmlFieldsJson.value = "{}";
@@ -519,7 +522,19 @@ async function deleteSource(source: SourceDefinition) {
               <small>{{ categoryLabels[entry.category] }} / {{ contentCategoryLabels[entry.contentCategory ?? "jav"] }} · {{ entry.projects.join(" / ") }}</small>
               <small>{{ getSourceCatalogDisplayNote(entry) }}</small>
             </div>
-            <UiButton class="secondary-button small" variant="secondary" type="button" @click="beginCatalogCreate(entry)">配置并登记</UiButton>
+            <div class="source-catalog-action">
+              <UiButton
+                class="secondary-button small"
+                variant="secondary"
+                type="button"
+                :disabled="entry.type === 'provider' && (adapterAvailabilityState !== 'loaded' || !availableAdapters.some((adapter) => adapter.id === entry.adapterId))"
+                @click="beginCatalogCreate(entry)"
+              >
+                {{ entry.type !== "provider" || availableAdapters.some((adapter) => adapter.id === entry.adapterId) ? "配置并登记" : adapterAvailabilityState === "loading" ? "正在读取适配器状态…" : adapterAvailabilityState === "error" ? "暂时无法确认适配器状态" : "需先启用对应适配器" }}
+              </UiButton>
+              <small v-if="entry.type === 'provider' && adapterAvailabilityState === 'error'">无法读取适配器状态，请刷新页面重试。</small>
+              <small v-else-if="entry.type === 'provider' && adapterAvailabilityState === 'loaded' && !availableAdapters.some((adapter) => adapter.id === entry.adapterId)">请先前往“适配器管理”，登记并启用此适配器：<code>{{ entry.adapterId }}</code></small>
+            </div>
           </article>
         </div>
         <p v-if="!unregisteredCatalogEntries.length" class="panel-note">所有预置候选来源均已登记。</p>
@@ -619,7 +634,7 @@ async function deleteSource(source: SourceDefinition) {
                 {{ source.enabled ? "已启用" : "已禁用" }}
               </span>
             </div>
-            <p class="source-meta">{{ categoryLabels[source.category] }} / {{ contentCategoryLabels[source.contentCategory ?? "jav"] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · Adapter: {{ source.adapterId }}</template></p>
+            <p class="source-meta">{{ categoryLabels[source.category] }} / {{ contentCategoryLabels[source.contentCategory ?? "jav"] }} · {{ source.id }} · {{ sourceTypeLabels[source.type ?? "provider"] }}<template v-if="(source.type ?? 'provider') === 'provider'"> · 适配器：{{ source.adapterId }}</template></p>
             <div class="source-tags">
               <span v-for="mode in source.searchModes" :key="mode">{{ modeLabels[mode] }}</span>
               <span v-for="capability in source.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
