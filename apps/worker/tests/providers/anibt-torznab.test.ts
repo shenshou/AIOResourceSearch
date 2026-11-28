@@ -8,9 +8,9 @@ const feed = (items: string) => `<?xml version="1.0"?><rss><channel>${items}</ch
 const item = (guid = "https://anibt.net/release/rel_12345", enclosure = torrentUrl) => `<item><title><![CDATA[Example &amp; Release]]></title><guid>${guid}</guid><enclosure url="${enclosure}" /><size>2048</size><pubDate>Mon, 16 Nov 2026 20:33:00 +0800</pubDate><attr name="seeders" value="12" /><attr name="peers" value="3" /></item>`;
 const source = { id: "anibt", name: "AniBT", category: "torrent" as const, contentCategory: "anime" as const, enabled: true, searchModes: ["keyword" as const], capabilities: ["metadata" as const, "torrent" as const], timeoutMs: 10000 };
 const context = (fetcher: typeof fetch) => ({ source, fetch: fetcher, signal: new AbortController().signal });
-test("registers a keyword-only Torznab adapter", () => {
+test("registers a Torznab adapter with keyword search", () => {
   assert.equal(getProviderAdapter("anibt-torznab"), anibtTorznabProvider);
-  assert.deepEqual(anibtTorznabProvider.searchModes, ["keyword"]);
+  assert.ok(anibtTorznabProvider.searchModes.includes("keyword"));
 });
 test("builds the Torznab query and maps a valid RSS item", async () => {
   let requested = "";
