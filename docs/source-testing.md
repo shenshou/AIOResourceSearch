@@ -1,6 +1,6 @@
 # Administrator source testing
 
-Source tests are available only through the authenticated Worker administration API. They execute one selected, enabled Provider source; they do not invoke the public all-source search fan-out.
+Source tests are available only through the authenticated Worker administration API. They execute one selected Provider source, including a source that is currently disabled; they do not invoke the public all-source search fan-out. A diagnostic never changes or persists the source's enabled state.
 
 ## Endpoints
 
@@ -37,7 +37,7 @@ A completed diagnostic returns HTTP 200 with a result object, including when the
 - `sampleResults`: at most three entries containing title, canonical result URL, and optional catalog number/release date
 - `errorCode` and a safe diagnostic message on Provider failure
 
-Invalid requests, missing sources, disabled sources, external-search entries, and unavailable/incompatible adapters use ordinary non-2xx HTTP responses. The endpoint does not expose upstream response bodies, request headers, credentials, or full resource payloads.
+Invalid requests, missing sources, external-search entries, and unavailable/incompatible adapters use ordinary non-2xx HTTP responses. Disabled Provider sources are eligible for explicit administrator diagnostics; disabled status continues to exclude them from ordinary public search. The endpoint does not expose upstream response bodies, request headers, credentials, or full resource payloads.
 
 ## Execution and safety boundaries
 
@@ -50,7 +50,7 @@ Invalid requests, missing sources, disabled sources, external-search entries, an
 - A successful smoke test establishes that the Provider returned a valid response for the probe query at that moment. It does not establish source policy approval, stable availability, or permission to enable the source.
 - Source-specific access controls and usage rules remain in force. No login, paywall, CAPTCHA, anti-bot challenge, geographic restriction, rate limit, or other access control is bypassed.
 
-The frontend exposes separate **测试连接** and **测试搜索** actions for enabled Provider sources. The connection action is explicitly described as a smoke search rather than a TCP ping. Query tests allow the administrator to choose a supported search mode and display status, elapsed time, result count, and up to three samples.
+The frontend exposes separate **测试连接** and **测试搜索** actions for Provider sources regardless of their enabled state. Testing a disabled source does not enable it; ordinary public search continues to exclude disabled sources. The connection action is explicitly described as a smoke search rather than a TCP ping. Query tests allow the administrator to choose a supported search mode and display status, elapsed time, result count, and up to three samples.
 
 
 ## Authenticated source diagnostics
