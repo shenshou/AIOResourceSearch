@@ -449,7 +449,7 @@ const adminTestSource = {
   type: "provider",
   adapterId: "perverzija-db",
   enabled: true,
-  searchModes: ["number", "keyword"],
+  searchModes: ["keyword"],
   capabilities: ["metadata"],
   timeoutMs: 5000,
 };
@@ -621,7 +621,7 @@ test("test search validates the query and selected mode before calling the Provi
     assert.equal(((await readJson(unsupportedMode)).error as Record<string, unknown>).code, "invalid_search_mode");
     assert.equal(fetched, false);
 
-    const valid = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
+    const valid = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "keyword" }), env);
     assert.equal(valid.status, 200);
     const body = await readJson(valid);
     assert.equal(body.kind, "test-search");
@@ -639,7 +639,7 @@ test("Provider test reports upstream failure and cancellation without persisting
   globalThis.fetch = async () => new Response("unavailable", { status: 503, headers: { "Content-Type": "text/plain" } });
   try {
     const env = createEnv(adminTestValues(), { adminToken: "test-secret" });
-    const failed = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), env);
+    const failed = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "keyword" }), env);
     assert.equal(failed.status, 200);
     const failureBody = await readJson(failed);
     assert.equal(failureBody.status, "error");
@@ -648,7 +648,7 @@ test("Provider test reports upstream failure and cancellation without persisting
 
     globalThis.fetch = async () => new Promise<Response>(() => undefined);
     const timeoutEnv = createEnv(adminTestValues({ ...adminTestSource, timeoutMs: 1000 }), { adminToken: "test-secret" });
-    const timedOut = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }), timeoutEnv);
+    const timedOut = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "keyword" }), timeoutEnv);
     assert.equal(timedOut.status, 200);
     const timeoutBody = await readJson(timedOut);
     assert.equal(timeoutBody.status, "timeout");
@@ -657,7 +657,7 @@ test("Provider test reports upstream failure and cancellation without persisting
 
     const controller = new AbortController();
     controller.abort(new DOMException("Cancelled by test.", "AbortError"));
-    const cancelled = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "number" }, controller.signal), env);
+    const cancelled = await worker.fetch(adminTestRequest("perverzija-source/test-search", { query: "ABP-123", mode: "keyword" }, controller.signal), env);
     assert.equal(cancelled.status, 499);
     assert.equal(env.__writes.length, 0);
   } finally {

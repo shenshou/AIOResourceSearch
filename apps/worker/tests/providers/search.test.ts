@@ -294,13 +294,13 @@ function perverzijaSourceDefinition(): SourceDefinition {
     contentCategory: "jav",
     adapterId: "perverzija-db",
     capabilities: ["metadata", "relationships"],
-    searchModes: ["number", "keyword"],
+    searchModes: ["keyword"],
   });
 }
 
 test("Perverzija DB Provider fails closed on a cache miss when its coordinator is unavailable", async () => {
   const result = await executeSearch(
-    request,
+    { ...request, mode: "keyword" },
     sourceConfig(perverzijaSourceDefinition()),
     perverzijaAdapterConfig(),
     resolve(perverzijaDbProvider),
@@ -328,7 +328,7 @@ test("Perverzija DB cache hits work without reserving a coordinator slot", async
   } as unknown as Cache;
 
   const result = await executeSearch(
-    request,
+    { ...request, mode: "keyword" },
     sourceConfig(perverzijaSourceDefinition()),
     perverzijaAdapterConfig(),
     resolve(perverzijaDbProvider),
