@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { UiButton } from "./ui";
 
 const props = defineProps<{
   loading: boolean;
@@ -26,7 +27,6 @@ function submit() {
   if (!value || props.loading) return;
   emit("submit", value);
 }
-import { UiButton } from "./ui";
 </script>
 
 <template>
