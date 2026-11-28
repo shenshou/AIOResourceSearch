@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { theRarBgProvider } from "../../src/providers/the-rarbg-json.ts";
 import { getProviderAdapter } from "../../src/providers/registry.ts";
+import type { SourceDefinition } from "@aio-resource-search/shared";
 
 const hash = "0123456789abcdef0123456789abcdef01234567";
 const magnet = `magnet:?xt=urn:btih:${hash}`;
 const source = { id: "the-rarbg-jav", name: "The RarBg · JAV", category: "torrent" as const, contentCategory: "jav" as const, enabled: true, searchModes: ["keyword" as const, "number" as const], capabilities: ["metadata" as const, "magnet" as const], timeoutMs: 10000 };
-const context = (fetcher: typeof fetch) => ({ source, fetch: fetcher, signal: new AbortController().signal });
+const context = (fetcher: typeof fetch, selectedSource: SourceDefinition = source) => ({ source: selectedSource, fetch: fetcher, signal: new AbortController().signal });
 test("registers The RarBg JSON adapter and declares supported categories", () => {
   assert.equal(getProviderAdapter("the-rarbg-json"), theRarBgProvider);
   assert.deepEqual(theRarBgProvider.contentCategories, ["jav", "anime", "film-tv", "game", "music"]);
@@ -39,6 +40,6 @@ test("drops mismatched magnets and untrusted detail URLs", async () => {
   assert.deepEqual(await theRarBgProvider.search({ query: "test", mode: "keyword" }, context(fetcher)), []);
 });
 test("rejects unsupported categories and invalid JSON envelopes", async () => {
-  await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, { ...context(async () => new Response("{}")), source: { ...source, contentCategory: "manga" } }), /does not support/);
+  await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}"), { ...source, contentCategory: "manga" })), /does not support/);
   await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}", { headers: { "Content-Type": "application/json" } })), /invalid JSON response/);
 });
