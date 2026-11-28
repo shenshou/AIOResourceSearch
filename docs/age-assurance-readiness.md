@@ -1,3 +1,5 @@
+**Review baseline: 2026-11-26.** This is a jurisdiction-specific research snapshot, not legal advice. Recheck current statutes, injunctions, and launch jurisdictions before release decisions.
+
 # Age-assurance and launch-scope readiness
 
 **Status: jurisdiction-specific launch assessment pending; no blanket adult-content disablement**

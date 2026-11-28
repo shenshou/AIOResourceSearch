@@ -40,6 +40,17 @@
 
 见 [providers/](providers/) 目录，包括每个 Provider 的协议、字段映射、限流、测试和启用边界。
 
+## 历史状态与研究快照
+
+以下文件包含特定分支、提交或日期的状态结论，阅读时必须同时查看其基准信息；不能直接视为当前实时状态：
+
+- `jav-source-status.md`：基于指定历史分支和 commit 的 JAV 来源核验盘点。
+- `resource-link-source-status.md`：基于 2026-11-27 基线的资源链接能力盘点。
+- `source-review.md`：最近审查日期为 2026-11-27 的候选来源审查日志。
+- `age-assurance-readiness.md`：2026-11-26 的年龄保障法律/政策研究基线。
+- `provider-integration-readiness.md`：Provider 接入准备度研究，必须逐项复核上游接口和政策。
+- `deferred-source-backlog.md`：持续维护的暂缓开发清单，不代表永久排除。
+
 ## 文档状态约定
 
 - **规范 / 契约**：描述当前必须遵守的规则；变更代码或接口时同步更新。
