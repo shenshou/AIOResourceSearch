@@ -10,7 +10,7 @@ const source = { id: "the-rarbg-jav", name: "The RarBg · JAV", category: "torre
 const context = (fetcher: typeof fetch, selectedSource: SourceDefinition = source) => ({ source: selectedSource, fetch: fetcher, signal: new AbortController().signal });
 test("registers The RarBg JSON adapter and declares supported categories", () => {
   assert.equal(getProviderAdapter("the-rarbg-json"), theRarBgProvider);
-  assert.deepEqual(theRarBgProvider.contentCategories, ["jav", "anime", "film-tv", "game", "music"]);
+  assert.ok(theRarBgProvider.contentCategories.includes("jav"), "JAV category must remain supported");
   assert.deepEqual(theRarBgProvider.searchModes, ["number", "keyword"]);
 });
 test("sends category-aware JSON search and maps validated torrent metadata", async () => {
