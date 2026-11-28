@@ -19,7 +19,7 @@ const activeView = ref<"search" | "sources" | "adapters">("search");
         <button :class="{ active: activeView === 'sources' }" type="button" @click="activeView = 'sources'">数据源管理</button>
         <button :class="{ active: activeView === 'adapters' }" type="button" @click="activeView = 'adapters'">适配器管理</button>
       </nav>
-      <span class="header-caption">多数据源聚合搜索</span>
+      <span class="header-caption">多来源聚合检索</span>
     </header>
 
     <SearchPage v-if="activeView === 'search'" />
@@ -27,7 +27,7 @@ const activeView = ref<"search" | "sources" | "adapters">("search");
     <AdapterManagement v-else />
 
     <footer class="site-footer">
-      AIOResourceSearch · Search and aggregate, not host media.
+      AIOResourceSearch · 聚合搜索，不托管媒体文件。
     </footer>
   </div>
 </template>
