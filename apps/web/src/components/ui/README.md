@@ -7,12 +7,12 @@
 | 组件 | 用途 |
 | --- | --- |
 | `UiButton` | 主按钮、次按钮、危险按钮、幽灵按钮；支持尺寸、加载和块级布局 |
-| `UiInput` | 单行输入，支持标签、提示、错误和原生 input 属性透传 |
-| `UiSelect` | 原生下拉选择，支持 v-model、标签和选项插槽 |
+| `UiInput` | 单行输入，支持标签、提示、错误和原生属性透传；`type="number"` 时以 number 类型回传 |
+| `UiSelect` | 原生下拉选择，支持 v-model、标签、选项插槽及 string/number 类型选项 |
 | `UiTextarea` | 多行输入，支持标签、提示和错误 |
 | `UiCard` | 统一卡片容器 |
 | `UiEmptyState` | 空状态 |
-| `UiModal` | 统一弹窗容器，支持标题、内容和 footer 插槽 |
+| `UiModal` | 统一弹窗容器，支持标题、内容和 footer 插槽；管理初始焦点、Tab 焦点循环、Esc 关闭及关闭后焦点恢复 |
 | `UiBadge` | 状态标签 |
 | `UiAlert` | 信息、成功、警告和错误提示 |
 
