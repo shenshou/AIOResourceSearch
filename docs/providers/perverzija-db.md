@@ -13,7 +13,13 @@
 - API key: not required
 - Shared rate-limit lane: `perverzija` (600 ms minimum spacing)
 
-The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capabilities `metadata` and `relationships`, and keyword search mode only. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until a live Cloudflare Worker request has been verified.
+The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capabilities `metadata` and `relationships`, and keyword search mode only. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until its configuration has been reviewed and explicit enablement is approved.
+
+## Staging verification snapshot (2026-11-28)
+
+- A live Staging Worker keyword search using `Kira Noir` succeeded, returning 30 results in approximately 840 ms.
+- The connection smoke test returned 0 results in approximately 1077 ms. This is not a contradiction: the smoke test uses a fixed probe term and treats a valid upstream response with no matches as a successful connection check.
+- These observations verify one Staging request path at that time. They do not authorize enabling the source or establish ongoing availability. Keep the source disabled unless and until its configuration and source-policy review are complete and enablement is explicitly approved.
 
 ## Request behavior
 
