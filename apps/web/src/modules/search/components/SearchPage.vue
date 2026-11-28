@@ -81,7 +81,8 @@ const errorLabels: Record<string, string> = {
 
     <section class="search-panel" aria-labelledby="search-title">
       <div class="search-panel-heading">
-        <h2 id="search-title">聚合搜索</h2>      </div>
+        <h2 id="search-title">聚合搜索</h2>
+      </div>
 
       <form class="search-form" @submit.prevent="submitSearch">
         <div class="search-controls">
