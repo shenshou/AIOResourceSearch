@@ -439,10 +439,6 @@ async function submitForm() {
 async function runSourceTest(source: SourceDefinition, kind: "connection" | "search") {
   if (testingSourceId.value || !manager.token.value) return;
   if ((source.type ?? "provider") !== "provider") return;
-  if (!source.enabled) {
-    testFeedback[source.id] = { status: "error", message: "请先启用数据源，再执行测试。" };
-    return;
-  }
   if (!availableAdapters.value.some((adapter) => adapter.id === source.adapterId)) {
     testFeedback[source.id] = { status: "error", message: "适配器当前未启用或没有 Worker 实现。" };
     return;
@@ -645,16 +641,16 @@ async function deleteSource(source: SourceDefinition) {
             <p v-else-if="source.externalSearchBaseUrl" class="source-url">外部站点：{{ source.externalSearchBaseUrl }}</p>
             <div v-if="(source.type ?? 'provider') === 'provider'" class="source-test-tools">
               <div class="source-test-actions">
-                <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'connection')">
+                <button class="secondary-button small" type="button" :disabled="testingSourceId !== null || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'connection')">
                   {{ testingSourceId === source.id ? "测试中…" : "测试连接" }}
                 </button>
-                <input v-model="testQueries[source.id]" type="search" maxlength="120" placeholder="输入测试关键词" :disabled="!source.enabled || testingSourceId !== null" :aria-label="source.name + ' 测试关键词'">
-                <select v-model="testModes[source.id]" :disabled="!source.enabled || testingSourceId !== null" :aria-label="source.name + ' 测试搜索方式'">
+                <input v-model="testQueries[source.id]" type="search" maxlength="120" placeholder="输入测试关键词" :disabled="testingSourceId !== null" :aria-label="source.name + ' 测试关键词'">
+                <select v-model="testModes[source.id]" :disabled="testingSourceId !== null" :aria-label="source.name + ' 测试搜索方式'">
                   <option v-for="mode in source.searchModes" :key="mode" :value="mode">{{ modeLabels[mode] }}</option>
                 </select>
                 <button class="secondary-button small" type="button" :disabled="!source.enabled || testingSourceId !== null || !testQueries[source.id]?.trim() || !availableAdapters.some((adapter) => adapter.id === source.adapterId)" @click="runSourceTest(source, 'search')">测试搜索</button>
               </div>
-              <p class="form-hint">连接测试会使用默认探测词执行一次 Provider 搜索，不是独立的 TCP Ping；上游正常响应但结果为 0 条也算连接成功。</p>
+              <p class="form-hint">连接测试会使用默认探测词执行一次 Provider 搜索，不是独立的 TCP Ping；上游正常响应但结果为 0 条也算连接成功。数据源处于禁用状态也可以测试；测试不会启用或修改数据源配置，但对应适配器必须已启用。</p>
               <div v-if="testFeedback[source.id]" class="source-test-feedback" :class="testFeedback[source.id]?.status" role="status">
                 <strong>{{ testFeedback[source.id]?.status === "success" ? "测试成功" : testFeedback[source.id]?.status === "timeout" ? "请求超时" : "测试失败" }}</strong>
                 <span v-if="testFeedback[source.id]?.elapsedMs !== undefined">耗时 {{ testFeedback[source.id]?.elapsedMs }} ms</span>
