@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { UiButton } from "./ui";
 
 const props = defineProps<{
   loading: boolean;
@@ -46,9 +47,9 @@ function submit() {
           {{ showToken ? "隐藏" : "显示" }}
         </button>
       </div>
-      <button class="primary-button" type="submit" :disabled="loading || !token.trim()">
+      <UiButton class="primary-button" type="submit" :disabled="!token.trim()" :loading="loading">
         {{ loading ? "验证中…" : "验证并进入管理" }}
-      </button>
+      </UiButton>
     </form>
   </div>
 </template>

@@ -1,45 +1,43 @@
 # AIOResourceSearch
 
-A multi-category, multi-mechanism resource search and aggregation platform.
+AIOResourceSearch is a multi-category, multi-source resource search and aggregation platform. It provides one search entry point for independently adapted sources, normalizes metadata, deduplicates result URLs, and presents source-attributed destinations.
 
-## Project scope
+Adult/JAV-related search and source management are a core product pillar, not an optional category. The project also supports broader content categories through the same aggregation architecture.
 
-AIOResourceSearch provides one search entry point for multiple independently adapted sources. Its core responsibilities are source integration, search orchestration, result normalization, deduplication, result presentation, and links supplied by authorized sources.
+## Product boundaries
 
-Source categories:
+- The application does not host, stream, or download media files.
+- It is not a local media manager or download client.
+- It does not provide user accounts, cloud favorites, search history, or cross-device personal-data synchronization.
+- Worker-backed Provider sources are distinct from external-search entries. External-search entries only generate a user-opened HTTPS destination and are never fetched by the Worker.
+- A source catalog entry is a research candidate, not an enabled or approved source.
 
-- JAV / adult video metadata
-- Anime and animation
-- Films and television
-- Manga and comics
-- Novels and books
-- Games
-- Music
-- General public resource indexes
+## Documentation
 
-Content categories are independent from source kinds (JAV site, torrent index, forum, or other index).
+Start at the **[Documentation Center](docs/README.md)**.
 
-The application does not host media files. It does not include user accounts, cloud favorites, search history, a media library, or cross-device user-data synchronization.
+Key references:
 
-The only planned browser-persisted preferences are the image-display toggle and theme.
-
-
-Adult/JAV-related search, metadata, and source management are a core product pillar of this project, not an optional category. The source inventory is intended to support progressive development of additional in-scope sources over time. Technical research may learn from other open-source implementations and is not limited to official APIs; implementation feasibility, access restrictions, and data-use permission must be evaluated separately. See [the source catalog governance policy](docs/source-catalog-policy.md).
-
-## Source catalog
-
-The candidate source inventory collected from Atlas, Lustpress, and FetchJAV is documented in [docs/source-catalog.md](./docs/source-catalog.md). Its retention, evidence, review, and reconciliation rules are defined in [docs/source-catalog-policy.md](./docs/source-catalog-policy.md) and are mandatory under [docs/development-standards.md](./docs/development-standards.md). Sources are not automatically enabled: each candidate must be checked for canonical URLs, search URL format, access policy, and Cloudflare Workers compatibility. A deferred or currently unreachable source remains in the inventory unless a documented removal criterion is met.
-
-The platform distinguishes Worker-backed **Provider** sources from **External Search** entries. External Search only generates a user-opened HTTPS search link and does not trigger a Worker fetch.
+- [User guide](docs/product/user-guide.md)
+- [Administrator guide](docs/product/admin-guide.md)
+- [UI design and shared components](docs/design/ui-system.md)
+- [Worker API contract](docs/api/worker-api.md)
+- [Deployment and operations runbook](docs/operations/runbook.md)
+- [Documentation maintenance rules](docs/governance/documentation-standards.md)
+- [Architecture](docs/architecture.md)
+- [Development standards](docs/development-standards.md)
+- [Source catalog governance](docs/source-catalog-policy.md)
+- [Provider-specific documentation](docs/providers/)
 
 ## Architecture
 
 - `apps/web`: Vue 3 + TypeScript + Vite frontend, deployed to Cloudflare Pages.
-- `apps/worker`: Cloudflare Worker API, deployed independently.
+- `apps/worker`: Cloudflare Worker API and Provider implementations.
 - `packages/shared`: shared TypeScript contracts.
-- Cloudflare KV: source and adapter management configuration in one namespace, stored under separate keys. No D1 database is planned.
+- Cloudflare KV: source and adapter configuration, stored under separate versioned keys.
+- Durable Objects: shared upstream rate-limit coordination where required.
 
-See [docs/cloudflare-deployment.md](docs/cloudflare-deployment.md) for the two-site Cloudflare deployment model: feature/fix branches flow into develop (Staging), then verified releases flow into main (Production). The two Pages projects and their Worker/KV/Durable Object environments are isolated. See [docs/architecture.md](docs/architecture.md) for boundaries and data flow, [docs/development-standards.md](docs/development-standards.md) for implementation and review rules, and [docs/development-roadmap.md](docs/development-roadmap.md) for phases, delivery criteria, and outstanding verification. Age-assurance scope and implementation gates are recorded in [docs/age-assurance-readiness.md](docs/age-assurance-readiness.md). Reusable Vue component contracts are listed in [docs/frontend-components.md](docs/frontend-components.md). Shared upstream API quota handling is documented in [docs/provider-rate-limiting.md](docs/provider-rate-limiting.md), candidate API contracts and implementation gates are documented in [docs/provider-integration-readiness.md](docs/provider-integration-readiness.md), source-inventory governance is defined in [docs/source-catalog-policy.md](docs/source-catalog-policy.md), the MangaDex metadata-only implementation is specified in [docs/providers/mangadex-api.md](docs/providers/mangadex-api.md), and JAV work identity plus field-level merge behavior are specified in [docs/providers/jav-metadata-aggregation.md](docs/providers/jav-metadata-aggregation.md).
+Pages and Worker are separate deployable targets. Staging and Production use separate Pages projects, Workers, KV namespaces, Durable Object storage, origins, and administrator secrets. See [the deployment guide](docs/cloudflare-deployment.md) and [the operations runbook](docs/operations/runbook.md).
 
 ## Local development
 
@@ -50,57 +48,39 @@ npm install
 npm run dev:web
 ```
 
-Run the static code checks with `npm run lint`. To format the frontend and shared TypeScript sources, use `npm run format` after reviewing the scope of the changes.
-
 In a second terminal:
 
 ```bash
 npm run dev:worker
 ```
 
-During local development, the frontend defaults to `http://localhost:8787` for the Worker API. Production builds do not fall back to localhost: set `VITE_API_BASE_URL` to the HTTPS origin of the deployed Worker in the Cloudflare Pages environment (see [apps/web/.env.example](apps/web/.env.example) and [the deployment guide](docs/cloudflare-deployment.md)).
+Run static checks with:
 
-The base `apps/worker/wrangler.jsonc` is for local Worker development and is not the hosted deployment target. Hosted environments use separate generated configurations and separate KV namespaces:
+```bash
+npm run lint
+npm run build
+```
 
-- Staging: `apps/worker/wrangler.staging.example.jsonc` → `aio-resource-search-api-staging`.
-- Production: `apps/worker/wrangler.production.example.jsonc` → `aio-resource-search-api`.
+The frontend uses `http://localhost:8787` only in Vite development mode. Production builds require `VITE_API_BASE_URL` to be set to the corresponding Worker HTTPS origin; they do not fall back to the visitor's localhost. See [apps/web/.env.example](apps/web/.env.example) and [the Cloudflare deployment guide](docs/cloudflare-deployment.md).
 
-Create one KV namespace for Staging and another for Production. Their IDs belong only in the corresponding GitHub Environment variables or ignored local generated configs. Follow [the deployment guide](docs/cloudflare-deployment.md) for exact setup. Never reuse the same KV namespace between environments, and do not commit API tokens or other secrets.
+The base `apps/worker/wrangler.jsonc` is for local development. Hosted environments use separate Staging and Production templates and KV namespaces. Never reuse a KV namespace between environments, and never commit API tokens or other secrets.
 
-For local admin API testing, create `apps/worker/.dev.vars` with:
+For local admin API testing, create the ignored `apps/worker/.dev.vars` file:
 
 ```dotenv
 ADMIN_API_TOKEN=replace-with-a-long-random-local-secret
 ```
 
-The file is ignored by Git and is used only by local Wrangler development. Neither hosted environment has been provisioned yet. Do not run `wrangler secret put` or `wrangler deploy` as part of local setup: `wrangler secret put` creates a new Worker version and deploys it immediately. Provision the separate Staging and Production resources and configure their GitHub Environments only by following the deployment guide.
+Do not run `wrangler secret put` or `wrangler deploy` as part of ordinary local setup. Secret updates deploy a new Worker version; hosted deployment and recovery must follow the environment-specific runbook.
 
-Set `ALLOWED_ORIGINS` to the exact frontend origin(s) in the relevant Worker environment. The checked-in value is for local Vite development only.
+## Source catalog and access policy
 
-## Current implementation status
+The candidate source inventory collected from Atlas, Lustpress, and FetchJAV is documented in [the source catalog](docs/source-catalog.md). Retention, evidence, review, and reconciliation rules are mandatory under [the source catalog governance policy](docs/source-catalog-policy.md) and [development standards](docs/development-standards.md).
 
-- [x] Initial monorepo structure
-- [x] Shared source configuration contract
-- [x] Worker health endpoint
-- [x] Public enabled-source endpoint
-- [x] Protected source configuration CRUD API backed by KV
-- [x] Frontend source-management interface (CRUD, enable/disable, in-memory admin token)
-- [x] Adapter metadata contract and KV-backed administration API
-- [x] Adapter-management UI (CRUD, implementation status, enable/disable)
-- [x] Runtime Provider interface and compile-time adapter registry
-- [x] Content-category model and category-filtered search
-- [x] API, RSS, and configurable HTML acquisition mechanisms
-- [x] Twelve site-specific API/RSS Providers plus reusable HTML adapter; code registration, KV configuration, enablement, and hosted Cloudflare verification are tracked separately
-- [ ] Per-source HTML selector review and live Cloudflare connectivity verification
-- [x] Search orchestration, per-source timeout/failure isolation, result validation, and URL deduplication
-- [x] Frontend aggregated-search page, result presentation, and resource-link actions
-- [x] Worker scheduler unit tests (availability, compatibility, normalization, deduplication, failure isolation, timeout, result cap, and concurrency)
-- [ ] Deployment and end-to-end verification
+Sources are not automatically enabled. Each candidate requires source-specific review of canonical URLs, search behavior, access rules, data use, and Cloudflare Workers compatibility. A deferred or currently unreachable candidate remains in the inventory unless a documented removal criterion is met.
 
-Source and adapter metadata changes are runtime operations: they update KV and do not require a Pages or Worker deployment. KV is eventually consistent, so propagation may be delayed briefly. Adapter records are metadata only; the Worker accepts an adapter as usable only when its ID is registered in the compile-time Provider registry (`apps/worker/src/providers/registry.ts`). New adapter code or protocol support still requires a Worker deployment.
+Do not implement or enable acquisition paths that require bypassing authentication, paywalls, CAPTCHA, anti-bot protections, geographic/IP restrictions, rate limits, or other access controls. Such candidates may remain documented for future research, but no bypass is pre-approved. Do not ingest or distribute illegal content or non-consensual intimate material.
 
-A configured source is not automatically searchable: its adapter must exist in code and its access method must be permitted by the source operator.
+## Environment status
 
-## Source access and safety
-
-Public visibility alone does not establish permission for automated access or display. In the current development phase, do not implement or enable acquisition paths requiring bypass of authentication, paywalls, CAPTCHA, anti-bot protections, geo/IP restrictions, rate limits, or other access controls. These paths are deferred, not permanently excluded: a later phase may explicitly research and assess technical solutions under the source-specific legal, contractual, platform, authorization, security, and privacy review defined in [the source catalog governance policy](docs/source-catalog-policy.md). No future bypass or integration is pre-approved. Do not ingest or distribute illegal content or non-consensual intimate material. Keep credentials in Worker secrets, never in source configuration committed to this public repository.
+Deployment status changes independently of repository documentation. Consult the [operations runbook](docs/operations/runbook.md) for the dated handover snapshot, and verify current GitHub Actions and Cloudflare state before making operational decisions.

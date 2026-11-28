@@ -15,6 +15,8 @@ import {
   type SourceType,
 } from "@aio-resource-search/shared";
 import { SOURCE_CATALOG, type SourceCatalogEntry } from "../sourceCatalog";
+import { getSourceCatalogDisplayNote } from "../sourceCatalogPresentation";
+import { UiButton, UiModal } from "../../../components/ui";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
 import { useSourceManager } from "../composables/useSourceManager";
 import { adapterApi } from "../../../services/adapterApi";
@@ -79,7 +81,7 @@ const emptyForm = (): SourceDefinition => ({
   externalSearchBaseUrl: "",
   providerSearchUrlTemplate: "",
   htmlSelectors: { result: "", title: "", link: "", fields: {} },
-  enabled: true,
+  enabled: false,
   baseUrl: "",
   searchModes: ["keyword"],
   capabilities: ["metadata"],
@@ -158,7 +160,7 @@ async function importAllCatalogSources() {
     searchModes: [...entry.searchModes],
     capabilities: [],
     timeoutMs: 10000,
-    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note} 尚未核验搜索 URL、访问规则和 Workers 可用性。`,
+    notes: `候选来源：${entry.projects.join("、")}。 ${getSourceCatalogDisplayNote(entry)} 尚未核验搜索 URL、访问规则和 Worker 可用性。`,
   }));
   if (!candidates.length) return;
   if (!window.confirm(`将一次性登记全部 ${candidates.length} 个外部搜索候选。它们都会保持禁用，不会参与搜索。Provider 类型来源需先启用对应适配器，再逐条登记。确认继续吗？`)) return;
@@ -186,7 +188,7 @@ function beginCatalogCreate(entry: SourceCatalogEntry) {
     enabled: false,
     searchModes: [...entry.searchModes],
     capabilities: [...(entry.capabilities ?? [])],
-    notes: `候选来源：${entry.projects.join("、")}。 ${entry.note}`,
+    notes: `候选来源：${entry.projects.join("、")}。 ${getSourceCatalogDisplayNote(entry)}`,
   });
   previousFormType = form.type ?? "provider";
   editingId.value = null;
@@ -205,8 +207,13 @@ function beginCreate() {
 
 function beginEdit(source: SourceDefinition) {
   htmlFieldsJson.value = JSON.stringify(source.htmlSelectors?.fields ?? {}, null, 2);
+  const catalogEntry = SOURCE_CATALOG.find((entry) => entry.id === source.id);
+  const localizedCatalogNotes = catalogEntry && source.notes?.includes(catalogEntry.note)
+    ? `候选来源：${catalogEntry.projects.join("、")}。 ${getSourceCatalogDisplayNote(catalogEntry)}`
+    : source.notes;
   Object.assign(form, {
     ...source,
+    notes: localizedCatalogNotes,
     contentCategory: source.contentCategory ?? "jav",
     type: source.type ?? "provider",
     adapterId: source.adapterId ?? "",
@@ -401,9 +408,9 @@ async function deleteSource(source: SourceDefinition) {
             <div>
               <strong>{{ entry.name }}</strong>
               <small>{{ categoryLabels[entry.category] }} / {{ contentCategoryLabels[entry.contentCategory ?? "jav"] }} · {{ entry.projects.join(" / ") }}</small>
-              <small>{{ entry.note }}</small>
+              <small>{{ getSourceCatalogDisplayNote(entry) }}</small>
             </div>
-            <button class="secondary-button small" type="button" @click="beginCatalogCreate(entry)">配置并登记</button>
+            <UiButton class="secondary-button small" variant="secondary" type="button" @click="beginCatalogCreate(entry)">配置并登记</UiButton>
           </article>
         </div>
         <p v-if="!unregisteredCatalogEntries.length" class="panel-note">所有预置候选来源均已登记。</p>
@@ -499,13 +506,9 @@ async function deleteSource(source: SourceDefinition) {
     <div v-if="manager.error.value" class="feedback error" role="alert">{{ manager.error.value }}</div>
     <div v-if="manager.notice.value" class="feedback success" role="status">{{ manager.notice.value }}</div>
 
-    <div v-if="showEditor" class="modal-backdrop" @click.self="closeEditor">
-      <section class="editor-dialog" role="dialog" aria-modal="true" :aria-label="isEditing ? '编辑数据源' : '新增数据源'">
-        <div class="dialog-heading">
-          <div><p class="eyebrow">SOURCE CONFIGURATION</p><h2>{{ isEditing ? "编辑数据源" : "新增数据源" }}</h2></div>
-          <button class="icon-button" type="button" aria-label="关闭" @click="closeEditor">×</button>
-        </div>
+    <UiModal v-model="showEditor" :title="isEditing ? '编辑数据源' : '新增数据源'" width="920px">
         <form class="source-form" @submit.prevent="submitForm">
+          <p class="eyebrow">SOURCE CONFIGURATION</p>
           <div class="form-grid">
             <label>数据源名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example Index" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-index" /></label>
@@ -578,8 +581,7 @@ async function deleteSource(source: SourceDefinition) {
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
           </div>
         </form>
-      </section>
-    </div>
+    </UiModal>
   </section>
 </template>
 

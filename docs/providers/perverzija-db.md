@@ -7,17 +7,23 @@
 - Upstream API version: `v1.2.0` (backwards-compatible v1; the 2026-11-06 release added performer profile/image fields that this scene-search Provider does not request or consume)
 - Category: `other-index`
 - Capabilities: `metadata`, `relationships`
-- Search modes: `number`, `keyword`
+- Search modes: `keyword` only
 - API endpoint: `https://api.perverzija.com/v1/scenes`
 - Authentication: none
 - API key: not required
 - Shared rate-limit lane: `perverzija` (600 ms minimum spacing)
 
-The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capabilities `metadata` and `relationships`, and both search modes. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until a live Cloudflare Worker request has been verified.
+The source must be configured as a Worker Provider with `adapterId: "perverzija-db"`, category `other-index`, capabilities `metadata` and `relationships`, and keyword search mode only. Use `https://db.perverzija.com` as the source's base URL for administration display. Keep the source disabled until its configuration has been reviewed and explicit enablement is approved.
+
+## Staging verification snapshot (2026-11-28)
+
+- A live Staging Worker keyword search using `Kira Noir` succeeded, returning 30 results in approximately 840 ms.
+- The connection smoke test returned 0 results in approximately 1077 ms. This is not a contradiction: the smoke test uses a fixed probe term and treats a valid upstream response with no matches as a successful connection check.
+- These observations verify one Staging request path at that time. They do not authorize enabling the source or establish ongoing availability. Keep the source disabled unless and until its configuration and source-policy review are complete and enablement is explicitly approved.
 
 ## Request behavior
 
-The adapter issues one GET request on a cache miss; a valid Worker Cache API hit avoids an upstream request:
+The adapter supports keyword search only. It forwards the supplied text as the API `q` parameter; the implementation does not distinguish number mode from keyword mode or perform a dedicated JAV catalogue-number lookup. The adapter issues one GET request on a cache miss; a valid Worker Cache API hit avoids an upstream request:
 
 ```text
 GET /v1/scenes?q=<encoded-query>&per_page=50
@@ -53,7 +59,7 @@ The upstream CDN and the Worker Cache API can both reduce repeated requests. Dis
 ## Tests and verification boundary
 
 The Worker test suite includes fixture-based checks for:
-- query construction and API endpoint;
+- keyword query construction and API endpoint;
 - result mapping and attribution links;
 - no image/embed consumption;
 - rejection of untrusted result/watch hosts;

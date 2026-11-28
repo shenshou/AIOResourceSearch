@@ -14,6 +14,7 @@ import {
 } from "@aio-resource-search/shared";
 import { useAdapterManager } from "../composables/useAdapterManager";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
+import { UiButton, UiModal } from "../../../components/ui";
 
 const manager = useAdapterManager();
 const showEditor = ref(false);
@@ -50,6 +51,21 @@ const emptyForm = (): AdapterDefinition => ({
   notes: "",
 });
 const form = reactive<AdapterDefinition>(emptyForm());
+const builtInAdapterNote = "内置 Worker 适配器实现。登记适配器不会创建或启用任何数据源；每个数据源仍需单独完成来源审查、配置和测试。";
+
+function adapterDescription(adapter: AdapterDefinition): string {
+  const description = adapter.description?.trim() ?? "";
+  return /^built-in worker provider implementation\.?$/i.test(description)
+    ? "内置 Worker Provider 实现；具体能力以当前适配器代码和能力声明为准。"
+    : description;
+}
+
+function adapterNotes(adapter: AdapterDefinition): string {
+  const notes = adapter.notes?.trim() ?? "";
+  return /^built-in worker implementation\./i.test(notes) || !notes
+    ? adapter.implemented ? builtInAdapterNote : notes
+    : notes;
+}
 const isEditing = computed(() => editingId.value !== null);
 const theRarBgPreset: AdapterDefinition = {
   id: "the-rarbg-json",
@@ -85,6 +101,8 @@ function beginCreate() {
 function beginEdit(adapter: AdapterDefinition) {
   Object.assign(form, {
     ...adapter,
+    description: adapterDescription(adapter),
+    notes: adapterNotes(adapter),
     categories: [...adapter.categories],
     contentCategories: [...(adapter.contentCategories ?? ["jav"])],
     capabilities: [...adapter.capabilities],
@@ -178,7 +196,7 @@ async function deleteAdapter(adapter: AdapterDefinition) {
       <details v-if="!theRarBgAdapter?.enabled" class="source-catalog-panel">
         <summary>预置适配器 · The RarBg JSON API</summary>
         <p class="form-hint">Worker 代码中已有 the-rarbg-json 实现。登记并启用此适配器只会让它可被数据源引用，不会自动发起搜索；后续 5 条分类数据源仍需单独登记并保持禁用。请先部署包含该 Provider 的 Worker，再执行此操作。</p>
-        <button class="primary-button small" type="button" :disabled="manager.saving.value" @click="registerOrEnableTheRarBgAdapter">{{ theRarBgAdapter ? "启用已登记适配器" : "登记并启用适配器" }}</button>
+        <UiButton class="primary-button small" type="button" :disabled="manager.saving.value" @click="registerOrEnableTheRarBgAdapter">{{ theRarBgAdapter ? "启用已登记适配器" : "登记并启用适配器" }}</UiButton>
       </details>
       <div v-if="manager.loading.value" class="empty-state">正在读取适配器配置…</div>
       <div v-else-if="!manager.adapters.value.length" class="empty-state">
@@ -195,11 +213,11 @@ async function deleteAdapter(adapter: AdapterDefinition) {
               </span>
             </div>
             <p class="source-meta">{{ adapter.id }} · v{{ adapter.version }} · {{ mechanismLabels[adapter.mechanism ?? "api"] }} · {{ (adapter.contentCategories ?? ["jav"]).map((item) => CONTENT_CATEGORY_LABELS[item]).join("、") }}</p>
-            <p v-if="adapter.description" class="source-url">{{ adapter.description }}</p>
+            <p v-if="adapter.description" class="source-url">{{ adapterDescription(adapter) }}</p>
             <div class="source-tags">
               <span v-for="capability in adapter.capabilities" :key="capability">{{ capabilityLabels[capability] }}</span>
             </div>
-            <p v-if="adapter.notes" class="source-meta">备注：{{ adapter.notes }}</p>
+            <p v-if="adapter.notes || adapter.implemented" class="source-meta">备注：{{ adapterNotes(adapter) }}</p>
           </div>
           <div class="source-actions">
             <button class="secondary-button small" type="button" :disabled="manager.saving.value || !adapter.implemented" @click="manager.save({ ...adapter, enabled: !adapter.enabled }, false)">
@@ -215,13 +233,9 @@ async function deleteAdapter(adapter: AdapterDefinition) {
     <div v-if="manager.error.value" class="feedback error" role="alert">{{ manager.error.value }}</div>
     <div v-if="manager.notice.value" class="feedback success" role="status">{{ manager.notice.value }}</div>
 
-    <div v-if="showEditor" class="modal-backdrop" @click.self="showEditor = false">
-      <section class="editor-dialog" role="dialog" aria-modal="true" :aria-label="isEditing ? '编辑适配器' : '新增适配器'">
-        <div class="dialog-heading">
-          <div><p class="eyebrow">ADAPTER REGISTRATION</p><h2>{{ isEditing ? "编辑适配器" : "新增适配器" }}</h2></div>
-          <button class="icon-button" type="button" aria-label="关闭" @click="showEditor = false">×</button>
-        </div>
+    <UiModal v-model="showEditor" :title="isEditing ? '编辑适配器' : '新增适配器'" width="920px">
         <form class="source-form" @submit.prevent="submitForm">
+          <p class="eyebrow">ADAPTER REGISTRATION</p>
           <div class="form-grid">
             <label>适配器名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example JSON API" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-json-api" /></label>
@@ -259,7 +273,6 @@ async function deleteAdapter(adapter: AdapterDefinition) {
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
           </div>
         </form>
-      </section>
-    </div>
+    </UiModal>
   </section>
 </template>

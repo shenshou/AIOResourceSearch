@@ -1,3 +1,5 @@
+**Review baseline: 2026-11-28.** This is an implementation-readiness research record, not a live deployment inventory. Revalidate upstream contracts, quotas, terms, and current Worker registration before acting on any row.
+
 # Provider Integration Readiness — API Candidates
 
 This document converts source-policy review into implementation-ready contracts. It is deliberately stricter than “an endpoint exists”: a Provider is not approved until its endpoint is stable, its intended use is permitted, its quota behavior is coordinated, and its response can be mapped into the shared result model.

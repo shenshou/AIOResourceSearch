@@ -1,5 +1,7 @@
 # JAV Metadata Aggregation
 
+> Review baseline: 2026-11-28. This document describes the aggregation behavior at the reviewed repository baseline; confirm the current code and tests before treating it as a live deployment statement.
+
 This document defines the current Worker-side aggregation contract for JAV metadata. It is an implementation policy, not a claim that every candidate source is approved for automated retrieval or data reuse.
 
 ## Work identity
@@ -13,25 +15,26 @@ This document defines the current Worker-side aggregation contract for JAV metad
 
 ## Field conflict policy
 
-- Source results are processed in configured source order. The first valid, non-empty value is authoritative when sources disagree.
-- Later sources may fill fields that are absent from the surviving result; they do not overwrite a selected title, canonical URL, catalogue number, release date, cover, description, or existing metadata key.
-- Metadata is merged by key: an existing non-empty value wins, while previously absent keys can be supplied by later sources.
+- Source results retain a deterministic global source order, which is the fallback and tie-breaker for field selection.
+- For `title`, `catalogNumber`, `releaseDate`, `imageUrl`, `description`, and each `metadata.<key>`, the optional `fieldPriorities` configuration can define a field-specific ordered list of source IDs. Listed sources rank ahead of unlisted sources; unlisted sources retain their global order.
+- The first valid, non-empty value from the highest-ranked source is authoritative. A higher-priority value can replace a lower-priority value even when its source is processed later; a later lower-priority value cannot overwrite it. Missing or empty priority lists preserve global source order.
+- Metadata is merged by key under the same per-field ranking rule: an existing value is replaced only by a valid value from a higher-ranked source; previously absent keys can be supplied by any eligible source.
 - Blank optional catalogue numbers, release dates, descriptions, and metadata values are discarded during normalization, so they cannot block a later source from filling the field.
 - Resource links are combined by URL, deduplicated, and capped by the existing normalizer/aggregator limits. The first source's label wins when the same URL has conflicting labels.
 - Source attribution is accumulated once per source ID. Per-source result counts continue to represent that Provider's pre-deduplication result count.
 
 ## Deliberate limitations
 
-- There is no configurable per-field source-priority system yet. Adding one would require a separately designed, backward-compatible source configuration contract and administrator UI.
-- This policy does not determine factual correctness when two non-empty sources disagree; it provides deterministic behavior and preserves provenance for later review.
+- Field priorities express operator preference, not factual verification. They cannot determine which conflicting upstream value is objectively correct; source provenance remains available for review.
+- Relationship aggregation remains a deduplicated union, and downloadable resource links retain their own source attribution; scalar field priorities do not rank or suppress those collections.
 - No source is enabled by this document. Data-use rights, upstream terms, and access-control boundaries remain separate source-review gates.
 - This phase does not implement automated retrieval that bypasses login, paywalls, CAPTCHA, anti-bot challenges, geographic restrictions, rate limits, or other access controls.
 
 ## Verification
 
-Additional URL-identity regression tests cover tracking-parameter removal/query-order normalization and preservation of meaningful query parameters. These tests are authored but not executed locally.
+Focused tests cover URL-identity normalization, field conflict resolution and attribution, deterministic source ordering, blank-value filtering, catalogue-number identity, category isolation, relationship capability enforcement and deduplication, Perverzija date validation, shared rate-lane spacing and cooldowns, cache behavior, coordinator fail-closed behavior, result caps, and Eporner relationship mapping.
 
-Focused unit tests now cover first-value-wins field and external-link conflicts, deterministic configured-source order despite out-of-order provider completion, blank-value filtering, catalogue-key collision isolation, JAV catalogue-number identity, category isolation, explicit relationship-capability enforcement, within-source relationship deduplication, URL-based entity identity, aliases and source provenance, relationship whitespace normalization, relationship-cap URL enrichment, Perverzija calendar-date validation, 600 ms lane spacing, `Retry-After` and `X-RateLimit-Reset` cooldown handling, cache hit/miss, invalid-cache refresh, cache allowlisting without unused image/media fields, coordinator fail-closed behavior, production-network mapping, global result cap and per-source count behavior, post-cap duplicate enrichment and attribution preservation, and Eporner performer/category/tag mapping plus URL validation. The focused tests are executed as part of the complete CI workflow. CI run [#46001993558](https://github.com/shenshou/AIOResourceSearch/actions/runs/46001993558) passed on branch head `432346d06e790c74e5889a59e1d990bcb4406e5a`, including lint, Worker unit tests, Durable Object runtime tests, frontend production build, and Worker type-check.
+Historical verification: CI run [#46001993558](https://github.com/shenshou/AIOResourceSearch/actions/runs/46001993558) passed on commit `432346d06e790c74e5889a59e1d990bcb4406e5a` on 2026-11-27. That result is not validation of the current PR #5 head. The initial PR #5 CI run [#46045198931](https://github.com/shenshou/AIOResourceSearch/actions/runs/46045198931) on 2026-11-27 reported four Worker unit-test failures (two coordinator expectations and two source-diagnostic expectations). The root cause was stale Perverzija test fixtures: they still advertised and requested `number` mode even though the Provider had been changed to `keyword` only. The affected search and admin-route fixtures were aligned with the implemented keyword-only contract in commit `4bc1a0ca88c25d3a7b89b9a925f9da160d529dc0`. This is a test-fixture correction, not a passing CI result; the complete suite remains pending on the current PR head. No CI was run during this review.
 
 ## Structured relationships
 

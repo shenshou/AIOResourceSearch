@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { CONTENT_CATEGORIES, CONTENT_CATEGORY_LABELS } from "@aio-resource-search/shared";
 import { useSearch } from "../composables/useSearch";
+import { UiButton, UiInput, UiSelect } from "../../../components/ui";
 
 const {
   query,
@@ -15,25 +16,6 @@ const {
 } = useSearch();
 
 const copyMessage = ref("");
-const showImages = ref(readImagePreference());
-
-function readImagePreference(): boolean {
-  try {
-    return localStorage.getItem("aio-resource-search:show-images") !== "false";
-  } catch {
-    return true;
-  }
-}
-
-function updateImagePreference(value: boolean) {
-  showImages.value = value;
-  try {
-    localStorage.setItem("aio-resource-search:show-images", String(value));
-  } catch {
-    // Storage can be unavailable in private or restricted browsing contexts.
-  }
-}
-
 async function copyResourceLink(value: string, label: string) {
   try {
     await navigator.clipboard.writeText(value);
@@ -100,42 +82,30 @@ const errorLabels: Record<string, string> = {
     <section class="search-panel" aria-labelledby="search-title">
       <div class="search-panel-heading">
         <h2 id="search-title">聚合搜索</h2>
-        <label class="image-toggle">
-          <input type="checkbox" :checked="showImages" @change="updateImagePreference(($event.target as HTMLInputElement).checked)">
-          <span>显示图片</span>
-        </label>
       </div>
 
       <form class="search-form" @submit.prevent="submitSearch">
         <div class="search-controls">
-          <label class="search-mode content-category">
-            <span>内容分类</span>
-            <select v-model="contentCategory">
-              <option value="all">全部分类</option>
-              <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ CONTENT_CATEGORY_LABELS[category] }}</option>
-            </select>
-          </label>
-          <label class="search-mode">
-            <span>搜索类型</span>
-            <select v-model="mode">
-              <option value="number">番号</option>
-              <option value="keyword">关键词</option>
-            </select>
-          </label>
-          <label class="query-field">
-            <span class="visually-hidden">搜索内容</span>
-            <input
-              v-model="query"
-              type="search"
-              maxlength="120"
-              autocomplete="off"
-              placeholder="输入番号、标题或关键词"
-              aria-label="输入番号、标题或关键词"
-            >
-          </label>
-          <button class="primary-button search-submit" type="submit" :disabled="loading || !query.trim()">
+          <UiSelect v-model="contentCategory" class="search-mode content-category" label="内容分类">
+            <option value="all">全部分类</option>
+            <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ CONTENT_CATEGORY_LABELS[category] }}</option>
+          </UiSelect>
+          <UiSelect v-model="mode" class="search-mode" label="搜索类型">
+            <option value="number">番号</option>
+            <option value="keyword">关键词</option>
+          </UiSelect>
+          <UiInput
+            v-model="query"
+            class="query-field"
+            type="search"
+            maxlength="120"
+            autocomplete="off"
+            placeholder="输入番号、标题或关键词"
+            aria-label="输入番号、标题或关键词"
+          />
+          <UiButton class="primary-button search-submit" type="submit" :disabled="!query.trim()" :loading="loading">
             {{ loading ? "搜索中…" : "搜索" }}
-          </button>
+          </UiButton>
         </div>
       </form>
       <p class="panel-note">Worker 自动抓取结果取决于已审查并注册的适配器；外部搜索入口会单独列出。</p>
@@ -178,7 +148,7 @@ const errorLabels: Record<string, string> = {
 
       <div v-else class="result-list">
         <article v-for="item in response.results" :key="item.sourceId + ':' + item.id" class="result-card">
-          <img v-if="showImages && item.imageUrl" class="result-image" :src="item.imageUrl" :alt="item.title" loading="lazy" referrerpolicy="no-referrer">
+          <img v-if="item.imageUrl" class="result-image" :src="item.imageUrl" :alt="item.title" loading="lazy" referrerpolicy="no-referrer">
           <div class="result-body">
             <div class="result-meta">
               <span class="result-source">{{ item.sourceName }}</span>

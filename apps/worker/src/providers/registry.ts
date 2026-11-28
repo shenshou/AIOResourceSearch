@@ -113,7 +113,7 @@ export function listImplementedAdapterDefinitions(): AdapterDefinition[] {
     return {
       id: adapter.id,
       name: presentation?.name ?? adapter.id,
-      description: presentation?.description ?? "Built-in Worker Provider implementation.",
+      description: presentation?.description ?? "内置 Worker Provider 实现；具体能力以当前适配器代码为准。",
       mechanism: adapter.mechanism ?? "api",
       contentCategories: [...(adapter.contentCategories ?? ["jav"])],
       version: adapter.version,
@@ -121,7 +121,7 @@ export function listImplementedAdapterDefinitions(): AdapterDefinition[] {
       categories: [...adapter.categories],
       capabilities: [...adapter.capabilities],
       implemented: true,
-      notes: "Built-in Worker implementation. Registration does not create or enable any source; source-specific review and configuration are still required.",
+      notes: "内置 Worker 适配器实现。登记适配器不会创建或启用任何数据源；每个数据源仍需单独完成来源审查、配置和测试。",
     };
   });
 }
