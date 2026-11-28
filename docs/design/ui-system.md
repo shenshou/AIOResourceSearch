@@ -33,7 +33,7 @@
 | `UiBadge` | 状态标签 |
 | `UiAlert` | 信息、成功、警告和错误提示 |
 
-`AdminLoginPanel` 是跨管理模块复用的业务级组件，接口见 [前端组件参考](../frontend-components.md)。
+数据源和适配器管理的新增/编辑弹窗统一使用 `UiModal`，由该组件负责初始焦点、Tab 焦点循环、Esc 关闭、遮罩点击关闭和关闭后的焦点恢复。\n\n`AdminLoginPanel` 是跨管理模块复用的业务级组件，接口见 [前端组件参考](../frontend-components.md)。
 
 ## 4. 使用约定
 
