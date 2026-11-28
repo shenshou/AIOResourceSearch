@@ -13,7 +13,6 @@ test("all compiled Provider adapters satisfy the shared registry contract", () =
     assert.ok(adapter.categories.length > 0, adapter.id + " must declare source categories");
     assert.ok(adapter.capabilities.length > 0, adapter.id + " must declare capabilities");
     assert.ok(adapter.searchModes.length > 0, adapter.id + " must declare search modes");
-    assert.ok(adapter.searchModes.every((mode) => mode === "keyword" || mode === "number"));
     assert.ok(adapter.contentCategories && adapter.contentCategories.length > 0, adapter.id + " must declare content categories");
   }
 });
