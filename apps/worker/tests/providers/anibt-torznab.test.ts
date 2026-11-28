@@ -37,5 +37,6 @@ test("drops hostile release and torrent URLs", async () => {
 test("rejects empty query, oversized UTF-8 query and protocol errors", async () => {
   await assert.rejects(anibtTorznabProvider.search({ query: " ", mode: "keyword" }, context(async () => new Response())), /non-empty/);
   await assert.rejects(anibtTorznabProvider.search({ query: "字".repeat(100), mode: "keyword" }, context(async () => new Response())), /160-byte/);
-  await assert.rejects(anibtTorznabProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response('<error code="100" />', { headers: { "Content-Type": "application/xml" } })), /protocol error 100/);
+  const protocolError = anibtTorznabProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response('<error code="100" />', { headers: { "Content-Type": "application/xml" } })));
+  await assert.rejects(protocolError, /protocol error 100/);
 });
