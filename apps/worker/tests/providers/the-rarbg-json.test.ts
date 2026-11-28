@@ -41,5 +41,7 @@ test("drops mismatched magnets and untrusted detail URLs", async () => {
 });
 test("rejects unsupported categories and invalid JSON envelopes", async () => {
   await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}"), { ...source, contentCategory: "manga" })), /does not support/);
-  await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}", { headers: { "Content-Type": "application/json" } })), /invalid JSON response/);
+  const invalidFetcher: typeof fetch = async () => new Response("{}", { headers: { "Content-Type": "application/json" } });
+  const invalidEnvelope = theRarBgProvider.search({ query: "test", mode: "keyword" }, context(invalidFetcher));
+  await assert.rejects(invalidEnvelope, /invalid JSON response/);
 });
