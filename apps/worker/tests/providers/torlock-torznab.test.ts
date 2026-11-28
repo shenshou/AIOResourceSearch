@@ -33,7 +33,8 @@ test("drops unsafe detail links and invalid magnets", async () => {
   assert.deepEqual(results, []);
 });
 test("rejects invalid RSS and unexpected content types", async () => {
-  const invalidFeed = torlockProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("<rss/>", { headers: { "Content-Type": "application/rss+xml" } })));
+  const invalidFetcher: typeof fetch = async () => new Response("<rss/>", { headers: { "Content-Type": "application/rss+xml" } });
+  const invalidFeed = torlockProvider.search({ query: "test", mode: "keyword" }, context(invalidFetcher));
   await assert.rejects(invalidFeed, /invalid Torznab RSS/);
   const wrongType = torlockProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("blocked", { headers: { "Content-Type": "text/html" } })));
   await assert.rejects(wrongType, /unexpected feed content type/);
