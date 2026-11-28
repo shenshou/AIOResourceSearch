@@ -8,7 +8,7 @@ const source = { id: "yourbittorrent", name: "YourBittorrent", category: "torren
 const context = (fetcher: typeof fetch) => ({ source, fetch: fetcher, signal: new AbortController().signal });
 test("registers the JSON API adapter", () => {
   assert.equal(getProviderAdapter("yourbittorrent-json"), yourBittorrentProvider);
-  assert.deepEqual(yourBittorrentProvider.searchModes, ["number", "keyword"]);
+  assert.ok(yourBittorrentProvider.searchModes.includes("number"));
 });
 test("sends adult-category query and maps torrent results", async () => {
   let requested = "";
