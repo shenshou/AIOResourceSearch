@@ -26,6 +26,7 @@ function submit() {
   if (!value || props.loading) return;
   emit("submit", value);
 }
+import { UiButton } from "./ui";
 </script>
 
 <template>
