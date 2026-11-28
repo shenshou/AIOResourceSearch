@@ -1,19 +1,19 @@
-<script setup lang="ts">
-export interface UiSelectOption {
-  value: string | number;
+<script setup lang="ts" generic="T extends string | number">
+export interface UiSelectOption<TValue extends string | number = string> {
+  value: TValue;
   label: string;
   disabled?: boolean;
 }
 withDefaults(defineProps<{
-  modelValue?: string | number;
+  modelValue?: T;
   label?: string;
   hint?: string;
   error?: string;
-  options?: UiSelectOption[];
+  options?: UiSelectOption<T>[];
   id?: string;
-}>(), { modelValue: "", options: () => [] });
+}>(), { options: () => [] });
 
-const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+const emit = defineEmits<{ "update:modelValue": [value: T] }>();
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const emit = defineEmits<{ "update:modelValue": [value: string] }>();
       class="ui-select"
       :value="modelValue"
       :aria-invalid="Boolean(error) || undefined"
-      @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
+      @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value as T)"
     >
       <option v-for="option in options" :key="String(option.value)" :value="option.value" :disabled="option.disabled">
         {{ option.label }}
