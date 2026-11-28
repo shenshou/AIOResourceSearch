@@ -47,6 +47,21 @@ export function getSourceCatalogDisplayNote(entry: SourceCatalogEntry): string {
     parts.push("需遵守上游限流要求，不通过代理轮换或其他方式规避限制。");
   }
 
+  if (/canonical homepage|canonical home page|canonical domain|official homepage/.test(note)) {
+    parts.push("官方主页或规范域名身份尚未完成核验，第三方域名记录不能替代运营方的正式说明。");
+  }
+  if (/current .*terms|terms.*could not be verified|terms.*not verified|no .*terms|automation policy/.test(note)) {
+    parts.push("现行服务条款及自动化访问政策尚未得到充分确认。");
+  }
+  if (/third-party/.test(note)) {
+    parts.push("第三方扫描、域名记录或社区维护的抓取脚本不构成该站对本项目的自动化访问授权。");
+  }
+  if (/public search|public api|api\/rss|rss contract|search contract|search endpoint/.test(note)) {
+    parts.push("官方公开搜索、API 或 RSS 接口契约尚未核实，不能仅凭网页可访问就推定可自动检索。");
+  }
+  if (/metadata|post extraction|data reuse|republish|redistribut/.test(note)) {
+    parts.push("尚未确认允许本项目采集、缓存或再展示相关元数据的授权范围。");
+  }
   if (/invite-only|invitation|invite code|account registration|requires an account|personal api key|api token/.test(note)) {
     parts.push("上游访问涉及账户、邀请或个人 API 凭据；当前不接入需要此类受限凭据的路径。");
   }
