@@ -38,7 +38,8 @@ test("uses configured same-origin HTTPS template and normalizes parsed results",
 });
 test("rejects cross-origin templates, redirects, and missing capability selectors", async () => {
   await assert.rejects(genericHtmlProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response() , { ...baseSource, providerSearchUrlTemplate: "https://evil.example/?q={query}" })), /configured HTTPS source origin/);
-  const redirect = genericHtmlProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response(null, { status: 302, headers: { Location: "https://example.test/elsewhere" } })));
+  const redirectFetcher: typeof fetch = async () => new Response(null, { status: 302, headers: { Location: "https://example.test/elsewhere" } });
+  const redirect = genericHtmlProvider.search({ query: "test", mode: "keyword" }, context(redirectFetcher));
   await assert.rejects(redirect, /redirected/);
   const missingSelector = genericHtmlProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("<html/>", { headers: { "Content-Type": "text/html" } }), { ...baseSource, htmlSelectors: { result: ".r", title: ".t", link: "a" } }));
   await assert.rejects(missingSelector, /matching optional-field selectors/);
