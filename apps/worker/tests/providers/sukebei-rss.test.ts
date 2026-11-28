@@ -29,6 +29,7 @@ test("queries the public magnet feed and maps detail, magnet and attribution lin
 test("rejects an untrusted detail host and unexpected feed format", async () => {
   const results = await sukebeiRssProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response(feed("https://evil.example/view/123"), { headers: { "Content-Type": "application/rss+xml" } })));
   assert.deepEqual(results, []);
-  const unexpectedFormat = sukebeiRssProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("<html>blocked</html>", { headers: { "Content-Type": "text/html" } })));
+  const htmlFetcher: typeof fetch = async () => new Response("<html>blocked</html>", { headers: { "Content-Type": "text/html" } });
+  const unexpectedFormat = sukebeiRssProvider.search({ query: "test", mode: "keyword" }, context(htmlFetcher));
   await assert.rejects(unexpectedFormat, /unexpected feed format/);
 });
