@@ -16,7 +16,7 @@ import {
 } from "@aio-resource-search/shared";
 import { SOURCE_CATALOG, type SourceCatalogEntry } from "../sourceCatalog";
 import { getSourceCatalogDisplayNote } from "../sourceCatalogPresentation";
-import { UiButton } from "../../../components/ui";
+import { UiButton, UiModal } from "../../../components/ui";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
 import { useSourceManager } from "../composables/useSourceManager";
 import { adapterApi } from "../../../services/adapterApi";
@@ -506,13 +506,9 @@ async function deleteSource(source: SourceDefinition) {
     <div v-if="manager.error.value" class="feedback error" role="alert">{{ manager.error.value }}</div>
     <div v-if="manager.notice.value" class="feedback success" role="status">{{ manager.notice.value }}</div>
 
-    <div v-if="showEditor" class="modal-backdrop" @click.self="closeEditor">
-      <section class="editor-dialog" role="dialog" aria-modal="true" :aria-label="isEditing ? '编辑数据源' : '新增数据源'">
-        <div class="dialog-heading">
-          <div><p class="eyebrow">SOURCE CONFIGURATION</p><h2>{{ isEditing ? "编辑数据源" : "新增数据源" }}</h2></div>
-          <button class="icon-button" type="button" aria-label="关闭" @click="closeEditor">×</button>
-        </div>
+    <UiModal v-model="showEditor" :title="isEditing ? '编辑数据源' : '新增数据源'" width="920px">
         <form class="source-form" @submit.prevent="submitForm">
+          <p class="eyebrow">SOURCE CONFIGURATION</p>
           <div class="form-grid">
             <label>数据源名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example Index" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-index" /></label>
@@ -585,8 +581,7 @@ async function deleteSource(source: SourceDefinition) {
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
           </div>
         </form>
-      </section>
-    </div>
+    </UiModal>
   </section>
 </template>
 

@@ -14,7 +14,7 @@ import {
 } from "@aio-resource-search/shared";
 import { useAdapterManager } from "../composables/useAdapterManager";
 import AdminLoginPanel from "../../../components/AdminLoginPanel.vue";
-import { UiButton } from "../../../components/ui";
+import { UiButton, UiModal } from "../../../components/ui";
 
 const manager = useAdapterManager();
 const showEditor = ref(false);
@@ -233,13 +233,9 @@ async function deleteAdapter(adapter: AdapterDefinition) {
     <div v-if="manager.error.value" class="feedback error" role="alert">{{ manager.error.value }}</div>
     <div v-if="manager.notice.value" class="feedback success" role="status">{{ manager.notice.value }}</div>
 
-    <div v-if="showEditor" class="modal-backdrop" @click.self="showEditor = false">
-      <section class="editor-dialog" role="dialog" aria-modal="true" :aria-label="isEditing ? '编辑适配器' : '新增适配器'">
-        <div class="dialog-heading">
-          <div><p class="eyebrow">ADAPTER REGISTRATION</p><h2>{{ isEditing ? "编辑适配器" : "新增适配器" }}</h2></div>
-          <button class="icon-button" type="button" aria-label="关闭" @click="showEditor = false">×</button>
-        </div>
+    <UiModal v-model="showEditor" :title="isEditing ? '编辑适配器' : '新增适配器'" width="920px">
         <form class="source-form" @submit.prevent="submitForm">
+          <p class="eyebrow">ADAPTER REGISTRATION</p>
           <div class="form-grid">
             <label>适配器名称<input v-model="form.name" required maxlength="80" placeholder="例如：Example JSON API" /></label>
             <label>唯一 ID<input v-model="form.id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" :disabled="isEditing" placeholder="example-json-api" /></label>
@@ -277,7 +273,6 @@ async function deleteAdapter(adapter: AdapterDefinition) {
             <button class="primary-button" type="submit" :disabled="manager.saving.value">{{ manager.saving.value ? "保存中…" : "保存配置" }}</button>
           </div>
         </form>
-      </section>
-    </div>
+    </UiModal>
   </section>
 </template>
