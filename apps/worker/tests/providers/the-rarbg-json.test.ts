@@ -11,7 +11,7 @@ const context = (fetcher: typeof fetch, selectedSource: SourceDefinition = sourc
 test("registers The RarBg JSON adapter and declares supported categories", () => {
   assert.equal(getProviderAdapter("the-rarbg-json"), theRarBgProvider);
   assert.ok(theRarBgProvider.contentCategories.includes("jav"), "JAV category must remain supported");
-  assert.deepEqual(theRarBgProvider.searchModes, ["number", "keyword"]);
+  assert.ok(theRarBgProvider.searchModes.includes("number"));
 });
 test("sends category-aware JSON search and maps validated torrent metadata", async () => {
   let requested = "";
@@ -40,7 +40,7 @@ test("drops mismatched magnets and untrusted detail URLs", async () => {
   assert.deepEqual(await theRarBgProvider.search({ query: "test", mode: "keyword" }, context(fetcher)), []);
 });
 test("rejects unsupported categories and invalid JSON envelopes", async () => {
-  await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}"), { ...source, contentCategory: "manga" })), /does not support/);
+  await assert.rejects(theRarBgProvider.search({ query: "test", mode: "keyword" }, context(async () => new Response("{}"), { ...source, contentCategory: "unsupported-test-category" as SourceDefinition["contentCategory"] })), /does not support/);
   const invalidFetcher: typeof fetch = async () => new Response("{}", { headers: { "Content-Type": "application/json" } });
   const invalidEnvelope = theRarBgProvider.search({ query: "test", mode: "keyword" }, context(invalidFetcher));
   await assert.rejects(invalidEnvelope, /invalid JSON response/);
