@@ -109,34 +109,26 @@ const errorLabels: Record<string, string> = {
 
       <form class="search-form" @submit.prevent="submitSearch">
         <div class="search-controls">
-          <label class="search-mode content-category">
-            <span>内容分类</span>
-            <select v-model="contentCategory">
-              <option value="all">全部分类</option>
-              <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ CONTENT_CATEGORY_LABELS[category] }}</option>
-            </select>
-          </label>
-          <label class="search-mode">
-            <span>搜索类型</span>
-            <select v-model="mode">
-              <option value="number">番号</option>
-              <option value="keyword">关键词</option>
-            </select>
-          </label>
-          <label class="query-field">
-            <span class="visually-hidden">搜索内容</span>
-            <input
-              v-model="query"
-              type="search"
-              maxlength="120"
-              autocomplete="off"
-              placeholder="输入番号、标题或关键词"
-              aria-label="输入番号、标题或关键词"
-            >
-          </label>
-          <button class="primary-button search-submit" type="submit" :disabled="loading || !query.trim()">
+          <UiSelect v-model="contentCategory" class="search-mode content-category" label="内容分类">
+            <option value="all">全部分类</option>
+            <option v-for="category in CONTENT_CATEGORIES" :key="category" :value="category">{{ CONTENT_CATEGORY_LABELS[category] }}</option>
+          </UiSelect>
+          <UiSelect v-model="mode" class="search-mode" label="搜索类型">
+            <option value="number">番号</option>
+            <option value="keyword">关键词</option>
+          </UiSelect>
+          <UiInput
+            v-model="query"
+            class="query-field"
+            type="search"
+            maxlength="120"
+            autocomplete="off"
+            placeholder="输入番号、标题或关键词"
+            aria-label="输入番号、标题或关键词"
+          />
+          <UiButton class="primary-button search-submit" type="submit" :disabled="!query.trim()" :loading="loading">
             {{ loading ? "搜索中…" : "搜索" }}
-          </button>
+          </UiButton>
         </div>
       </form>
       <p class="panel-note">Worker 自动抓取结果取决于已审查并注册的适配器；外部搜索入口会单独列出。</p>
