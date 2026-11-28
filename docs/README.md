@@ -23,6 +23,7 @@
 - [前端组件参考](frontend-components.md)
 - [Cloudflare 部署指南](cloudflare-deployment.md)
 - [Provider 共享限流设计](provider-rate-limiting.md)
+- [JAV 元数据聚合、字段优先级与来源归属](providers/jav-metadata-aggregation.md)
 
 ### 数据源目录与审查
 
