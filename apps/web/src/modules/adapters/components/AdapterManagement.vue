@@ -101,6 +101,8 @@ function beginCreate() {
 function beginEdit(adapter: AdapterDefinition) {
   Object.assign(form, {
     ...adapter,
+    description: adapterDescription(adapter),
+    notes: adapterNotes(adapter),
     categories: [...adapter.categories],
     contentCategories: [...(adapter.contentCategories ?? ["jav"])],
     capabilities: [...adapter.capabilities],
