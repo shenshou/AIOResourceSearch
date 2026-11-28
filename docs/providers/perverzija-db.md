@@ -60,15 +60,15 @@ The upstream CDN and the Worker Cache API can both reduce repeated requests. Dis
 
 The Worker test suite includes fixture-based checks for:
 - keyword query construction and API endpoint;
-- result mapping and attribution links;
-- no image/embed consumption;
-- rejection of untrusted result/watch hosts;
-- no retry on 429;
-- five-minute cache hits/misses and invalid-cache refresh;
-- shared 600 ms Durable Object rate-lane registration and fail-closed behavior when the coordinator is unavailable;
-- malformed JSON rejection.
+- result mapping, metadata, relationships, duration, and attribution links;
+- rejection of malformed records and untrusted result/watch hosts;
+- invalid dates and bounded relationship data;
+- JSON content type, malformed JSON, and invalid response envelopes;
+- no retry on 429 and declared response-size limits;
+- five-minute cache behavior, allowlisted cache fields, and invalid-cache refresh;
+- shared 600 ms Durable Object rate-lane registration and fail-closed behavior when the coordinator is unavailable.
 
-These tests use mocked Fetch. They do not prove that Cloudflare Workers can reach the live API. Do not enable the source until the deployed test Worker confirms connectivity and the operator has reviewed the API's adult-only terms for the intended audience.
+The dedicated Provider test file is included in the standard Worker unit-test command and CI. These tests use mocked Fetch. They do not prove that Cloudflare Workers can reach the live API. Do not enable the source until the deployed test Worker confirms connectivity and the operator has reviewed the API's adult-only terms for the intended audience.
 
 ## Official references
 

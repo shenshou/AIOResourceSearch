@@ -190,10 +190,6 @@ export async function handleAdmin(
     if ((source.type ?? "provider") === "external-search") {
       return json({ error: { code: "external_search_not_testable", message: "External-search entries are browser-opened links and are never fetched by the Worker." } }, 422);
     }
-    if (!source.enabled) {
-      return json({ error: { code: "source_disabled", message: "Enable the source before running a Provider test." } }, 409);
-    }
-
     const kind = testMatch[2];
     let mode = source.searchModes.includes("keyword") ? "keyword" as const : "number" as const;
     let query = mode === "keyword" ? "AIOResourceSearch connection check" : "AIO-TEST-001";
