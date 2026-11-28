@@ -47,9 +47,9 @@ function submit() {
           {{ showToken ? "隐藏" : "显示" }}
         </button>
       </div>
-      <button class="primary-button" type="submit" :disabled="loading || !token.trim()">
+      <UiButton class="primary-button" type="submit" :disabled="!token.trim()" :loading="loading">
         {{ loading ? "验证中…" : "验证并进入管理" }}
-      </button>
+      </UiButton>
     </form>
   </div>
 </template>
